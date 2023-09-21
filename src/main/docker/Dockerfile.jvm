@@ -91,8 +91,18 @@ COPY --chown=185 target/quarkus-app/quarkus/ /deployments/quarkus/
 EXPOSE 8080
 USER 185
 ENV AB_JOLOKIA_OFF=""
-ENV JAVA_OPTS="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
+ENV JAVA_OPTS="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager -Dquarkus.mongodb.connection-string=mongodb://mongodb-ops-manager:Devdbpass2023@zaga-mongo-ops-manager-db-0.zaga-mongo-ops-manager-db-svc.mongodb-workspace.svc.cluster.local:27017,zaga-mongo-ops-manager-db-1.zaga-mongo-ops-manager-db-svc.mongodb-workspace.svc.cluster.local:27017,zaga-mongo-ops-manager-db-2.zaga-mongo-ops-manager-db-svc.mongodb-workspace.svc.cluster.local:27017 -Dmp.messaging.incoming.metric-in.bootstrap.servers=dev-persistent-cluster-kafka-bootstrap.kafka-workspace.svc.cluster.local:9092 -Dmp.messaging.incoming.logs-in.bootstrap.servers= dev-persistent-cluster-kafka-bootstrap.kafka-workspace.svc.cluster.local:9092 -Dmp.messaging.incoming.trace-in.bootstrap.servers=dev-persistent-cluster-kafka-bootstrap.kafka-workspace.svc.cluster.local:9092"
 ENV JAVA_APP_JAR="/deployments/quarkus-run.jar"
 
 ENTRYPOINT [ "/opt/jboss/container/java/run/run-java.sh" ]
 
+
+
+
+#  -Dquarkus.mongodb.connection-string=
+
+#  -Dmp.messaging.incoming.metric-in.bootstrap.servers=
+
+#  -Dmp.messaging.incoming.logs-in.bootstrap.servers=
+
+#  -Dmp.messaging.incoming.trace-in.bootstrap.servers=
