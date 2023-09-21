@@ -97,7 +97,7 @@ ENTRYPOINT [ "/opt/jboss/container/java/run/run-java.sh" ]
 
 
 
-#  -Dquarkus.mongodb.connection-string=
+# -Dquarkus.mongodb.connection-string=
 
 #  -Dmp.messaging.incoming.metric-in.bootstrap.servers=
 
