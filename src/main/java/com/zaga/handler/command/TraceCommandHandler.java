@@ -66,45 +66,6 @@ public class TraceCommandHandler {
 }
 
 
-
-
-
-
-  // logic for calculating the duration for trace 
-  // private static String formatDuration(Duration duration) {
-  //   if (duration.toMinutes() < 1) {
-  //     long seconds = duration.getSeconds();
-  //     if (seconds == 0) {
-  //       return "a few seconds ago";
-  //     } else if (seconds == 1) {
-  //       return "a second ago";
-  //     } else {
-  //       return seconds + " seconds ago";
-  //     }
-  //   } else if (duration.toHours() < 1) {
-  //     long minutes = duration.toMinutes();
-  //     if (minutes == 1) {
-  //       return "a minute ago";
-  //     } else {
-  //       return minutes + " minutes ago";
-  //     }
-  //   } else if (duration.toDays() < 1) {
-  //     long hours = duration.toHours();
-  //     if (hours == 1) {
-  //       return "an hour ago";
-  //     } else {
-  //       return hours + " hours ago";
-  //     }
-  //   } else {
-  //     long days = duration.toDays();
-  //     if (days == 1) {
-  //       return "a day ago";
-  //     } else {
-  //       return days + " days ago";
-  //     }
-  //   }
-  // }
-
   private Long calculateDuration(Spans span) {
     String startTimeUnixNano = span.getStartTimeUnixNano();
     String endTimeUnixNano = span.getEndTimeUnixNano();
@@ -180,7 +141,8 @@ public class TraceCommandHandler {
                                 
                                 try {
                                     int statusCodeInt = Integer.parseInt(statusCodeString);
-                                    long statusCode = (long) statusCodeInt;                                    traceDTO.setStatusCode(statusCode);
+                                    Long statusCode = (long) statusCodeInt;    
+                                    traceDTO.setStatusCode(statusCode);
                                 } catch (NumberFormatException e) {
                                 }
                             } else {
