@@ -137,15 +137,23 @@ public class TraceCommandHandler {
                                   attribute.getValue().getStringValue()
                                 );
                               } else if ("http.status_code".equals(attribute.getKey())) {
-                                String statusCodeString = attribute.getValue().getStringValue();
+                                String statusCodeString = attribute.getValue().getIntValue();
                                 
-                                try {
-                                    int statusCodeInt = Integer.parseInt(statusCodeString);
-                                    Long statusCode = (long) statusCodeInt;    
-                                    traceDTO.setStatusCode(statusCode);
-                                } catch (NumberFormatException e) {
+                                if (statusCodeString != null) {
+                                    try {
+                                        Long statusCode = Long.parseLong(statusCodeString);
+                                        traceDTO.setStatusCode(statusCode);
+                                        System.out.println("Status Code stored successfully: " + statusCode);
+                                    } catch (NumberFormatException e) {
+                                        System.err.println("Failed to parse status code: " + statusCodeString);
+                                        e.printStackTrace();
+                                    }
+                                } else {
+                                    System.err.println("Status code is null. Cannot parse.");
                                 }
-                            } else {
+                            }
+                            
+                             else {
                               }
                             }
                             traceDTO.setDuration(calculateDuration(span));
