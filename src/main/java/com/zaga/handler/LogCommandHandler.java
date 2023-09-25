@@ -1,7 +1,7 @@
-package com.zaga.handler.command;
+package com.zaga.handler;
 
 import com.zaga.entity.otellog.OtelLog;
-import com.zaga.repo.command.LogCommandRepo;
+import com.zaga.repo.LogCommandRepo;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;

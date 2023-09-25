@@ -4,7 +4,7 @@ package com.zaga.kafka.consumer;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 
 import com.zaga.entity.otellog.OtelLog;
-import com.zaga.handler.command.LogCommandHandler;
+import com.zaga.handler.LogCommandHandler;
 
 import jakarta.inject.Inject;
 

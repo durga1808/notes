@@ -1,7 +1,7 @@
-package com.zaga.handler.command;
+package com.zaga.handler;
 
 import com.zaga.entity.otelmetric.OtelMetric;
-import com.zaga.repo.command.MetricCommandRepo;
+import com.zaga.repo.MetricCommandRepo;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;

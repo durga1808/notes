@@ -1,4 +1,4 @@
-package com.zaga.handler.command;
+package com.zaga.handler;
 
 import com.zaga.entity.oteltrace.OtelTrace;
 import com.zaga.entity.oteltrace.ResourceSpans;
@@ -6,8 +6,9 @@ import com.zaga.entity.oteltrace.ScopeSpans;
 import com.zaga.entity.oteltrace.scopeSpans.Spans;
 import com.zaga.entity.oteltrace.scopeSpans.spans.Attributes;
 import com.zaga.entity.queryentity.trace.TraceDTO;
-import com.zaga.repo.command.TraceCommandRepo;
-import com.zaga.repo.query.TraceQueryRepo;
+import com.zaga.repo.TraceCommandRepo;
+import com.zaga.repo.TraceQueryRepo;
+
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.time.Duration;

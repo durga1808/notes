@@ -4,7 +4,7 @@ import org.eclipse.microprofile.reactive.messaging.Incoming;
 
 
 import com.zaga.entity.otelmetric.OtelMetric;
-import com.zaga.handler.command.MetricCommandHandler;
+import com.zaga.handler.MetricCommandHandler;
 
 import jakarta.inject.Inject;
 

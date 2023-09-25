@@ -1,4 +1,4 @@
-package com.zaga.repo.command;
+package com.zaga.repo;
 
 import com.zaga.entity.oteltrace.OtelTrace;
 
