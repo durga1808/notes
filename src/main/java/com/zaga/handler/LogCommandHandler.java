@@ -2,7 +2,9 @@ package com.zaga.handler;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.zaga.entity.otellog.OtelLog;
 import com.zaga.entity.otellog.ResourceLogs;
@@ -32,35 +34,38 @@ public class LogCommandHandler {
     }
 
     public List<LogDTO> marshalLogData(OtelLog logs) {
-        List<LogDTO> logDTOs = new ArrayList<>();
+        Set<LogDTO> logDTOs = new HashSet<>(); // Use a Set to prevent duplicates
     
         try {
             for (ResourceLogs resourceLog : logs.getResourceLogs()) {
+                String serviceName = getServiceName(resourceLog);
+    
                 for (ScopeLogs scopeLog : resourceLog.getScopeLogs()) {
-                    for (LogRecord logRecord : scopeLog.getLogRecords()){
-                    LogDTO logDTO = new LogDTO();
-                    String serviceName = getServiceName(resourceLog);
-                    logDTO.setServiceName(serviceName);
-                    logDTO.setTraceId(logRecord.getTraceId());
+                    for (LogRecord logRecord : scopeLog.getLogRecords()) {
+                        LogDTO logDTO = new LogDTO();
+                        logDTO.setServiceName(serviceName);
+                        logDTO.setTraceId(logRecord.getTraceId());
     
-                    // Set the entire list of scopeLogs
-                    logDTO.setScopeLogs(resourceLog.getScopeLogs());
+                        // Include all scopeLogs for each logDTO
+                        logDTO.setScopeLogs(resourceLog.getScopeLogs());
     
-                    logDTOs.add(logDTO);
+                        logDTOs.add(logDTO);
+                    }
                 }
-            }
             }
     
             if (!logDTOs.isEmpty()) {
-                logQueryRepo.persist(logDTOs);
+                logQueryRepo.persist(new ArrayList<>(logDTOs)); // Convert Set to List for persistence
             }
     
         } catch (Exception e) {
             e.printStackTrace();
         }
     
-        return logDTOs;
+        return new ArrayList<>(logDTOs); // Convert Set to List for return
     }
+    
+    
     
 
      private String getServiceName(ResourceLogs resourceLog) {
