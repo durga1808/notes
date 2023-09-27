@@ -17,6 +17,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @ApplicationScoped
@@ -50,21 +51,22 @@ public class TraceCommandHandler {
 
 
     // logic for calculating the createdtime
-  private String calculateCreatedTime(Spans span) {
-    String startTimeUnixNano = span.getStartTimeUnixNano();
-    long startUnixNanoTime = Long.parseLong(startTimeUnixNano);
-    Instant startInstant = Instant.ofEpochSecond(
-      startUnixNanoTime / 1_000_000_000L,
-      startUnixNanoTime % 1_000_000_000L
-    );
-    ZoneId istZone = ZoneId.of("Asia/Kolkata");
-
-    ZonedDateTime istTime = startInstant.atZone(istZone);
-
-    String formattedIstTime = istTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss z"));
-
-    return formattedIstTime;
-}
+    private Date calculateCreatedTime(Spans span) {
+      String startTimeUnixNano = span.getStartTimeUnixNano();
+      long startUnixNanoTime = Long.parseLong(startTimeUnixNano);
+      Instant startInstant = Instant.ofEpochSecond(
+          startUnixNanoTime / 1_000_000_000L,
+          startUnixNanoTime % 1_000_000_000L
+      );
+      ZoneId istZone = ZoneId.of("Asia/Kolkata");
+  
+      ZonedDateTime istTime = startInstant.atZone(istZone);
+  
+      Date date = Date.from(istTime.toInstant());
+      
+      return date;
+  }
+  
 
 
   private Long calculateDuration(Spans span) {
@@ -140,13 +142,13 @@ private Spans findParentSpan(ResourceSpans resourceSpans, String spanId) {
                                 traceDTO.setOperationName(span.getName());
                                 traceDTO.setCreatedTime(calculateCreatedTime(span));
                             } else {
-                                String parentSpanId = span.getParentSpanId();
-                                Spans parentSpan = findParentSpan(resourceSpans, parentSpanId);
+                                // String parentSpanId = span.getParentSpanId();
+                                // Spans parentSpan = findParentSpan(resourceSpans, parentSpanId);
 
-                                if (parentSpan != null) {
-                                    traceDTO.setCreatedTime(calculateCreatedTime(parentSpan));
-                                    traceDTO.setOperationName(parentSpan.getName());
-                                }
+                                // if (parentSpan != null) {
+                                //     traceDTO.setCreatedTime(calculateCreatedTime(parentSpan));
+                                //     traceDTO.setOperationName(parentSpan.getName());
+                                // }
                             }
                             
                             List<Attributes> attributes = span.getAttributes();
