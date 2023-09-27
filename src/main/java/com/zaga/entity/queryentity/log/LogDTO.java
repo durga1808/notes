@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Log {
+public class LogDTO {
     private String serviceName;
+    private String traceId;
+    
 }
