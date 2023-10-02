@@ -15,7 +15,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -196,6 +195,8 @@ private Spans findParentSpan(ResourceSpans resourceSpans, String spanId) {
         
       }
 
+
+      
 
   // get all trace data
   public List<OtelTrace> getTraceProduct(OtelTrace trace) {
