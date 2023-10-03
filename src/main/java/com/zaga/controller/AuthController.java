@@ -2,12 +2,15 @@ package com.zaga.controller;
 
 
 import com.zaga.entity.auth.UserCredentials;
+import com.zaga.entity.auth.ServiceList;
 import com.zaga.handler.AuthCommandHandler;
 
 import jakarta.inject.Inject;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
 
 @Path("/AuthController")
 public class AuthController {
@@ -40,6 +43,37 @@ public class AuthController {
         }
     }
 
+
+    /**
+     * Add a new service to the user's service list.
+     *
+     * @param serviceList Service details to be added.
+     * @return Response indicating success or failure of adding the service.
+     */
+    @POST
+    @Path("/addServiceList")
+    public Response addServiceList(final ServiceList serviceList) {
+        try {
+            Response response = authCommandHandler.addServiceList(serviceList);
+            return response;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Response.serverError().build();
+        }
+    }
+
+    @POST
+    @Path("/getServiceList")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getServiceList(final UserCredentials userCredentials) {
+        try {
+            Response response = authCommandHandler.getServiceList(userCredentials);
+            return response;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Response.serverError().build();
+        }
+    }
     // @POST
     // @Path("/forgotPassword")
     // public Response forgotPassword(final UserCredentials credentials) {
