@@ -134,6 +134,7 @@ public class AuthCommandHandler {
       return null;
     }
 
+  }
 //   public UserCredentials getUserInfoByUsername(String username) {
 //     return authRepo.find("username", username).firstResult();
 // }
