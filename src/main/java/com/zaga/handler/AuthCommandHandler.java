@@ -5,8 +5,11 @@ import com.zaga.entity.auth.ServiceList;
 import com.zaga.repo.AuthRepo;
 import com.zaga.repo.ServiceListRepo;
 
+import io.quarkus.mongodb.panache.PanacheQuery;
+import io.vertx.mutiny.ext.auth.User;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 
 @ApplicationScoped
@@ -130,5 +133,25 @@ public class AuthCommandHandler {
       e.printStackTrace();
       return null;
     }
+
+//   public UserCredentials getUserInfoByUsername(String username) {
+//     return authRepo.find("username", username).firstResult();
+// }
+
+  public UserCredentials updateUserCredentials(UserCredentials userCredentials){
+    // UserCredentials userData = authRepo.getUser(userCredentials.getUsername());
+    // System.out.println(userData);
+    UserCredentials existingUser = authRepo.getUser(userCredentials.getUsername());
+    if (existingUser == null) {
+          throw new WebApplicationException("User Not Found ", 500);
+    }
+    UserCredentials user = userCredentials;
+    System.out.println(user);
+    user.setId(existingUser.getId());
+    user.setRoles(existingUser.getRoles());
+    user.setUsername(existingUser.getUsername());
+    UserCredentials.update(user);
+    System.out.println(user);
+    return userCredentials;   
   }
 }

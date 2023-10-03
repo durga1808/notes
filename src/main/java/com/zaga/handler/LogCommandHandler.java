@@ -1,7 +1,11 @@
 package com.zaga.handler;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -56,6 +60,7 @@ public List<LogDTO> marshalLogData(OtelLog logs) {
                         logDTO.setServiceName(serviceName);
                         logDTO.setTraceId(traceId);
                         logDTO.setScopeLogs(new ArrayList<>());
+                        logDTO.setCreatedTime(convertObservedTimeToIST(logRecord.getObservedTimeUnixNano()));
 
                         logDTOMap.put(traceId, logDTO);
                     }
@@ -89,5 +94,16 @@ private String getServiceName(ResourceLogs resourceLog) {
       .map(attribute -> attribute.getValue().getStringValue())
       .orElse(null);
   }
+
+   private static Date convertObservedTimeToIST(String observedTimeUnixNano) {
+        long observedTimeMillis = Long.parseLong(observedTimeUnixNano) / 1_000_000;
+
+        Instant instant = Instant.ofEpochMilli(observedTimeMillis);
+
+        ZoneId istZone = ZoneId.of("Asia/Kolkata");
+        LocalDateTime istDateTime = LocalDateTime.ofInstant(instant, istZone);
+
+        return Date.from(istDateTime.atZone(istZone).toInstant());
+    }
 
 }
