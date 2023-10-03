@@ -3,6 +3,7 @@ package com.zaga.controller;
 
 import com.zaga.entity.auth.UserCredentials;
 import com.zaga.handler.AuthCommandHandler;
+import com.zaga.repo.AuthRepo;
 
 import jakarta.inject.Inject;
 import jakarta.ws.rs.POST;
@@ -15,6 +16,9 @@ public class AuthController {
 
     @Inject
     AuthCommandHandler authCommandHandler;
+
+    @Inject
+    AuthRepo repo;
 
     @POST
     @Path("/login")
@@ -40,21 +44,18 @@ public class AuthController {
         }
     }
 
-    // @POST
-    // @Path("/forgotPassword")
-    // public Response forgotPassword(final UserCredentials credentials) {
-    //     try {
-    //         UserCredentials existingUser = authCommandHandler.getUserInfoByUsername(credentials.getUsername());
-    //         if (existingUser == null) {
-    //             return Response.status(Response.Status.NOT_FOUND).entity("User not found").build();
-    //         }
-    //         authCommandHandler.updateUserPassword(existingUser, credentials.getPassword());
+    @POST
+    @Path("/forgotPassword")
+    public Response forgotPassword(UserCredentials credentials) {
+        try {
+       
+            authCommandHandler.updateUserCredentials(credentials);
 
-    //         return Response.ok("Password updated successfully").build();
-    //     } catch (Exception e) {
-    //         e.printStackTrace();
-    //         return Response.serverError().build();
-    //     }
-    // }
+            return Response.ok("Password updated successfully").build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Response.serverError().build();
+        }
+    }
 }
 

@@ -3,8 +3,11 @@ package com.zaga.handler;
 import com.zaga.entity.auth.UserCredentials;
 import com.zaga.repo.AuthRepo;
 
+import io.quarkus.mongodb.panache.PanacheQuery;
+import io.vertx.mutiny.ext.auth.User;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 
 @ApplicationScoped
@@ -70,14 +73,25 @@ public class AuthCommandHandler {
   }
 
 
-  public UserCredentials getUserInfoByUsername(String username) {
-    return authRepo.find("username", username).firstResult();
-}
-// public static void updateUserPassword(String username, String newPassword) {
-//     update("username", username)
-//         .set("password", newPassword)
-//         .execute();
+//   public UserCredentials getUserInfoByUsername(String username) {
+//     return authRepo.find("username", username).firstResult();
 // }
 
+  public UserCredentials updateUserCredentials(UserCredentials userCredentials){
+    // UserCredentials userData = authRepo.getUser(userCredentials.getUsername());
+    // System.out.println(userData);
+    UserCredentials existingUser = authRepo.getUser(userCredentials.getUsername());
+    if (existingUser == null) {
+          throw new WebApplicationException("User Not Found ", 500);
+    }
+    UserCredentials user = userCredentials;
+    System.out.println(user);
+    user.setId(existingUser.getId());
+    user.setRoles(existingUser.getRoles());
+    user.setUsername(existingUser.getUsername());
+    UserCredentials.update(user);
+    System.out.println(user);
+    return userCredentials;   
+  }
 }
     
