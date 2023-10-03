@@ -5,8 +5,6 @@ import com.zaga.entity.auth.ServiceList;
 import com.zaga.repo.AuthRepo;
 import com.zaga.repo.ServiceListRepo;
 
-import io.quarkus.mongodb.panache.PanacheQuery;
-import io.vertx.mutiny.ext.auth.User;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.WebApplicationException;
