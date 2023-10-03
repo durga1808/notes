@@ -133,7 +133,6 @@ public class AuthCommandHandler {
       e.printStackTrace();
       return null;
     }
-
   }
 //   public UserCredentials getUserInfoByUsername(String username) {
 //     return authRepo.find("username", username).firstResult();

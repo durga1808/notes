@@ -42,48 +42,43 @@ public class LogCommandHandler {
         System.out.println("log sizes"+logDTOs.size());
     }
  
-public List<LogDTO> marshalLogData(OtelLog logs) {
-    Map<String, LogDTO> logDTOMap = new HashMap<>();
-
-    try {
-        for (ResourceLogs resourceLog : logs.getResourceLogs()) {
-            String serviceName = getServiceName(resourceLog);
-
-            for (ScopeLogs scopeLog : resourceLog.getScopeLogs()) {
-                for (LogRecord logRecord : scopeLog.getLogRecords()) {
-                    String traceId = logRecord.getTraceId();
-
-                    LogDTO logDTO = logDTOMap.get(traceId);
-
-                    if (logDTO == null) {
-                        logDTO = new LogDTO();
+    public List<LogDTO> marshalLogData(OtelLog logs) {
+        List<LogDTO> logDTOs = new ArrayList<>();
+    
+        try {
+            for (ResourceLogs resourceLog : logs.getResourceLogs()) {
+                String serviceName = getServiceName(resourceLog);
+    
+                for (ScopeLogs scopeLog : resourceLog.getScopeLogs()) {
+                    for (LogRecord logRecord : scopeLog.getLogRecords()) {
+                        String traceId = logRecord.getTraceId();
+    
+                        // Create a new LogDTO for each LogRecord
+                        LogDTO logDTO = new LogDTO();
                         logDTO.setServiceName(serviceName);
                         logDTO.setTraceId(traceId);
-                        logDTO.setScopeLogs(new ArrayList<>());
+                        logDTO.setSpanId(logRecord.getSpanId());
+                        logDTO.setSeverityText(logRecord.getSeverityText());
+                        logDTO.setScopeLogs(Collections.singletonList(scopeLog));
                         logDTO.setCreatedTime(convertObservedTimeToIST(logRecord.getObservedTimeUnixNano()));
-
-                        logDTOMap.put(traceId, logDTO);
+                        
+                        logDTOs.add(logDTO);
                     }
-
-                    logDTO.getScopeLogs().add(scopeLog);
                 }
             }
+    
+            if (!logDTOs.isEmpty()) {
+                logQueryRepo.persist(logDTOs);
+                return logDTOs;
+            }
+    
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
-        if (!logDTOMap.isEmpty()) {
-            List<LogDTO> logDTOs = new ArrayList<>(logDTOMap.values());
-            logQueryRepo.persist(logDTOs);
-            return logDTOs;
-        }
-
-    } catch (Exception e) {
-        e.printStackTrace();
+    
+        return new ArrayList<>();
     }
-
-    return new ArrayList<>();
-}
-
-
+        
 private String getServiceName(ResourceLogs resourceLog) {
     return resourceLog
       .getResource()
