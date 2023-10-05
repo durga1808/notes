@@ -25,6 +25,7 @@ public class AuthController {
 
     @POST
     @Path("/login")
+    @Produces(MediaType.APPLICATION_JSON)
     public Response authenticateWithDB(final UserCredentials credentials) {
         try {
             Response response = authCommandHandler.getUserInfo(credentials);

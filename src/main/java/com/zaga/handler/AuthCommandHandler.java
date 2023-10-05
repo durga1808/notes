@@ -145,7 +145,7 @@ public class AuthCommandHandler {
     }
     UserCredentials user = userCredentials;
     System.out.println(user);
-    user.setId(existingUser.getId());
+    // user.setId(existingUser.getId());
     user.setRoles(existingUser.getRoles());
     user.setUsername(existingUser.getUsername());
     UserCredentials.update(user);
