@@ -89,18 +89,7 @@ public class TraceCommandHandler {
     return (Long) duration.toMillis();
   }
 
-  // Helper method to find a span by its spanId within a ResourceSpans object
-private Spans findParentSpan(ResourceSpans resourceSpans, String spanId) {
-  for (ScopeSpans scopeSpans : resourceSpans.getScopeSpans()) {
-      for (Spans span : scopeSpans.getSpans()) {
-          if (span.getSpanId().equals(spanId)) {
-              return span;
-          }
-      }
-  }
-  return null; // Return null if parent span is not found
-}
-
+ 
   // extraction and marshelling of data and persistance for trace
   private List<TraceDTO> extractAndMapData(OtelTrace trace) {
     List<TraceDTO> traceDTOs = new ArrayList<>();
