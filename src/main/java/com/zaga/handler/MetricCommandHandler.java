@@ -1,9 +1,8 @@
 package com.zaga.handler;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -47,8 +46,8 @@ try {
     for (ResourceMetric resourceMetric : metrics.getResourceMetrics()) {
         String serviceName = getServiceName(resourceMetric);
         for (ScopeMetric scopeMetric : resourceMetric.getScopeMetrics()) {
-            LocalDateTime createdTime = null;
-            Double cpuUsage = null; // Change the data type to Double
+            Date createdTime = null;
+            Double cpuUsage = null;
             String name = scopeMetric.getScope().getName();
             if (name != null && name.contains("io.opentelemetry.runtime")) {
                 List<Metric> metricsList = scopeMetric.getMetrics();
@@ -88,9 +87,11 @@ try {
                             }
                         }
 
+                        Integer memoryUsageInMb = (memoryUsage / (1024 * 1024));
+
                         // Create a MetricDTO and add it to the list
                         MetricDTO metricDTO = new MetricDTO();
-                        metricDTO.setMemoryUsage(memoryUsage);
+                        metricDTO.setMemoryUsage(memoryUsageInMb);
                         metricDTO.setDate(createdTime);
                         metricDTO.setServiceName(serviceName);
                         metricDTO.setCpuUsage(cpuUsage);
@@ -143,9 +144,16 @@ private String getServiceName(ResourceMetric resourceMetric){
     .orElse(null);
 }
 
-private LocalDateTime convertUnixNanoToLocalDateTime(String startTimeUnixNano) {
+private Date convertUnixNanoToLocalDateTime(String startTimeUnixNano) {
     long nanoValue = Long.parseLong(startTimeUnixNano);
-    Instant instant = Instant.ofEpochMilli(nanoValue / 1_000_000); 
-    return LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
+    
+    // Convert Unix Nano timestamp to Instant
+    Instant instant = Instant.ofEpochMilli(nanoValue / 1_000_000);
+    
+    // Convert Instant to Date
+    Date date = Date.from(instant);
+    
+    // Return the Date object
+    return date;
 }
 }

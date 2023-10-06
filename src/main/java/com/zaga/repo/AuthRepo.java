@@ -5,7 +5,6 @@ import com.zaga.entity.auth.UserCredentials;
 
 import io.quarkus.mongodb.panache.PanacheMongoRepository;
 import io.quarkus.mongodb.panache.PanacheQuery;
-import io.vertx.mutiny.ext.auth.User;
 import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
