@@ -1,6 +1,8 @@
 package com.zaga.handler;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -144,16 +146,27 @@ private String getServiceName(ResourceMetric resourceMetric){
     .orElse(null);
 }
 
-private Date convertUnixNanoToLocalDateTime(String startTimeUnixNano) {
-    long nanoValue = Long.parseLong(startTimeUnixNano);
+// private Date convertUnixNanoToLocalDateTime(String startTimeUnixNano) {
+//     long nanoValue = Long.parseLong(startTimeUnixNano);
     
-    // Convert Unix Nano timestamp to Instant
-    Instant instant = Instant.ofEpochMilli(nanoValue / 1_000_000);
+//     // Convert Unix Nano timestamp to Instant
+//     Instant instant = Instant.ofEpochSecond(nanoValue / 1_000_000_000, nanoValue % 1_000_000_000);
     
-    // Convert Instant to Date
-    Date date = Date.from(instant);
+//     // Convert Instant to Date
+//     Date date = Date.from(instant);
     
-    // Return the Date object
-    return date;
-}
+//     // Return the Date object
+//     return date;
+// }
+private static Date convertUnixNanoToLocalDateTime(String startTimeUnixNano) {
+        long observedTimeMillis = Long.parseLong(startTimeUnixNano) / 1_000_000;
+
+        Instant instant = Instant.ofEpochMilli(observedTimeMillis);
+
+        ZoneId istZone = ZoneId.of("Asia/Kolkata");
+        LocalDateTime istDateTime = LocalDateTime.ofInstant(instant, istZone);
+
+        return Date.from(istDateTime.atZone(istZone).toInstant());
+        
+    }
 }
