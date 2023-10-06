@@ -34,7 +34,7 @@ public class MetricCommandHandler {
     public void createMetricProduct(OtelMetric metrics) {
         metricCommandRepo.persist(metrics);
         List<MetricDTO> metricDTOs = extractAndMapData(metrics);
-        // System.out.println("MetricDTOs: " + metricDTOs);
+        System.out.println("---------MetricDTOs:---------- " + metricDTOs.size());
     }
 
     private List<MetricDTO> extractAndMapData(OtelMetric metrics) {
@@ -68,7 +68,6 @@ try {
                                         int currentMemoryUsage = Integer.parseInt(asInt);
                                         System.out.println("--------Memory usage:----- " + currentMemoryUsage);
 
-                                        // Accumulate memoryUsage value
                                         memoryUsage += currentMemoryUsage;
                                     }
                                 }
