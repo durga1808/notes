@@ -32,58 +32,70 @@ public class LogCommandHandler {
         logCommandRepo.persist(logs);
 
         List<LogDTO> logDTOs = marshalLogData(logs);
-        System.out.println("log sizes"+logDTOs.size());
+        // System.out.println("log sizes" + logDTOs.size());
     }
- 
+
     public List<LogDTO> marshalLogData(OtelLog logs) {
         List<LogDTO> logDTOs = new ArrayList<>();
-    
+        LogDTO logDTO = new LogDTO();
+
         try {
             for (ResourceLogs resourceLog : logs.getResourceLogs()) {
                 String serviceName = getServiceName(resourceLog);
-    
+                logDTO.setServiceName(serviceName);
                 for (ScopeLogs scopeLog : resourceLog.getScopeLogs()) {
                     for (LogRecord logRecord : scopeLog.getLogRecords()) {
                         String traceId = logRecord.getTraceId();
-    
+                        List<LogRecord> mockLog = new ArrayList<LogRecord>();
+
                         // Create a new LogDTO for each LogRecord
-                        LogDTO logDTO = new LogDTO();
-                        logDTO.setServiceName(serviceName);
+
                         logDTO.setTraceId(traceId);
                         logDTO.setSpanId(logRecord.getSpanId());
                         logDTO.setSeverityText(logRecord.getSeverityText());
-                        logDTO.setScopeLogs(Collections.singletonList(scopeLog));
                         logDTO.setCreatedTime(convertObservedTimeToIST(logRecord.getObservedTimeUnixNano()));
-                        
-                        logDTOs.add(logDTO);
+
+                        mockLog.add(logRecord);
+
+                        ScopeLogs newScopeLogs = new ScopeLogs();
+                        newScopeLogs.setScope(scopeLog.getScope());
+                        newScopeLogs.setLogRecords(mockLog);
+
+                        logDTO.setScopeLogs(Collections.singletonList(newScopeLogs));
+
+                        System.out.println("Log Data DTo " + logDTO);
+                        // logDTOs.add(logDTO);
+                        logQueryRepo.persist(logDTO);
+
                     }
+
                 }
             }
-    
+
             if (!logDTOs.isEmpty()) {
-                logQueryRepo.persist(logDTOs);
+                // logQueryRepo.persist(logDTOs);
                 return logDTOs;
             }
-    
+
         } catch (Exception e) {
             e.printStackTrace();
         }
-    
+
         return new ArrayList<>();
     }
-        
-private String getServiceName(ResourceLogs resourceLog) {
-    return resourceLog
-      .getResource()
-      .getAttributes()
-      .stream()
-      .filter(attribute -> "service.name".equals(attribute.getKey()))
-      .findFirst()
-      .map(attribute -> attribute.getValue().getStringValue())
-      .orElse(null);
-  }
 
-   private static Date convertObservedTimeToIST(String observedTimeUnixNano) {
+    private String getServiceName(ResourceLogs resourceLog) {
+        return resourceLog
+                .getResource()
+                .getAttributes()
+                .stream()
+                .filter(attribute -> "service.name".equals(attribute.getKey()))
+                .findFirst()
+                .map(attribute -> attribute.getValue().getStringValue())
+                .orElse(null);
+    }
+
+    private static Date convertObservedTimeToIST(String observedTimeUnixNano) {
         long observedTimeMillis = Long.parseLong(observedTimeUnixNano) / 1_000_000;
 
         Instant instant = Instant.ofEpochMilli(observedTimeMillis);
