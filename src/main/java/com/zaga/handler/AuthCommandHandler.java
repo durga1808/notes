@@ -84,12 +84,7 @@ public class AuthCommandHandler {
   // .execute();
   // }
 
-  /**
-   * Add a new service to the list of available services.
-   *
-   * @param serviceList Service details to be added.
-   * @return Response indicating the result of service addition.
-   */
+
   public Response addServiceList(final ServiceList serviceList) {
     try {
       ServiceList serviceData = serviceListRepo

@@ -2,7 +2,6 @@ package com.zaga.entity.auth;
 
 import java.util.List;
 
-import org.bson.types.ObjectId;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -23,7 +22,6 @@ import lombok.ToString;
 @JsonIgnoreProperties({ "id" })
 @MongoEntity(collection = "UserCreds", database = "ObservabilityCredentials")
 public class UserCredentials extends PanacheMongoEntity {
-    // public ObjectId id;
     private String username;
     private String password;
     private List<String> roles;

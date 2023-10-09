@@ -1,7 +1,6 @@
 package com.zaga.entity.queryentity.metrics;
 
-import java.time.LocalDateTime;
-
+import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -16,9 +15,9 @@ import lombok.NoArgsConstructor;
 @JsonIgnoreProperties("id")
 @MongoEntity(collection = "MetricDTO", database = "OtelMetric")
 public class MetricDTO {
-    private LocalDateTime date;
-    private Long cpuUsage;
-    private Long memoryUsage;
+    private Date date;
+    private Double cpuUsage;
+    private Integer memoryUsage;
     private String serviceName;
     
 }
