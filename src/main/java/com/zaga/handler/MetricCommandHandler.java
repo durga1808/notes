@@ -89,11 +89,11 @@ try {
                             }
                         }
 
-                        Integer memoryUsageInMb = (memoryUsage / (1024 * 1024));
+                        // Integer memoryUsageInMb = (memoryUsage / (1024 * 1024));
 
                         // Create a MetricDTO and add it to the list
                         MetricDTO metricDTO = new MetricDTO();
-                        metricDTO.setMemoryUsage(memoryUsageInMb);
+                        metricDTO.setMemoryUsage(memoryUsage);
                         metricDTO.setDate(createdTime);
                         metricDTO.setServiceName(serviceName);
                         metricDTO.setCpuUsage(cpuUsage);
@@ -128,11 +128,11 @@ private boolean isSupportedMetric(String metricName) {
 }
 
 private boolean isMemoryMetric(String metricName) {
-    return Set.of("process.runtime.jvm.memory.usage", "process.runtime.jvm.memory.limit").contains(metricName);
+    return Set.of("process.runtime.jvm.memory.usage").contains(metricName);
 }
 
 private boolean isCpuMetric(String metricName) {
-    return Set.of("process.runtime.jvm.cpu.utilization","process.runtime.jvm.system.cpu.utilization").contains(metricName);
+    return Set.of("process.runtime.jvm.cpu.utilization").contains(metricName);
 }
 
 private String getServiceName(ResourceMetric resourceMetric){
