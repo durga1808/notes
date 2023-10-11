@@ -51,7 +51,7 @@ try {
             Date createdTime = null;
             Double cpuUsage = null;
             String name = scopeMetric.getScope().getName();
-            if (name != null && name.contains("io.opentelemetry.runtime")) {
+            if (name != null && name.contains("io.opentelemetry.runtime-telemetry")) {
                 List<Metric> metricsList = scopeMetric.getMetrics();
                 for (Metric metric : metricsList) {
                     String metricName = metric.getName();
@@ -107,6 +107,8 @@ try {
     if (!metricDTOs.isEmpty()) {
         // Only persist the last MetricDTO, outside the loop
         metricDtoRepo.persist(metricDTOs.subList(metricDTOs.size() - 1, metricDTOs.size()));
+        
+        System.out.println("----Last MetricDTO----: " + metricDTOs);
         System.out.println("Last MetricDTO: " + metricDTOs.get(metricDTOs.size() - 1));
     }
 } catch (Exception e) {
@@ -132,7 +134,7 @@ private boolean isMemoryMetric(String metricName) {
 }
 
 private boolean isCpuMetric(String metricName) {
-    return Set.of("process.runtime.jvm.cpu.utilization").contains(metricName);
+    return Set.of("process.runtime.jvm.cpu.utilization","process.runtime.jvm.system.cpu.utilization").contains(metricName);
 }
 
 private String getServiceName(ResourceMetric resourceMetric){

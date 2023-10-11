@@ -21,36 +21,24 @@ public class AuthCommandHandler {
 
   public Response getUserInfo(final UserCredentials credentials) {
     try {
-      UserCredentials userCreds = authRepo
-          .find("username = ?1", credentials.getUsername())
-          .firstResult();
-      if (userCreds != null) {
-        if (userCreds.getPassword().equals(credentials.getPassword())) {
-          if (userCreds.getRoles().containsAll(credentials.getRoles())) {
+        UserCredentials userCreds = authRepo
+                .find("username = ?1 and password = ?2", credentials.getUsername(), credentials.getPassword())
+                .firstResult();
+        if (userCreds != null) {
             return Response.status(200).entity(userCreds).build();
-          } else {
-            return Response
-                .status(Response.Status.FORBIDDEN)
-                .entity("You don't have valid permission")
-                .build();
-          }
         } else {
-          return Response
-              .status(Response.Status.UNAUTHORIZED)
-              .entity("Username or password is incorrect")
-              .build();
+            return Response
+                .status(Response.Status.UNAUTHORIZED)
+                .entity("Username or password is incorrect")
+                .build();
         }
-      } else {
-        return Response
-            .status(Response.Status.NOT_FOUND)
-            .entity("User not found")
-            .build();
-      }
     } catch (Exception e) {
-      e.printStackTrace();
-      return null;
+        e.printStackTrace();
+        return Response.serverError().build();
     }
-  }
+}
+
+
 
   public Response saveUserInfo(final UserCredentials credentials) {
     try {
@@ -74,6 +62,8 @@ public class AuthCommandHandler {
       return null;
     }
   }
+
+
 
   public UserCredentials getUserInfoByUsername(String username) {
     return authRepo.find("username", username).firstResult();

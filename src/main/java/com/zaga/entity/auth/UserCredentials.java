@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import io.quarkus.mongodb.panache.PanacheMongoEntity;
 import io.quarkus.mongodb.panache.common.MongoEntity;
+import jakarta.json.bind.annotation.JsonbNillable;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -24,5 +25,6 @@ import lombok.ToString;
 public class UserCredentials extends PanacheMongoEntity {
     private String username;
     private String password;
+    @JsonbNillable
     private List<String> roles;
 }
