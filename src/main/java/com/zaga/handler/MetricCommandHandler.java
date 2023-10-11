@@ -89,11 +89,11 @@ try {
                             }
                         }
 
-                        // Integer memoryUsageInMb = (memoryUsage / (1024 * 1024));
+                        Integer memoryUsageInMb = (memoryUsage / (1024 * 1024));
 
                         // Create a MetricDTO and add it to the list
                         MetricDTO metricDTO = new MetricDTO();
-                        metricDTO.setMemoryUsage(memoryUsage);
+                        metricDTO.setMemoryUsage(memoryUsageInMb);
                         metricDTO.setDate(createdTime);
                         metricDTO.setServiceName(serviceName);
                         metricDTO.setCpuUsage(cpuUsage);
