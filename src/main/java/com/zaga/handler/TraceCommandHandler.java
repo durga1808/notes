@@ -127,7 +127,6 @@ public class TraceCommandHandler {
                                 traceDTO.setCreatedTime(calculateCreatedTime(span));
                                 traceDTO.setDuration(calculateDuration(span));
                             } else {
-                              traceDTO.setDuration(calculateDuration(span));
                                 // String parentSpanId = span.getParentSpanId();
                                 // Spans parentSpan = findParentSpan(resourceSpans, parentSpanId);
 
