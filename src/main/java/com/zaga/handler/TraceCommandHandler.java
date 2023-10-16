@@ -11,7 +11,7 @@ import com.zaga.repo.TraceQueryRepo;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import java.time.Duration;
+
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -69,25 +69,21 @@ public class TraceCommandHandler {
 
 
   private Long calculateDuration(Spans span) {
-    String startTimeUnixNano = span.getStartTimeUnixNano();
-    String endTimeUnixNano = span.getEndTimeUnixNano();
+ 
+      long covertedStartTime = Long.parseLong(span.getStartTimeUnixNano(), 10);
+      long convertedEndTime = Long.parseLong(span.getEndTimeUnixNano(), 10);
 
-    long startUnixNanoTime = Long.parseLong(startTimeUnixNano);
-    long endUnixNanoTime = Long.parseLong(endTimeUnixNano);
+      Date startTime = new Date(covertedStartTime / 1000000);
+      Date endTime = new Date(convertedEndTime / 1000000); 
 
-    Instant startInstant = Instant.ofEpochSecond(
-      startUnixNanoTime / 1_000_000_000L,
-      startUnixNanoTime % 1_000_000_000L
-    );
-    Instant endInstant = Instant.ofEpochSecond(
-      endUnixNanoTime / 1_000_000_000L,
-      endUnixNanoTime % 1_000_000_000L
-    );
+      // Calculate the duration in milliseconds
+      long duration = endTime.getTime() - startTime.getTime();
 
-    Duration duration = Duration.between(startInstant, endInstant);
+      System.out.println("-----------duration:------------- " + duration);
+      return duration;
+   
+}
 
-    return (Long) duration.toMillis();
-  }
 
  
   // extraction and marshelling of data and persistance for trace
@@ -129,7 +125,9 @@ public class TraceCommandHandler {
                             if (span.getParentSpanId() == null || span.getParentSpanId().isEmpty()) {
                                 traceDTO.setOperationName(span.getName());
                                 traceDTO.setCreatedTime(calculateCreatedTime(span));
+                                traceDTO.setDuration(calculateDuration(span));
                             } else {
+                              traceDTO.setDuration(calculateDuration(span));
                                 // String parentSpanId = span.getParentSpanId();
                                 // Spans parentSpan = findParentSpan(resourceSpans, parentSpanId);
 
@@ -166,7 +164,6 @@ public class TraceCommandHandler {
                              else {
                               }
                             }
-                            traceDTO.setDuration(calculateDuration(span));
                             objectList.add(span);
                             traceDTO.setSpanCount(String.valueOf(objectList.size()));
                             traceDTO.setSpans(objectList);

@@ -32,7 +32,7 @@ public class LogCommandHandler {
         logCommandRepo.persist(logs);
 
         List<LogDTO> logDTOs = marshalLogData(logs);
-        // System.out.println("log sizes" + logDTOs.size());
+        System.out.println("log sizes" + logDTOs.size());
     }
 
     public List<LogDTO> marshalLogData(OtelLog logs) {
