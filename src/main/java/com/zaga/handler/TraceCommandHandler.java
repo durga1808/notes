@@ -29,7 +29,7 @@ public class TraceCommandHandler {
   TraceQueryRepo traceQueryRepo;
 
   public void createTraceProduct(OtelTrace trace) {
-    System.out.println("Tracesss" + trace);
+    // System.out.println("Tracesss" + trace);
     traceCommandRepo.persist(trace);
 
     List<TraceDTO> traceDTOs = extractAndMapData(trace);
