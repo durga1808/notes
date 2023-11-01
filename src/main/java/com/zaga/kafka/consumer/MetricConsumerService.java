@@ -10,9 +10,9 @@ public class MetricConsumerService {
   @Inject
   MetricCommandHandler metricCommandHandler;
 
-  // @Incoming("metric-in")
+  @Incoming("metric-in")
   public void consumeMetricDetails(OtelMetric metrics) {
-    System.out.println("consumer++++++++++++++" + metrics);
+    // System.out.println("consumer++++++++++++++" + metrics);
     metricCommandHandler.createMetricProduct(metrics);
   }
 }
