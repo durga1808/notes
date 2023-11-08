@@ -13,9 +13,9 @@ public class LogConsumerService {
       @Inject
       private LogCommandHandler logCommandHandler;
        
-      @Incoming("logs-in")  
+      @Incoming("logs-in") 
       public void consumeLogDetails(OtelLog logs) {
-        System.out.println("consumer++++++++++++++"+logs);
+        // System.out.println("consumer++++++++++++++"+logs);
        logCommandHandler.createLogProduct(logs);
      }
 }
