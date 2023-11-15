@@ -1,5 +1,6 @@
 package com.zaga.handler;
 
+
 import com.zaga.entity.kepler.KeplerMetric;
 import com.zaga.repo.KeplerMetricRepo;
 
@@ -14,7 +15,8 @@ public class KeplerMetricCommandHandler {
 
     public void createKeplerMetric(KeplerMetric metric) {
         keplerMetricRepo.persist(metric);
-        System.out.println("---------MetricDTOs:---------- " + metric);
-    }
+        // List<KeplerMetricDTO> metricDTOs = extractAndMapData(metric);
+        // System.out.println("---------MetricDTOs:---------- " + metricDTOs.size());
+     }
 
 }
