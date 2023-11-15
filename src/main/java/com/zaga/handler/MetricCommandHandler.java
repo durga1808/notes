@@ -8,7 +8,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-import com.zaga.entity.kepler.KeplerMetric;
 import com.zaga.entity.otelmetric.OtelMetric;
 import com.zaga.entity.otelmetric.ResourceMetric;
 import com.zaga.entity.otelmetric.ScopeMetric;
@@ -18,7 +17,6 @@ import com.zaga.entity.otelmetric.scopeMetric.MetricSum;
 import com.zaga.entity.otelmetric.scopeMetric.gauge.GaugeDataPoint;
 import com.zaga.entity.otelmetric.scopeMetric.sum.SumDataPoint;
 import com.zaga.entity.queryentity.metrics.MetricDTO;
-import com.zaga.repo.KeplerMetricRepo;
 import com.zaga.repo.MetricCommandRepo;
 import com.zaga.repo.MetricDTORepo;
 
@@ -31,9 +29,6 @@ public class MetricCommandHandler {
     @Inject
     MetricCommandRepo metricCommandRepo;
 
-    // @Inject
-    // KeplerMetricRepo keplerMetricRepo;
-
     @Inject
     MetricDTORepo metricDtoRepo;
 
@@ -44,21 +39,17 @@ public class MetricCommandHandler {
     }
 
 
-    //     public void createKeplerMetric(KeplerMetric metric) {
-    //     keplerMetricRepo.persist(metric);
-    //     System.out.println("---------MetricDTOs:---------- " + metric);
-    // }
 
     private List<MetricDTO> extractAndMapData(OtelMetric metrics) {
-        // Initialize a list to store MetricDTOs
-        List<MetricDTO> metricDTOs = new ArrayList<>();
-    // Initialize memoryUsage as a running total
-Integer memoryUsage = 0;
 
-try {
-    for (ResourceMetric resourceMetric : metrics.getResourceMetrics()) {
-        String serviceName = getServiceName(resourceMetric);
-        for (ScopeMetric scopeMetric : resourceMetric.getScopeMetrics()) {
+        List<MetricDTO> metricDTOs = new ArrayList<>();
+
+        Integer memoryUsage = 0;
+
+        try {
+        for (ResourceMetric resourceMetric : metrics.getResourceMetrics()) {
+            String serviceName = getServiceName(resourceMetric);
+            for (ScopeMetric scopeMetric : resourceMetric.getScopeMetrics()) {
             Date createdTime = null;
             Double cpuUsage = null;
             String name = scopeMetric.getScope().getName();

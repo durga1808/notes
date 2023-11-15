@@ -4,7 +4,6 @@ package com.zaga.kafka.consumer;
 import org.apache.kafka.common.header.Headers;
 
 import com.zaga.entity.kepler.KeplerMetric;
-import com.zaga.entity.otelmetric.OtelMetric;
 
 import io.smallrye.common.annotation.Identifier;
 import io.smallrye.reactive.messaging.kafka.DeserializationFailureHandler;
