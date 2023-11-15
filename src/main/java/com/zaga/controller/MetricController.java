@@ -34,17 +34,17 @@ public class MetricController {
         }
     }
 
-     @POST
-    @Path("/createKepler")
-    public Response createKepler(KeplerMetric metric) {
-        try {
-            //System.out.println("----------------");
-            metricCommandHandler.createKeplerMetric(metric);
-            return Response.status(200).entity(metric).build();
-        } catch (Exception e) {
-            return Response.status(500).entity(e.getMessage()).build();
-        }
-    }
+    //  @POST
+    // @Path("/createKepler")
+    // public Response createKepler(KeplerMetric metric) {
+    //     try {
+    //         //System.out.println("----------------");
+    //         metricCommandHandler.createKeplerMetric(metric);
+    //         return Response.status(200).entity(metric).build();
+    //     } catch (Exception e) {
+    //         return Response.status(500).entity(e.getMessage()).build();
+    //     }
+    // }
 
     
 }

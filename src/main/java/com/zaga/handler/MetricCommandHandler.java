@@ -31,8 +31,8 @@ public class MetricCommandHandler {
     @Inject
     MetricCommandRepo metricCommandRepo;
 
-    @Inject
-    KeplerMetricRepo keplerMetricRepo;
+    // @Inject
+    // KeplerMetricRepo keplerMetricRepo;
 
     @Inject
     MetricDTORepo metricDtoRepo;
@@ -44,10 +44,10 @@ public class MetricCommandHandler {
     }
 
 
-        public void createKeplerMetric(KeplerMetric metric) {
-        keplerMetricRepo.persist(metric);
-        System.out.println("---------MetricDTOs:---------- " + metric);
-    }
+    //     public void createKeplerMetric(KeplerMetric metric) {
+    //     keplerMetricRepo.persist(metric);
+    //     System.out.println("---------MetricDTOs:---------- " + metric);
+    // }
 
     private List<MetricDTO> extractAndMapData(OtelMetric metrics) {
         // Initialize a list to store MetricDTOs
