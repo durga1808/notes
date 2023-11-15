@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
+import com.zaga.entity.kepler.KeplerMetric;
 import com.zaga.entity.otelmetric.OtelMetric;
 import com.zaga.entity.otelmetric.ResourceMetric;
 import com.zaga.entity.otelmetric.ScopeMetric;
@@ -17,6 +18,7 @@ import com.zaga.entity.otelmetric.scopeMetric.MetricSum;
 import com.zaga.entity.otelmetric.scopeMetric.gauge.GaugeDataPoint;
 import com.zaga.entity.otelmetric.scopeMetric.sum.SumDataPoint;
 import com.zaga.entity.queryentity.metrics.MetricDTO;
+import com.zaga.repo.KeplerMetricRepo;
 import com.zaga.repo.MetricCommandRepo;
 import com.zaga.repo.MetricDTORepo;
 
@@ -30,12 +32,21 @@ public class MetricCommandHandler {
     MetricCommandRepo metricCommandRepo;
 
     @Inject
+    KeplerMetricRepo keplerMetricRepo;
+
+    @Inject
     MetricDTORepo metricDtoRepo;
 
     public void createMetricProduct(OtelMetric metrics) {
         metricCommandRepo.persist(metrics);
         List<MetricDTO> metricDTOs = extractAndMapData(metrics);
         System.out.println("---------MetricDTOs:---------- " + metricDTOs.size());
+    }
+
+
+        public void createKeplerMetric(KeplerMetric metric) {
+        keplerMetricRepo.persist(metric);
+        System.out.println("---------MetricDTOs:---------- " + metric);
     }
 
     private List<MetricDTO> extractAndMapData(OtelMetric metrics) {

@@ -1,9 +1,9 @@
 ####
 # mvn package -Dquarkus.profile=dev  ----  mvn package -Dquarkus.profile=prod
 #
-# docker build -f src/main/docker/Dockerfile.jvm -t mugicoder13/observai-backend-jvm .
+# podman build -f src/main/docker/Dockerfile.jvm -t quay.io/zagaos/observai-persistance-api .
 #
-# docker run -i --rm -p 8080:8080 mugicoder13/observai-backend-jvm
+# podman run -i --rm -p 8080:8080 quay.io/zagaos/observai-persistance-api
 ####
 
 FROM registry.access.redhat.com/ubi8/openjdk-11:1.16
