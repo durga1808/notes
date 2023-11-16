@@ -10,9 +10,14 @@ public class MetricConsumerService {
   @Inject
   MetricCommandHandler metricCommandHandler;
 
-  @Incoming("metric-in")
+  // @Incoming("metric-in")
   public void consumeMetricDetails(OtelMetric metrics) {
     // System.out.println("consumer++++++++++++++" + metrics);
+    if (metrics != null) {
     metricCommandHandler.createMetricProduct(metrics);
+    }
+    else {
+      System.out.println("Received null message. Check serialization/deserialization.");
+  }
   }
 }

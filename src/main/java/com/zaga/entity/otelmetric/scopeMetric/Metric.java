@@ -9,6 +9,7 @@ public class Metric {
     private String name;
     private String description;
     private String unit;
+    private MetricSummary summary;
     private MetricSum sum;
     private MetricGauge gauge;
     private MetricHistogram histogram;

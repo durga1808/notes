@@ -16,13 +16,18 @@ public class KeplerDeserialization implements Deserializer<KeplerMetric>  {
    }
     
    @Override
-    public KeplerMetric deserialize(String topic, byte[] data) {
-         try {
-         return objectMapper.readValue(data, KeplerMetric.class);
-       } catch (Exception e) {
-          throw new RuntimeException("Error deserializing JSON", e);
-       }
+   public KeplerMetric deserialize(String topic, byte[] data) {
+    if (data == null) {
+        return null; // or throw an appropriate exception
     }
+    try {
+        return objectMapper.readValue(data, KeplerMetric.class);
+    } catch (Exception e) {
+        // Log the exception
+        System.out.println("Error deserializing JSON"+e);
+        throw new RuntimeException("Error deserializing JSON", e);
+    }
+}
 }
  
   
