@@ -111,7 +111,7 @@ public class KeplerMetricCommandHandler {
       StringBuffer keys = new StringBuffer();
       double usage = 0;
       Date createdTime = null;
-      String sumType = "Sum";
+      // String sumType = "Sum";
 
       String startTime = sumDataPoint.getTimeUnixNano();
       if (startTime != null) {
@@ -181,7 +181,7 @@ public class KeplerMetricCommandHandler {
     for (GaugeDataPoint gaugeDataPoint : gaugeDataPointLst) {
       StringBuffer keys = null;
       String dobulevle = gaugeDataPoint.getAsDouble();
-      String type = "Gauge";
+      // String type = "Gauge";
       double usage = 0;
       Date createdTime = null;
       // long observedTimeMillis = 0;
@@ -195,7 +195,7 @@ public class KeplerMetricCommandHandler {
         createdTime = convertUnixNanoToLocalDateTime(startTimeStm);
       }
 
-      String time = gaugeDataPoint.getTimeUnixNano();
+      // String time = gaugeDataPoint.getTimeUnixNano();
 
       List<GaugeDataPointAttribute> gaugeDataPointAttributes = gaugeDataPoint.getAttributes();
 
@@ -246,7 +246,7 @@ public class KeplerMetricCommandHandler {
 
     for (HistogramDataPoint histogramDataPoint : histogramDataPoints) {
       StringBuffer keys = null;
-      String type = "Histogram";
+      // String type = "Histogram";
 
       String startTime = histogramDataPoint.getTimeUnixNano();
       Date createdTime = convertUnixNanoToLocalDateTime(startTime);
