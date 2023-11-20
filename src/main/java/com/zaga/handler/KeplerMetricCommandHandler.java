@@ -1,13 +1,5 @@
 package com.zaga.handler;
 
-
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
 import com.zaga.entity.kepler.KeplerMetric;
 import com.zaga.entity.otelmetric.ResourceMetric;
 import com.zaga.entity.otelmetric.ScopeMetric;
@@ -24,333 +16,307 @@ import com.zaga.entity.otelmetric.scopeMetric.histogram.HistogramDataPointAttrib
 import com.zaga.entity.otelmetric.scopeMetric.sum.SumDataPoint;
 import com.zaga.entity.otelmetric.scopeMetric.sum.SumDataPointAttribute;
 import com.zaga.entity.otelmetric.scopeMetric.sum.SumDataPointAttributeValue;
-import com.zaga.entity.queryentity.metrics.KeplerMetricDTO;
-import com.zaga.entity.queryentity.metrics.MetricDTO;
+import com.zaga.entity.queryentity.kepler.KeplerMetricDTO;
 import com.zaga.repo.KeplerMetricDTORepo;
 import com.zaga.repo.KeplerMetricRepo;
-import com.zaga.repo.MetricCommandRepo;
-import com.zaga.repo.MetricDTORepo;
-
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 @ApplicationScoped
 public class KeplerMetricCommandHandler {
-    
-    @Inject
-    KeplerMetricRepo keplerMetricRepo;
 
-    @Inject
-    KeplerMetricDTORepo KeplerMetricDTORepo;
+  @Inject
+  KeplerMetricRepo keplerMetricRepo;
 
+  @Inject
+  KeplerMetricDTORepo KeplerMetricDTORepo;
 
-    public void createKeplerMetric(KeplerMetric metric) {
+  public void createKeplerMetric(KeplerMetric metric) {
+    keplerMetricRepo.persist(metric);
 
-        keplerMetricRepo.persist(metric);
+    List<KeplerMetricDTO> metricDTOs = extractAndMapData(metric);
 
-        List<KeplerMetricDTO> metricDTOs = extractAndMapData(metric);
-        
-         if (!metricDTOs.isEmpty()) {
-
-            for ( KeplerMetricDTO keplerMetDTO : metricDTOs) {
-
-              KeplerMetricDTORepo.persist(keplerMetDTO);
-
-            }
-
-          }
-
-     }
-
-     public List<KeplerMetricDTO> extractAndMapData(KeplerMetric keplerMetric){
-     
-            List<KeplerMetricDTO> keplerMetricDTOLst = new ArrayList<>();
-
-
-            List<ResourceMetric> resourceMetrics = keplerMetric.getResourceMetrics();
-
-           for (ResourceMetric resourceMetric : resourceMetrics) {
-
-              List<ScopeMetric> scopeMetrics = resourceMetric.getScopeMetrics();
-
-              ScopeMetric scopeMetric = scopeMetrics.get(0);
-
-              List<Metric>  metrics = scopeMetric.getMetrics();
-
-              KeplerMetricDTO keplerMetricDTO = null;
-
-            
-
-              for ( Metric metric : metrics) {
-                  
-                MetricGauge  metricGauge = metric.getGauge();
-
-                String key = null;
-                String value = null;
-                double usage = 0;
-                String type = null;
-                Date createdTime = null;
-                long observedTimeMillis = 0;
-                String metricName = metric.getName();
-
-                if ( metricGauge != null) {
-
-
-                  List<GaugeDataPoint>  gaugeDataPointLst = metricGauge.getDataPoints();
-
-                  for (GaugeDataPoint gaugeDataPoint : gaugeDataPointLst ){
-
-                   StringBuffer keys = null; 
-
-
-                    String dobulevle = gaugeDataPoint.getAsDouble();
-
-                    type = new String("Gauge");
-                   
-
-                    if ( dobulevle != null ){
-                    
-                        usage = Double.parseDouble(dobulevle);
-
-                    }
-
-                    String startTimeStm = gaugeDataPoint.getStartTimeUnixNano();
-                    if (startTimeStm != null ){
-                      createdTime = convertUnixNanoToLocalDateTime(startTimeStm);
-                    }
-
-
-                    String time = gaugeDataPoint.getTimeUnixNano();
-
-                    observedTimeMillis = Long.parseLong(time) / 1_000_000;
-
-
-                    List<GaugeDataPointAttribute>  gaugeDataPointAttributes = gaugeDataPoint.getAttributes();
-
-                      for ( GaugeDataPointAttribute gAtt : gaugeDataPointAttributes ){
-
-                        if (keys == null) {
-                          keys = new StringBuffer();
-                        }
-
-                          String keyValue = gAtt.getKey();
-                          String attvalue = null;
-                          //key = gAtt.getKey();
-
-                          GaugeDataPointAttributeValue gAttValue = gAtt.getValue();
-
-                          if (gAttValue!=null)
-                          {
-                           // GaugeDataPointAttributeValue gaugeDataPointAttributeValue = gAttValue.getValue();
-
-                            attvalue = gAttValue.getStringValue();
-
-                          }else 
-                          {
-                            attvalue = null;
-                          }
-                          if (keyValue!=null && attvalue != null ) {
-                              keys.append("( ");
-                              keys.append(keyValue); 
-                              keys.append(":");
-                              keys.append(attvalue);
-                              keys.append(" )");
-
-                          }
-                        }
-
-                          //
-                    keplerMetricDTO = new KeplerMetricDTO();
-
-                    keplerMetricDTO.setDate(createdTime);
-                    keplerMetricDTO.setPowerConsumption(usage);
-                    keplerMetricDTO.setObservedTimeMillis(observedTimeMillis);
-                    keplerMetricDTO.setServiceName(keys != null && !keys.equals("")?  keys.toString() : metricName);
-                    keplerMetricDTO.setType(type);
-                    keplerMetricDTOLst.add(keplerMetricDTO);
-
-                    }
-                   
-
-                }
-                //Metric sum
-                MetricSum metricSum = metric.getSum();
-                if (metricSum != null) {
-
-                    List<SumDataPoint> sumDataPoints =  metricSum.getDataPoints();
-
-
-                    for (SumDataPoint sumDataPoint : sumDataPoints){
-                       
-                      StringBuffer keys = null;
-
-                      String sumType = new String("Sum");
-                      String startTime = sumDataPoint.getStartTimeUnixNano();
-
-                      createdTime = convertUnixNanoToLocalDateTime(startTime);
-                      
-                     
-                      String time = sumDataPoint.getTimeUnixNano();
-
-                      observedTimeMillis = Long.parseLong(time) / 1_000_000;
-
-                      List<SumDataPointAttribute> sumAtt =  sumDataPoint.getAttributes();  
-
-                      for ( SumDataPointAttribute sumDataPointAttribute : sumAtt ){
-
-                         if (keys == null) {
-                          keys = new StringBuffer();
-                        }
-
-                          String keyValue = sumDataPointAttribute.getKey();
-                         // keys.append(keyValue);
-                          String attvalue = null;
-                          SumDataPointAttributeValue gAttValue = sumDataPointAttribute.getValue();
-
-                          if (gAttValue != null)
-                          {
-
-                             System.out.println("not null value " + keys.toString());
-                             attvalue = gAttValue.getStringValue();
-                             System.out.println("not null value " + attvalue);
-
-                          }else 
-                          {
-                            System.out.println("null value " + keys.toString());
-                             attvalue = null;
-                          }
-
-                          if ( keyValue != null &&  attvalue  != null ) {
-
-                              keys.append("( ");
-                              keys.append(keyValue); 
-                              keys.append(":");
-                              keys.append(attvalue);
-                              keys.append(" )");
-                            
-                          }
-                         
-                      }
-                      //create dto
-                       //
-                      keplerMetricDTO = new KeplerMetricDTO();
-
-                      keplerMetricDTO.setDate(createdTime);
-                      keplerMetricDTO.setPowerConsumption(usage);
-                      keplerMetricDTO.setObservedTimeMillis(observedTimeMillis);
-                      keplerMetricDTO.setServiceName(keys != null  ?  keys.toString() : metricName);
-                      keplerMetricDTO.setType(sumType);
-                      keplerMetricDTOLst.add(keplerMetricDTO);
-
-
-                    }
-                    
-                }
-                
-                MetricHistogram histogram = metric.getHistogram();
-
-                if (histogram != null) {
-
-                   List< HistogramDataPoint > histogramDataPoints =  histogram.getDataPoints();
-
-                    for ( HistogramDataPoint histogramDataPoint : histogramDataPoints){
-                      
-                      StringBuffer keys = null;
-
-                      
-                      type = new String("Histogram");
-
-                      String startTime = histogramDataPoint.getStartTimeUnixNano();
-
-                      createdTime = convertUnixNanoToLocalDateTime(startTime);
-                      
-                      //System.out.println("startTime==>" + startTime );
-                     
-                      String time = histogramDataPoint.getTimeUnixNano();
-
-                      observedTimeMillis = Long.parseLong(time) / 1_000_000;
-
-                        
-                      //System.out.println("teim==>" + time);
-
-                      List<HistogramDataPointAttribute> histogramDataPointAttributes =  histogramDataPoint.getAttributes();  
-
-                      for ( HistogramDataPointAttribute histogramDataPointAttribute : histogramDataPointAttributes ){
-
-                         if (keys == null) {
-                          keys = new StringBuffer();
-                        }
-                          String keyValue = histogramDataPointAttribute.getKey();
-                          String attvalue = null;
-
-                          HistogramDataPointAttributeValue gAttValue = histogramDataPointAttribute.getValue();
-
-                          if (gAttValue != null)
-                          {
-
-                             attvalue = gAttValue.getStringValue();
-
-                          }else 
-                          {
-                            attvalue = null;
-                          }
-                          if ( keyValue!=null && attvalue != null ) {
-
-                              keys.append("( ");
-                              keys.append(keyValue); 
-                              keys.append(":");
-                              keys.append(attvalue);
-                              keys.append(" )");
-                            
-
-                          }
-                          
-                      
-                      }
-                     //
-                    keplerMetricDTO = new KeplerMetricDTO();
-
-                    keplerMetricDTO.setDate(createdTime);
-                    keplerMetricDTO.setPowerConsumption(usage);
-                    keplerMetricDTO.setObservedTimeMillis(observedTimeMillis);
-                    keplerMetricDTO.setServiceName(keys != null  ?  keys.toString() : metricName);
-                    keplerMetricDTO.setType(type);
-                    keplerMetricDTOLst.add(keplerMetricDTO);
-
-                }
-
-               
-              }
-              
-
-           }
-
-          }
-        return keplerMetricDTOLst ;
+    if (!metricDTOs.isEmpty()) {
+      for (KeplerMetricDTO keplerMetDTO : metricDTOs) {
+        KeplerMetricDTORepo.persist(keplerMetDTO);
       }
-  private static Date convertUnixNanoToLocalDateTime(String startTimeUnixNano) {
-        long observedTimeMillis = Long.parseLong(startTimeUnixNano) / 1_000_000;
+    }
+  }
 
-        Instant instant = Instant.ofEpochMilli(observedTimeMillis);
+  public List<KeplerMetricDTO> extractAndMapData(KeplerMetric keplerMetric) {
 
-        ZoneId istZone = ZoneId.of("Asia/Kolkata");
-        LocalDateTime istDateTime = LocalDateTime.ofInstant(instant, istZone);
+    List<KeplerMetricDTO> keplerMetricDTOLst = new ArrayList<>();
 
-        return Date.from(istDateTime.atZone(istZone).toInstant());
-        
+    List<ResourceMetric> resourceMetrics = keplerMetric.getResourceMetrics();
+
+    for (ResourceMetric resourceMetric : resourceMetrics) {
+
+      List<ScopeMetric> scopeMetrics = resourceMetric.getScopeMetrics();
+
+      ScopeMetric scopeMetric = scopeMetrics.get(0);
+
+      List<Metric> metrics = scopeMetric.getMetrics();
+
+      List<KeplerMetricDTO> keplerMetricDTOList = new ArrayList<>();
+
+      for (Metric metric : metrics) {
+
+        String metricName = metric.getName();
+
+        if ("kepler_container_cpu_cycles_total".equals(metricName)) {
+
+          MetricGauge metricGauge = metric.getGauge();
+          MetricSum metricSum = metric.getSum();
+          MetricHistogram histogram = metric.getHistogram();
+
+          if (metricGauge != null) {
+
+            keplerMetricDTOList.addAll(
+              processGaugeMetric(metricGauge, metricName)
+            );
+          } else if (metricSum != null) {
+
+            keplerMetricDTOList.addAll(processSumMetric(metricSum, metricName));
+          } else if (histogram != null) {
+
+            keplerMetricDTOList.addAll(
+              processHistogramMetric(histogram, metricName)
+            );
+          }
+        } else {
+          // System.out.println("not Found");
+        }
+      }
+
+      keplerMetricDTOLst.addAll(keplerMetricDTOList);
     }
 
+    return keplerMetricDTOLst;
+  }
 
-      public void addDTO(){
-        // KeplerMetricDTO keplerMetricDTO = new KeplerMetricDTO();
+  private List<KeplerMetricDTO> processSumMetric(
+    MetricSum metricSum,
+    String metricName
+  ) {
+    List<KeplerMetricDTO> keplerMetricDTOList = new ArrayList<>();
+    List<SumDataPoint> sumDataPoints = metricSum.getDataPoints();
 
-        // keplerMetricDTO.setDate(createdTime);
-        // keplerMetricDTO.setPowerConsumption(usage);
-        // keplerMetricDTO.setObservedTimeMillis(observedTimeMillis);
-        // keplerMetricDTO.setServiceName(key == null ? metricName : key);
-        // keplerMetricDTO.setType(type);
-        // keplerMetricDTOLst.add(keplerMetricDTO);
+    for (SumDataPoint sumDataPoint : sumDataPoints) {
+      StringBuffer keys = new StringBuffer();
+      double usage = 0;
+      Date createdTime = null;
+      String sumType = "Sum";
 
-       }
+      String startTime = sumDataPoint.getTimeUnixNano();
+      if (startTime != null) {
+        createdTime = convertUnixNanoToLocalDateTime(startTime);
+      }
 
+      // String time = sumDataPoint.getTimeUnixNano();
+
+      List<SumDataPointAttribute> sumAtt = sumDataPoint.getAttributes();
+      String podName = null;
+      String containerNamespace = null;
+      String containerName = null;
+
+      for (SumDataPointAttribute sumDataPointAttribute : sumAtt) {
+        String keyValue = sumDataPointAttribute.getKey();
+        String attvalue = null;
+        SumDataPointAttributeValue gAttValue = sumDataPointAttribute.getValue();
+
+        if (gAttValue != null) {
+          attvalue = gAttValue.getStringValue();
+        }
+
+        if ("pod_name".equals(keyValue)) {
+          podName = attvalue;
+        } else if ("container_namespace".equals(keyValue)) {
+          containerNamespace = attvalue;
+        } else if ("container_name".equals(keyValue)) {
+          containerName = attvalue;
+        }
+      }
+
+      // keys.append("serviceName=");
+      if (podName != null) {
+        // keys.append("/");
+        keys.append(podName);
+      }
+      if (containerNamespace != null) {
+        keys.append("/");
+        keys.append(containerNamespace);
+      }
+      if (containerName != null) {
+        keys.append("/");
+        keys.append(containerName);
+      }
+
+      KeplerMetricDTO keplerMetricDTO = new KeplerMetricDTO();
+      keplerMetricDTO.setDate(createdTime);
+      keplerMetricDTO.setPowerConsumption(usage);
+      keplerMetricDTO.setServiceName(
+        keys.toString().isEmpty() ? metricName : keys.toString()
+      );
+      // keplerMetricDTO.setType(sumType);
+
+      keplerMetricDTOList.add(keplerMetricDTO);
+    }
+
+    return keplerMetricDTOList;
+  }
+
+  private List<KeplerMetricDTO> processGaugeMetric(
+    MetricGauge metricGauge,
+    String metricName
+  ) {
+    List<KeplerMetricDTO> keplerMetricDTOList = new ArrayList<>();
+    List<GaugeDataPoint> gaugeDataPointLst = metricGauge.getDataPoints();
+
+    for (GaugeDataPoint gaugeDataPoint : gaugeDataPointLst) {
+      StringBuffer keys = null;
+      String dobulevle = gaugeDataPoint.getAsDouble();
+      String type = "Gauge";
+      double usage = 0;
+      Date createdTime = null;
+      // long observedTimeMillis = 0;
+
+      if (dobulevle != null) {
+        usage = Double.parseDouble(dobulevle);
+      }
+
+      String startTimeStm = gaugeDataPoint.getStartTimeUnixNano();
+      if (startTimeStm != null) {
+        createdTime = convertUnixNanoToLocalDateTime(startTimeStm);
+      }
+
+      String time = gaugeDataPoint.getTimeUnixNano();
+
+      List<GaugeDataPointAttribute> gaugeDataPointAttributes = gaugeDataPoint.getAttributes();
+
+      for (GaugeDataPointAttribute gAtt : gaugeDataPointAttributes) {
+        if (keys == null) {
+          keys = new StringBuffer();
+        }
+
+        String keyValue = gAtt.getKey();
+        String attvalue = null;
+        GaugeDataPointAttributeValue gAttValue = gAtt.getValue();
+
+        if (gAttValue != null) {
+          attvalue = gAttValue.getStringValue();
+        } else {
+          attvalue = null;
+        }
+
+        if (keyValue != null && attvalue != null) {
+          keys.append("( ");
+          keys.append(keyValue);
+          keys.append(":");
+          keys.append(attvalue);
+          keys.append(" )");
+        }
+      }
+
+      KeplerMetricDTO keplerMetricDTO = new KeplerMetricDTO();
+      keplerMetricDTO.setDate(createdTime);
+      keplerMetricDTO.setPowerConsumption(usage);
+      keplerMetricDTO.setServiceName(
+        keys != null && !keys.equals("") ? keys.toString() : metricName
+      );
+      // keplerMetricDTO.setType(type);
+
+      keplerMetricDTOList.add(keplerMetricDTO);
+    }
+
+    return keplerMetricDTOList;
+  }
+
+  private List<KeplerMetricDTO> processHistogramMetric(
+    MetricHistogram histogram,
+    String metricName
+  ) {
+    List<KeplerMetricDTO> keplerMetricDTOList = new ArrayList<>();
+    List<HistogramDataPoint> histogramDataPoints = histogram.getDataPoints();
+
+    for (HistogramDataPoint histogramDataPoint : histogramDataPoints) {
+      StringBuffer keys = null;
+      String type = "Histogram";
+
+      String startTime = histogramDataPoint.getTimeUnixNano();
+      Date createdTime = convertUnixNanoToLocalDateTime(startTime);
+
+      // String time = histogramDataPoint.getTimeUnixNano();
+
+      List<HistogramDataPointAttribute> histogramDataPointAttributes = histogramDataPoint.getAttributes();
+
+      for (HistogramDataPointAttribute histogramDataPointAttribute : histogramDataPointAttributes) {
+        if (keys == null) {
+          keys = new StringBuffer();
+        }
+
+        String keyValue = histogramDataPointAttribute.getKey();
+        String attvalue = null;
+
+        HistogramDataPointAttributeValue gAttValue = histogramDataPointAttribute.getValue();
+
+        if (gAttValue != null) {
+          attvalue = gAttValue.getStringValue();
+        } else {
+          attvalue = null;
+        }
+
+        if (keyValue != null && attvalue != null) {
+          keys.append("( ");
+          keys.append(keyValue);
+          keys.append(":");
+          keys.append(attvalue);
+          keys.append(" )");
+        }
+      }
+
+      KeplerMetricDTO keplerMetricDTO = new KeplerMetricDTO();
+      keplerMetricDTO.setDate(createdTime);
+      double usage = 0; 
+      keplerMetricDTO.setPowerConsumption(usage);
+      // keplerMetricDTO.setObservedTimeMillis(observedTimeMillis);
+      keplerMetricDTO.setServiceName(
+        keys != null ? keys.toString() : metricName
+      );
+      // keplerMetricDTO.setType(type);
+
+      // Add each DTO to the list
+      keplerMetricDTOList.add(keplerMetricDTO);
+    }
+
+    return keplerMetricDTOList;
+  }
+
+  private static Date convertUnixNanoToLocalDateTime(String startTimeUnixNano) {
+    long observedTimeMillis = Long.parseLong(startTimeUnixNano) / 1_000_000;
+
+    Instant instant = Instant.ofEpochMilli(observedTimeMillis);
+
+    ZoneId istZone = ZoneId.of("Asia/Kolkata");
+    LocalDateTime istDateTime = LocalDateTime.ofInstant(instant, istZone);
+
+    return Date.from(istDateTime.atZone(istZone).toInstant());
+  }
+
+  public void addDTO() {
+    // KeplerMetricDTO keplerMetricDTO = new KeplerMetricDTO();
+
+    // keplerMetricDTO.setDate(createdTime);
+    // keplerMetricDTO.setPowerConsumption(usage);
+    // keplerMetricDTO.setObservedTimeMillis(observedTimeMillis);
+    // keplerMetricDTO.setServiceName(key == null ? metricName : key);
+    // keplerMetricDTO.setType(type);
+    // keplerMetricDTOLst.add(keplerMetricDTO);
+
+  }
 }

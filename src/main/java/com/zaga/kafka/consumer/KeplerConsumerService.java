@@ -21,7 +21,7 @@ import com.zaga.entity.otelmetric.scopeMetric.MetricHistogram;
 import com.zaga.entity.otelmetric.scopeMetric.MetricSum;
 import com.zaga.entity.otelmetric.scopeMetric.sum.SumDataPoint;
 import com.zaga.entity.otelmetric.scopeMetric.sum.SumDataPointAttribute;
-import com.zaga.entity.queryentity.metrics.KeplerMetricDTO;
+import com.zaga.entity.queryentity.kepler.KeplerMetricDTO;
 import com.zaga.handler.KeplerMetricCommandHandler;
 
 import jakarta.inject.Inject;
@@ -48,39 +48,39 @@ public class KeplerConsumerService {
             System.out.println("Received null message. Check serialization/deserialization.");
         }
     }
-    public static void main (String [] ar){
+    // public static void main (String [] ar){
 
 
-            Gson gson = new Gson();
+    //         Gson gson = new Gson();
     
            
 
-            try (Reader reader1 = new FileReader("/Users/jpaulraj/zaga/observAi-backend/src/main/java/com/zaga/kafka/consumer/keplerdata.json")) {
+    //         try (Reader reader1 = new FileReader("D:/observai/newone/kepler/observAi-backend/src/main/java/com/zaga/kafka/consumer/keplerdata.json")) {
 
-                KeplerMetric keplerMetric = gson.fromJson(reader1, KeplerMetric.class);
+    //             KeplerMetric keplerMetric = gson.fromJson(reader1, KeplerMetric.class);
 
 			
-                KeplerMetricCommandHandler keplerMetricCommandHandler = new KeplerMetricCommandHandler();
+    //             KeplerMetricCommandHandler keplerMetricCommandHandler = new KeplerMetricCommandHandler();
 
-                List<KeplerMetricDTO>  keplerMetricDTOlst = keplerMetricCommandHandler.extractAndMapData(keplerMetric);
+    //             List<KeplerMetricDTO>  keplerMetricDTOlst = keplerMetricCommandHandler.extractAndMapData(keplerMetric);
 
-                System.out.println(keplerMetricDTOlst.size());
+    //             System.out.println(keplerMetricDTOlst.size());
 
-                for ( KeplerMetricDTO keplerMetricDTO : keplerMetricDTOlst){
+    //             for ( KeplerMetricDTO keplerMetricDTO : keplerMetricDTOlst){
 
-                    System.out.println(keplerMetricDTO.toString());
+    //                 System.out.println(keplerMetricDTO.toString());
 
-                }
-                System.out.println(keplerMetricDTOlst.size());
+    //             }
+    //             System.out.println(keplerMetricDTOlst.size());
 
 
-               // keplerMetricCommandHandler.createKeplerMetric(keplerMetric);
+    //            // keplerMetricCommandHandler.createKeplerMetric(keplerMetric);
 
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    //     } catch (IOException e) {
+    //         e.printStackTrace();
+    //     }
         
-    }
+    // }
     
     
 
