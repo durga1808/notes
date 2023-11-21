@@ -224,8 +224,16 @@ public class KeplerMetricCommandHandler {
     }
     for (SumDataPoint sumDataPoint : sumDataPoints) {
       StringBuffer keys = new StringBuffer();
+     String dobulevle = sumDataPoint.getAsDouble();
+      // String type = "Gauge";
       double usage = 0;
       Date createdTime = null;
+      // long observedTimeMillis = 0;
+
+      if (dobulevle != null) {
+        usage = Double.parseDouble(dobulevle);
+        System.out.println("Usage: -----------------"+usage);
+      }
 
       String startTime = sumDataPoint.getTimeUnixNano();
       if (startTime != null) {
@@ -380,6 +388,7 @@ public class KeplerMetricCommandHandler {
 
       if (dobulevle != null) {
         usage = Double.parseDouble(dobulevle);
+        System.out.println("Usage: -----------------"+usage);
       }
 
       String startTimeStm = gaugeDataPoint.getStartTimeUnixNano();
