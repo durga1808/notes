@@ -32,8 +32,13 @@ import java.util.List;
 @ApplicationScoped
 public class KeplerMetricCommandHandler {
 
-  public enum KeplerMetrics {
+  @Inject
+  KeplerMetricRepo keplerMetricRepo;
 
+  @Inject
+  KeplerMetricDTORepo KeplerMetricDTORepo;
+
+  public enum KeplerMetricsNames {
     kepler_container_joules_total("CONT1001"),
     kepler_container_core_joules_total("CONT1002"),
     kepler_container_dram_joules_total("CONT1003"),
@@ -43,9 +48,9 @@ public class KeplerMetricCommandHandler {
     kepler_container_gpu_joules_total("CONT1007"),
     kepler_container_energy_stat("CONT1008"),
     kepler_node_core_joules_total("NODE2001"),
-    kepler_node_uncore_joules_total("2002"),
-    kepler_node_dram_joules_total("2003"),
-    kepler_node_package_joules_total("2004"),
+    kepler_node_uncore_joules_total("NODE2002"),
+    kepler_node_dram_joules_total("NODE2003"),
+    kepler_node_package_joules_total("NODE2004"),
     kepler_node_other_host_components_joules_total("HOST3001"),
     kepler_node_gpu_joules_total("NODE2006"),
     kepler_node_platform_joules_total("NODE2007"),
@@ -53,30 +58,48 @@ public class KeplerMetricCommandHandler {
 
     String metricsName;
 
-    KeplerMetrics(String metricsName) {
-
+    KeplerMetricsNames(String metricsName) {
       this.metricsName = metricsName;
     }
 
     public String getMetricsName() {
-
       return metricsName;
     }
-
-    // public static KeplerMetrics getMetricsName(String name) {
-    // try {
-    // return KeplerMetrics.valueOf(name);
-    // } catch (IllegalArgumentException ex) {
-    // return null;
-    // }
-    // }
   }
 
-  @Inject
-  KeplerMetricRepo keplerMetricRepo;
 
-  @Inject
-  KeplerMetricDTORepo KeplerMetricDTORepo;
+  
+
+
+    public enum KeplerTypeNames {
+    kepler_container_joules_total("TOTAL"),
+    kepler_container_core_joules_total("CORE"),
+    kepler_container_dram_joules_total("DRAM"),
+    kepler_container_uncore_joules_total("UNCORE"),
+    kepler_container_package_joules_total("PKG"),
+    kepler_container_other_joules_total("OTHER"),
+    kepler_container_gpu_joules_total("GPU"),
+    kepler_container_energy_stat("ENERGYSTAT"),
+    kepler_node_core_joules_total("CORE"),
+    kepler_node_uncore_joules_total("UNCORE"),
+    kepler_node_dram_joules_total("DRAM"),
+    kepler_node_package_joules_total("PKG"),
+    kepler_node_other_host_components_joules_total("TOTAL"),
+    kepler_node_gpu_joules_total("GPU"),
+    kepler_node_platform_joules_total("TOTAL"),
+    kepler_node_energy_stat("ENERGYSTAT"),;
+
+    String KeplerType;
+
+    KeplerTypeNames(String KeplerType) {
+      this.KeplerType = KeplerType;
+    }
+
+    public String getKeplerType() {
+      return KeplerType;
+    }
+  }
+  
 
   public void createKeplerMetric(KeplerMetric metric) {
     keplerMetricRepo.persist(metric);
@@ -91,85 +114,118 @@ public class KeplerMetricCommandHandler {
   }
 
   public List<KeplerMetricDTO> extractAndMapData(KeplerMetric keplerMetric) {
-
     List<KeplerMetricDTO> keplerMetricDTOLst = new ArrayList<>();
 
     List<ResourceMetric> resourceMetrics = keplerMetric.getResourceMetrics();
 
     for (ResourceMetric resourceMetric : resourceMetrics) {
-
       List<ScopeMetric> scopeMetrics = resourceMetric.getScopeMetrics();
 
-      ScopeMetric scopeMetric = scopeMetrics.get(0);
+      for (ScopeMetric scopeMetric : scopeMetrics) {
+        List<Metric> metrics = scopeMetric.getMetrics();
 
-      List<Metric> metrics = scopeMetric.getMetrics();
+        for (Metric metric : metrics) {
+          String metricName = metric.getName();
 
-      List<KeplerMetricDTO> keplerMetricDTOList = new ArrayList<>();
+          KeplerMetricsNames metricsEnum = null;
+          // String typeName = metricsEnum.getMetricsName();
 
-      for (Metric metric : metrics) {
+          try {
+            metricsEnum = KeplerMetricsNames.valueOf(metricName);
+          } catch (Exception ex) {}
 
-        String metricName = metric.getName();
-
-        // if ("kepler_container_cpu_cycles_total".equals(metricName)) {
-        // String metricsName = KeplerMetrics.valueOf(metricName).getMetricsName();
-
-        KeplerMetrics metricsEnum = null;
-        String type = null;
-        try {
-          metricsEnum = KeplerMetrics.valueOf(metricName);
-          type = metricsEnum.getMetricsName();
-          System.out.println("Kepler type ---> " + metricName);
-          // metricsName = kmet.getMetricsName();
-          System.out.println("Kepler valid matric name ---> " + type);
-
-        } catch (Exception ex) {
-          // System.out.println("Kepler matric name Not in the metrics , skipeing it " +
-          // metricName);
-        }
-        // if ("kepler_container_cpu_cycles_total".equals(metricName)) {
-
-        if (metricsEnum != null) {
-
-          MetricGauge metricGauge = metric.getGauge();
-          MetricSum metricSum = metric.getSum();
-          MetricHistogram histogram = metric.getHistogram();
-
-          if (metricGauge != null) {
-
-            keplerMetricDTOList.addAll(
-                processGaugeMetric(metricGauge, metricName));
-          } else if (metricSum != null) {
-
-            keplerMetricDTOList.addAll(processSumMetric(metricSum, metricName));
-          } else if (histogram != null) {
-
-            keplerMetricDTOList.addAll(
-                processHistogramMetric(histogram, metricName));
-          }
-        } else {
-          // System.out.println("not Found");
+          if (metricsEnum != null) {
+            if (metric.getSum() != null) {
+              keplerMetricDTOLst.addAll(
+                processSumMetric(metric.getSum(), metricName)
+              );
+            } else if (metric.getGauge() != null) {
+              keplerMetricDTOLst.addAll(
+                processGaugeMetric(metric.getGauge(), metricName)
+              );
+            } else if (metric.getHistogram() != null) {
+              keplerMetricDTOLst.addAll(
+                processHistogramMetric(metric.getHistogram(), metricName)
+              );
+            }
+          } else {}
         }
       }
-
-      keplerMetricDTOLst.addAll(keplerMetricDTOList);
     }
 
     return keplerMetricDTOLst;
   }
 
   private List<KeplerMetricDTO> processSumMetric(
-      MetricSum metricSum,
-      String metricName
-  // type pass type from calling method
+    MetricSum metricSum,
+    String metricName
   ) {
     List<KeplerMetricDTO> keplerMetricDTOList = new ArrayList<>();
-    List<SumDataPoint> sumDataPoints = metricSum.getDataPoints();
 
+    List<SumDataPoint> sumDataPoints = metricSum.getDataPoints();
+    String type = "";
+    String kepType = "";
+
+    for (KeplerMetricsNames metricsEnum : KeplerMetricsNames.values()) {
+      String matchName = metricsEnum.toString();
+      String typeName = metricsEnum.getMetricsName();
+      
+      // System.out.println("CONTAINER " + matchName + " " + metricName);
+
+      if (matchName.equals(metricName)) {
+        // System.out.println("CONTAINER " + metricsEnum);
+        // keplerMetricDTO.setType(type);
+        if (typeName.startsWith("CONT")) {
+          System.out.println("CONTAINER " + metricsEnum);
+          type = "container";
+        } else if (typeName.startsWith("HOST")) {
+          System.out.println("HOST " + metricsEnum);
+          type = "host";
+        } else if (typeName.startsWith("NODE")) {
+          System.out.println("NODE " + metricsEnum);
+          type = "node";
+        }
+        break;
+      }
+    }
+
+
+    for(KeplerTypeNames keplerTypeEnum : KeplerTypeNames.values()){
+      String matchTypeName = keplerTypeEnum.toString();
+      String keplerName = keplerTypeEnum.getKeplerType();
+      
+      if(matchTypeName.equals(metricName)){
+        if(keplerName.startsWith("DRAM")){
+          // keplerMetricDTO.setKeplerType("DRAM");
+          kepType = "DRAM";
+        }else if(keplerName.startsWith("CORE")){
+          // keplerMetricDTO.setKeplerType("CORE");
+          kepType = "CORE";
+        }else if(keplerName.startsWith("UNCORE")){
+          // keplerMetricDTO.setKeplerType("UNCORE");
+          kepType = "UNCORE";
+        }else if(keplerName.startsWith("OTHER")){
+          // keplerMetricDTO.setKeplerType("OTHER");
+          kepType = "OTHER";
+        }else if(keplerName.startsWith("GPU")){
+          // keplerMetricDTO.setKeplerType("GPU");
+          kepType = "GPU";
+        }else if(keplerName.startsWith("PKG")){
+          // keplerMetricDTO.setKeplerType("PKG");
+          kepType = "PKG";
+        }else if(keplerName.startsWith("TOTAL")){
+          // keplerMetricDTO.setKeplerType("TOTAL");
+          kepType = "TOTAL";
+        }else if(keplerName.startsWith("ENERGYSTAT")){
+          // keplerMetricDTO.setKeplerType("ENERGYSTAT");
+          kepType = "ENERGYSTAT";
+        }
+      }
+    }
     for (SumDataPoint sumDataPoint : sumDataPoints) {
       StringBuffer keys = new StringBuffer();
       double usage = 0;
       Date createdTime = null;
-      // String sumType = "Sum";
 
       String startTime = sumDataPoint.getTimeUnixNano();
       if (startTime != null) {
@@ -182,9 +238,11 @@ public class KeplerMetricCommandHandler {
       String podName = null;
       String containerNamespace = null;
       String containerName = null;
+      String node = null;
 
       for (SumDataPointAttribute sumDataPointAttribute : sumAtt) {
         String keyValue = sumDataPointAttribute.getKey();
+
         String attvalue = null;
         SumDataPointAttributeValue gAttValue = sumDataPointAttribute.getValue();
 
@@ -198,36 +256,46 @@ public class KeplerMetricCommandHandler {
           containerNamespace = attvalue;
         } else if ("container_name".equals(keyValue)) {
           containerName = attvalue;
-        }
+        } 
       }
 
-      // keys.append("serviceName=");
-      if (podName != null) {
-        // keys.append("/");
-        keys.append(podName);
+    
+      if (containerName != null) {
+        keys.append(containerName);
       }
       if (containerNamespace != null) {
         keys.append("/");
         keys.append(containerNamespace);
       }
-      if (containerName != null) {
-        keys.append("/");
-        keys.append(containerName);
+        if (podName != null) {
+           keys.append("/");
+        keys.append(podName);
       }
+      if (kepType != null) {
+        keys.append("/");
+        keys.append(kepType);
+    }
 
       // create metadata
-      Resource resource = new Resource(containerNamespace, podName,
-          null, containerName, metricName);
+      Resource resource = new Resource(
+        containerNamespace,
+        podName,
+        null,
+        containerName,
+        metricName,
+        node
+      );
 
       KeplerMetricDTO keplerMetricDTO = new KeplerMetricDTO();
+
       keplerMetricDTO.setDate(createdTime);
       keplerMetricDTO.setPowerConsumption(usage);
       keplerMetricDTO.setResource(resource);
+      keplerMetricDTO.setType(type);
+      keplerMetricDTO.setKeplerType(kepType);
       keplerMetricDTO.setServiceName(
-          keys.toString().isEmpty() ? metricName : keys.toString());
-      // update type from param
-      keplerMetricDTO.setType("");
-
+        keys.toString().isEmpty() ? metricName : keys.toString()
+      );
       keplerMetricDTOList.add(keplerMetricDTO);
     }
 
@@ -235,10 +303,72 @@ public class KeplerMetricCommandHandler {
   }
 
   private List<KeplerMetricDTO> processGaugeMetric(
-      MetricGauge metricGauge,
-      String metricName) {
+    MetricGauge metricGauge,
+    String metricName
+  ) {
     List<KeplerMetricDTO> keplerMetricDTOList = new ArrayList<>();
     List<GaugeDataPoint> gaugeDataPointLst = metricGauge.getDataPoints();
+
+    KeplerMetricDTO keplerMetricDTO = new KeplerMetricDTO();
+
+    System.out.println("METRIC: " + metricName);
+    for (KeplerMetricsNames metricsEnum : KeplerMetricsNames.values()) {
+      String matchName = metricsEnum.toString();
+      String typeName = metricsEnum.getMetricsName();
+      String type = "";
+      // System.out.println("CONTAINER " + matchName + " " + metricName);
+
+      if (matchName.equals(metricName)) {
+        // System.out.println("CONTAINER " + metricsEnum);
+        // keplerMetricDTO.setType(type);
+        if (typeName.startsWith("CONT")) {
+          System.out.println("CONTAINER " + metricsEnum);
+          keplerMetricDTO.setType("container");
+          type = "container";
+        } else if (typeName.startsWith("HOST")) {
+          System.out.println("HOST " + metricsEnum);
+          keplerMetricDTO.setType("host");
+          type = "host";
+        } else if (typeName.startsWith("NODE")) {
+          System.out.println("NODE " + metricsEnum);
+          keplerMetricDTO.setType("node");
+          type = "node";
+        }
+        break;
+      }
+    }
+     for(KeplerTypeNames keplerTypeEnum : KeplerTypeNames.values()){
+      String matchTypeName = keplerTypeEnum.toString();
+      String keplerName = keplerTypeEnum.getKeplerType();
+      String kepType = "";
+      if(matchTypeName.equals(metricName)){
+        if(keplerName.startsWith("DRAM")){
+          keplerMetricDTO.setKeplerType("DRAM");
+          kepType = "DRAM";
+        }else if(keplerName.startsWith("CORE")){
+          keplerMetricDTO.setKeplerType("CORE");
+          kepType = "CORE";
+        }else if(keplerName.startsWith("UNCORE")){
+          keplerMetricDTO.setKeplerType("UNCORE");
+          kepType = "UNCORE";
+        }else if(keplerName.startsWith("OTHER")){
+          keplerMetricDTO.setKeplerType("OTHER");
+          kepType = "OTHER";
+        }else if(keplerName.startsWith("GPU")){
+          keplerMetricDTO.setKeplerType("GPU");
+          kepType = "GPU";
+        }else if(keplerName.startsWith("PKG")){
+          keplerMetricDTO.setKeplerType("PKG");
+          kepType = "PKG";
+        }else if(keplerName.startsWith("TOTAL")){
+          keplerMetricDTO.setKeplerType("TOTAL");
+          kepType = "TOTAL";
+        }else if(keplerName.startsWith("ENERGYSTAT")){
+          keplerMetricDTO.setKeplerType("ENERGYSTAT");
+          kepType = "ENERGYSTAT";
+        }
+      }
+    }
 
     for (GaugeDataPoint gaugeDataPoint : gaugeDataPointLst) {
       StringBuffer keys = null;
@@ -285,13 +415,11 @@ public class KeplerMetricCommandHandler {
         }
       }
 
-      // update resource
-      KeplerMetricDTO keplerMetricDTO = new KeplerMetricDTO();
       keplerMetricDTO.setDate(createdTime);
       keplerMetricDTO.setPowerConsumption(usage);
       keplerMetricDTO.setServiceName(
-          keys != null && !keys.equals("") ? keys.toString() : metricName);
-      // keplerMetricDTO.setType(type);
+        keys != null && !keys.equals("") ? keys.toString() : metricName
+      );
 
       keplerMetricDTOList.add(keplerMetricDTO);
     }
@@ -300,10 +428,68 @@ public class KeplerMetricCommandHandler {
   }
 
   private List<KeplerMetricDTO> processHistogramMetric(
-      MetricHistogram histogram,
-      String metricName) {
+    MetricHistogram histogram,
+    String metricName
+  ) {
     List<KeplerMetricDTO> keplerMetricDTOList = new ArrayList<>();
     List<HistogramDataPoint> histogramDataPoints = histogram.getDataPoints();
+
+    KeplerMetricDTO keplerMetricDTO = new KeplerMetricDTO();
+
+    for (KeplerMetricsNames metricsEnum : KeplerMetricsNames.values()) {
+      String matchName = metricsEnum.toString();
+      String typeName = metricsEnum.getMetricsName();
+      String type = "";
+      // System.out.println("CONTAINER " + matchName + " " + metricName);
+
+      if (matchName.equals(metricName)) {
+        // System.out.println("CONTAINER " + metricsEnum);
+        // keplerMetricDTO.setType(type);
+        if (typeName.startsWith("CONT")) {
+          keplerMetricDTO.setType("container");
+          type = "container";
+        } else if (typeName.startsWith("HOST")) {
+          keplerMetricDTO.setType("host");
+          type = "host";
+        } else if (typeName.startsWith("NODE")) {
+          keplerMetricDTO.setType("node");
+          type = "node";
+        }
+        break; 
+      }
+    }
+     for(KeplerTypeNames keplerTypeEnum : KeplerTypeNames.values()){
+      String matchTypeName = keplerTypeEnum.toString();
+      String keplerName = keplerTypeEnum.getKeplerType();
+      String kepType = "";
+      if(matchTypeName.equals(metricName)){
+        if(keplerName.startsWith("DRAM")){
+          keplerMetricDTO.setKeplerType("DRAM");
+          kepType = "DRAM";
+        }else if(keplerName.startsWith("CORE")){
+          keplerMetricDTO.setKeplerType("CORE");
+          kepType = "CORE";
+        }else if(keplerName.startsWith("UNCORE")){
+          keplerMetricDTO.setKeplerType("UNCORE");
+          kepType = "UNCORE";
+        }else if(keplerName.startsWith("OTHER")){
+          keplerMetricDTO.setKeplerType("OTHER");
+          kepType = "OTHER";
+        }else if(keplerName.startsWith("GPU")){
+          keplerMetricDTO.setKeplerType("GPU");
+          kepType = "GPU";
+        }else if(keplerName.startsWith("PKG")){
+          keplerMetricDTO.setKeplerType("PKG");
+          kepType = "PKG";
+        }else if(keplerName.startsWith("TOTAL")){
+          keplerMetricDTO.setKeplerType("TOTAL");
+          kepType = "TOTAL";
+        }else if(keplerName.startsWith("ENERGYSTAT")){
+          keplerMetricDTO.setKeplerType("ENERGYSTAT");
+          kepType = "ENERGYSTAT";
+        }
+      }
+    }
 
     for (HistogramDataPoint histogramDataPoint : histogramDataPoints) {
       StringBuffer keys = null;
@@ -341,18 +527,13 @@ public class KeplerMetricCommandHandler {
         }
       }
 
-      // update resource
-
-      KeplerMetricDTO keplerMetricDTO = new KeplerMetricDTO();
       keplerMetricDTO.setDate(createdTime);
       double usage = 0;
       keplerMetricDTO.setPowerConsumption(usage);
       // keplerMetricDTO.setObservedTimeMillis(observedTimeMillis);
       keplerMetricDTO.setServiceName(
-          keys != null ? keys.toString() : metricName);
-      // keplerMetricDTO.setType(type);
-
-      // Add each DTO to the list
+        keys != null ? keys.toString() : metricName
+      );
       keplerMetricDTOList.add(keplerMetricDTO);
     }
 

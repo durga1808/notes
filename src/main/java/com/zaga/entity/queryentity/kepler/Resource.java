@@ -10,12 +10,13 @@ public class Resource {
     private String node;
     private String host;
 
-    public Resource(String nameSpace, String podName, String containerId, String containerName, String metricsName) {
+    public Resource(String nameSpace, String podName, String containerId, String containerName, String metricsName, String node) {
         this.nameSpace = nameSpace;
         this.podName = podName;
         this.containerId = containerId;
         this.containerName = containerName;
         this.metricsName = metricsName;
+        this.node = node;
     }
 
     public Resource() {
@@ -24,7 +25,7 @@ public class Resource {
     @Override
     public String toString() {
         return "Resource [nameSpace=" + nameSpace + ", podName=" + podName + ", containerId=" + containerId
-                + ", containerName=" + containerName + ", metricsName=" + metricsName + "]";
+                + ", containerName=" + containerName + ", metricsName=" + metricsName + ",node=" + node +"]";
     }
 
     /**

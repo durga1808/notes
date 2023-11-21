@@ -1,12 +1,10 @@
 package com.zaga.kafka.consumer;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.List;
 
 import org.eclipse.microprofile.reactive.messaging.Incoming;
