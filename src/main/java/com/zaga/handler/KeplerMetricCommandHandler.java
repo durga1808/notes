@@ -27,7 +27,9 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @ApplicationScoped
 public class KeplerMetricCommandHandler {
@@ -156,6 +158,7 @@ public class KeplerMetricCommandHandler {
     return keplerMetricDTOLst;
   }
 
+
   private List<KeplerMetricDTO> processSumMetric(
     MetricSum metricSum,
     String metricName
@@ -169,15 +172,12 @@ public class KeplerMetricCommandHandler {
     for (KeplerMetricsNames metricsEnum : KeplerMetricsNames.values()) {
       String matchName = metricsEnum.toString();
       String typeName = metricsEnum.getMetricsName();
-      
-      // System.out.println("CONTAINER " + matchName + " " + metricName);
+    
 
       if (matchName.equals(metricName)) {
-        // System.out.println("CONTAINER " + metricsEnum);
-        // keplerMetricDTO.setType(type);
         if (typeName.startsWith("CONT")) {
           System.out.println("CONTAINER " + metricsEnum);
-          type = "container";
+          type = "pod";
         } else if (typeName.startsWith("HOST")) {
           System.out.println("HOST " + metricsEnum);
           type = "host";
@@ -223,12 +223,10 @@ public class KeplerMetricCommandHandler {
       }
     }
     for (SumDataPoint sumDataPoint : sumDataPoints) {
-      StringBuffer keys = new StringBuffer();
-     String dobulevle = sumDataPoint.getAsDouble();
-      // String type = "Gauge";
+    StringBuffer keys = new StringBuffer();
+    String dobulevle = sumDataPoint.getAsDouble();
       double usage = 0;
       Date createdTime = null;
-      // long observedTimeMillis = 0;
 
       if (dobulevle != null) {
         usage = Double.parseDouble(dobulevle);
@@ -239,8 +237,6 @@ public class KeplerMetricCommandHandler {
       if (startTime != null) {
         createdTime = convertUnixNanoToLocalDateTime(startTime);
       }
-
-      // String time = sumDataPoint.getTimeUnixNano();
 
       List<SumDataPointAttribute> sumAtt = sumDataPoint.getAttributes();
       String podName = null;
@@ -264,25 +260,28 @@ public class KeplerMetricCommandHandler {
           containerNamespace = attvalue;
         } else if ("container_name".equals(keyValue)) {
           containerName = attvalue;
-        } 
+        } else if ("exported_instance".equals(keyValue)){
+          node = attvalue;
+        }
       }
 
     
-      if (containerName != null) {
-        keys.append(containerName);
-      }
+   
       if (containerNamespace != null) {
-        keys.append("/");
         keys.append(containerNamespace);
       }
         if (podName != null) {
            keys.append("/");
         keys.append(podName);
       }
+       if(node != null) {
+        keys.append(node);
+    }
       if (kepType != null) {
         keys.append("/");
         keys.append(kepType);
     }
+   
 
       // create metadata
       Resource resource = new Resource(
@@ -309,7 +308,7 @@ public class KeplerMetricCommandHandler {
 
     return keplerMetricDTOList;
   }
-
+ 
   private List<KeplerMetricDTO> processGaugeMetric(
     MetricGauge metricGauge,
     String metricName
@@ -332,7 +331,7 @@ public class KeplerMetricCommandHandler {
         if (typeName.startsWith("CONT")) {
           System.out.println("CONTAINER " + metricsEnum);
           keplerMetricDTO.setType("container");
-          type = "container";
+          type = "pod";
         } else if (typeName.startsWith("HOST")) {
           System.out.println("HOST " + metricsEnum);
           keplerMetricDTO.setType("host");
@@ -391,7 +390,7 @@ public class KeplerMetricCommandHandler {
         System.out.println("Usage: -----------------"+usage);
       }
 
-      String startTimeStm = gaugeDataPoint.getStartTimeUnixNano();
+      String startTimeStm = gaugeDataPoint.getTimeUnixNano();
       if (startTimeStm != null) {
         createdTime = convertUnixNanoToLocalDateTime(startTimeStm);
       }
@@ -456,7 +455,7 @@ public class KeplerMetricCommandHandler {
         // keplerMetricDTO.setType(type);
         if (typeName.startsWith("CONT")) {
           keplerMetricDTO.setType("container");
-          type = "container";
+          type = "pod";
         } else if (typeName.startsWith("HOST")) {
           keplerMetricDTO.setType("host");
           type = "host";
