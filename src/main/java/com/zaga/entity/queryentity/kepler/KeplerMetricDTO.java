@@ -19,11 +19,11 @@ public class KeplerMetricDTO {
     private Double powerConsumption;
     // private Integer memoryUsage;
     private String serviceName;
+    // container / node/host
+    private String type;
     // private String type;
     // private long observedTimeMillis ;
-
-
-    
+    private Resource resource;
 
     /**
      * @return Date return the date
@@ -53,20 +53,6 @@ public class KeplerMetricDTO {
         this.powerConsumption = powerConsumption;
     }
 
-    // /**
-    //  * @return Integer return the memoryUsage
-    //  */
-    // public Integer getMemoryUsage() {
-    //     return memoryUsage;
-    // }
-
-    // /**
-    //  * @param memoryUsage the memoryUsage to set
-    //  */
-    // public void setMemoryUsage(Integer memoryUsage) {
-    //     this.memoryUsage = memoryUsage;
-    // }
-
     /**
      * @return String return the serviceName
      */
@@ -81,38 +67,24 @@ public class KeplerMetricDTO {
         this.serviceName = serviceName;
     }
 
-    // /**
-    //  * @return String return the type
-    //  */
-    // public String getType() {
-    //     return type;
-    // }
+    /**
+     * @return Resource return the resource
+     */
+    public Resource getResource() {
+        return resource;
+    }
 
-    // /**
-    //  * @param type the type to set
-    //  */
-    // public void setType(String type) {
-    //     this.type = type;
-    // }
-
-
-    // /**
-    //  * @return long return the observedTimeMillis
-    //  */
-    // public long getObservedTimeMillis() {
-    //     return observedTimeMillis;
-    // }
-
-    // /**
-    //  * @param observedTimeMillis the observedTimeMillis to set
-    //  */
-    // public void setObservedTimeMillis(long observedTimeMillis) {
-    //     this.observedTimeMillis = observedTimeMillis;
-    // }
+    /**
+     * @param resource the resource to set
+     */
+    public void setResource(Resource resource) {
+        this.resource = resource;
+    }
 
     @Override
     public String toString() {
-        return "KeplerMetricDTO [date=" + date + ", powerConsumption=" + powerConsumption +", serviceName=" + serviceName +  "]";
+        return "KeplerMetricDTO [date=" + date + ", powerConsumption=" + powerConsumption + ", serviceName="
+                + serviceName + ", resource=" + resource + "]";
     }
 
 }

@@ -1,8 +1,12 @@
 package com.zaga.kafka.consumer;
 
+import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.List;
 
 import org.eclipse.microprofile.reactive.messaging.Incoming;
@@ -16,13 +20,13 @@ import jakarta.inject.Inject;
 import com.google.gson.Gson;
 
 public class KeplerConsumerService {
-    
+
     @Inject
     KeplerMetricCommandHandler keplerMetricCommandHandler;
 
     @Incoming("kepler-in")
     public void consumeKeplerDetails(KeplerMetric keplerMetric) {
-         
+
         if (keplerMetric != null) {
             System.out.println("consumer++++++++++++++" + keplerMetric);
             keplerMetricCommandHandler.createKeplerMetric(keplerMetric);
@@ -30,40 +34,36 @@ public class KeplerConsumerService {
             System.out.println("Received null message. Check serialization/deserialization.");
         }
     }
-    // public static void main (String [] ar){
 
+    public static void main(String[] ar) throws URISyntaxException {
 
-    //         Gson gson = new Gson();
-    
-           
+        Gson gson = new Gson();
 
-    //         try (Reader reader1 = new FileReader("D:/observai/newone/kepler/observAi-backend/src/main/java/com/zaga/kafka/consumer/keplerdata.json")) {
+        File file = new File("./src/main/java/com/zaga/kafka/consumer/keplerdata.json");
 
-    //             KeplerMetric keplerMetric = gson.fromJson(reader1, KeplerMetric.class);
+        try (Reader reader1 = new FileReader(file)) {
 
-			
-    //             KeplerMetricCommandHandler keplerMetricCommandHandler = new KeplerMetricCommandHandler();
+            KeplerMetric keplerMetric = gson.fromJson(reader1, KeplerMetric.class);
 
-    //             List<KeplerMetricDTO>  keplerMetricDTOlst = keplerMetricCommandHandler.extractAndMapData(keplerMetric);
+            KeplerMetricCommandHandler keplerMetricCommandHandler = new KeplerMetricCommandHandler();
 
-    //             System.out.println(keplerMetricDTOlst.size());
+            List<KeplerMetricDTO> keplerMetricDTOlst = keplerMetricCommandHandler.extractAndMapData(keplerMetric);
 
-    //             for ( KeplerMetricDTO keplerMetricDTO : keplerMetricDTOlst){
+            System.out.println(keplerMetricDTOlst.size());
 
-    //                 System.out.println(keplerMetricDTO.toString());
+            for (KeplerMetricDTO keplerMetricDTO : keplerMetricDTOlst) {
 
-    //             }
-    //             System.out.println(keplerMetricDTOlst.size());
+                System.out.println(keplerMetricDTO.toString());
 
+            }
+            System.out.println(keplerMetricDTOlst.size());
 
-    //            // keplerMetricCommandHandler.createKeplerMetric(keplerMetric);
+            // keplerMetricCommandHandler.createKeplerMetric(keplerMetric);
 
-    //     } catch (IOException e) {
-    //         e.printStackTrace();
-    //     }
-        
-    // }
-    
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-    
+    }
+
 }
