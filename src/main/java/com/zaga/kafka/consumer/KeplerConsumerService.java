@@ -22,11 +22,11 @@ public class KeplerConsumerService {
     @Inject
     KeplerMetricCommandHandler keplerMetricCommandHandler;
 
-    @Incoming("kepler-in")
+    // @Incoming("kepler-in")
     public void consumeKeplerDetails(KeplerMetric keplerMetric) {
 
         if (keplerMetric != null) {
-            System.out.println("consumer++++++++++++++" + keplerMetric);
+            // System.out.println("consumer++++++++++++++" + keplerMetric);
             keplerMetricCommandHandler.createKeplerMetric(keplerMetric);
         } else {
             System.out.println("Received null message. Check serialization/deserialization.");
@@ -59,7 +59,7 @@ public class KeplerConsumerService {
             // keplerMetricCommandHandler.createKeplerMetric(keplerMetric);
 
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("ERROR " + e.getLocalizedMessage());
         }
 
     }
