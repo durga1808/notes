@@ -12,7 +12,7 @@ public class MetricConsumerService {
 
   @Incoming("metric-in")
   public void consumeMetricDetails(OtelMetric metrics) {
-    // System.out.println("consumer++++++++++++++" + metrics);
+    System.out.println("consumed metric data----------------");
     if (metrics != null) {
     metricCommandHandler.createMetricProduct(metrics);
     }

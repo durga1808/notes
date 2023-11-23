@@ -26,7 +26,7 @@ public class KeplerConsumerService {
     public void consumeKeplerDetails(KeplerMetric keplerMetric) {
 
         if (keplerMetric != null) {
-            // System.out.println("consumer++++++++++++++" + keplerMetric);
+            System.out.println("consumed Kepler data ------------------");
             keplerMetricCommandHandler.createKeplerMetric(keplerMetric);
         } else {
             System.out.println("Received null message. Check serialization/deserialization.");

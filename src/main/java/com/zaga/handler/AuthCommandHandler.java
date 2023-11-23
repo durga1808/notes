@@ -129,7 +129,7 @@ public class AuthCommandHandler {
           throw new WebApplicationException("User Not Found ", 500);
     }
     UserCredentials user = userCredentials;
-    System.out.println(user);
+    // System.out.println(user);
     // user.setId(existingUser.getId());
     user.setRoles(existingUser.getRoles());
     user.setUsername(existingUser.getUsername());

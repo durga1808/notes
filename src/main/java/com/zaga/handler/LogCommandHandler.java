@@ -63,7 +63,7 @@ public class LogCommandHandler {
 
                         logDTO.setScopeLogs(Collections.singletonList(newScopeLogs));
 
-                        System.out.println("Log Data DTo " + logDTO);
+                        // System.out.println("Log Data DTo " + logDTO);
                         // logDTOs.add(logDTO);
                         logQueryRepo.persist(logDTO);
 

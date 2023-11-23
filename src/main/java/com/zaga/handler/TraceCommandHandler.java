@@ -27,11 +27,11 @@ public class TraceCommandHandler {
   TraceQueryRepo traceQueryRepo;
 
   public void createTraceProduct(OtelTrace trace) {
-    System.out.println("Tracesss" + trace);
+    // System.out.println("Tracesss" + trace);
     traceCommandRepo.persist(trace);
 
     List<TraceDTO> traceDTOs = extractAndMapData(trace);
-    System.out.println(traceDTOs);
+    System.out.println("TraceDTO count"+traceDTOs.size());
   }
 
   // logic for getting serviceName
@@ -59,7 +59,7 @@ public class TraceCommandHandler {
     ZonedDateTime istTime = startInstant.atZone(istZone);
 
     Date date = Date.from(istTime.toInstant());
-    System.out.println("Date--------" + date);
+    // System.out.println("Date--------" + date);
     return date;
   }
 
@@ -128,13 +128,13 @@ public class TraceCommandHandler {
                                     try {
                                         Long statusCode = Long.parseLong(statusCodeString);
                                         traceDTO.setStatusCode(statusCode);
-                                        System.out.println("Status Code stored successfully: " + statusCode);
+                                        // System.out.println("Status Code stored successfully: " + statusCode);
                                     } catch (NumberFormatException e) {
-                                        System.err.println("Failed to parse status code: " + statusCodeString);
+                                        // System.err.println("Failed to parse status code: " + statusCodeString);
                                         e.printStackTrace();
                                     }
                                 } else {
-                                    System.err.println("Status code is null. Cannot parse.");
+                                    // System.err.println("Status code is null. Cannot parse.");
                                 }
                             }
                         }
@@ -158,7 +158,7 @@ public class TraceCommandHandler {
         }
         
           traceQueryRepo.persist(traceDTO);
-          System.out.println("TraceDto: " + traceDTO.toString());
+          // System.out.println("TraceDto: " + traceDTO.toString());
         }
       }
       return traceDTOs;

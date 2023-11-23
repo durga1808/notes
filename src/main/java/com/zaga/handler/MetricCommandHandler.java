@@ -69,7 +69,7 @@ public class MetricCommandHandler {
                                     if (sumDataPoint.getAsInt() != null && !sumDataPoint.getAsInt().isEmpty()) {
                                         String asInt = sumDataPoint.getAsInt();
                                         int currentMemoryUsage = Integer.parseInt(asInt);
-                                        System.out.println("--------Memory usage:----- " + currentMemoryUsage);
+                                        // System.out.println("--------Memory usage:----- " + currentMemoryUsage);
 
                                         memoryUsage += currentMemoryUsage;
                                     }
@@ -83,9 +83,9 @@ public class MetricCommandHandler {
                                 if (isCpuMetric(metricName)) {
                                     if (gaugeDataPoint.getAsDouble() != null) {
                                         String asDouble = gaugeDataPoint.getAsDouble();
-                                        System.out.println("--------asDOUBLE------" + asDouble);
+                                        // System.out.println("--------asDOUBLE------" + asDouble);
                                         cpuUsage = Double.parseDouble(asDouble);
-                                        System.out.println("--------cpuUsage-------" + cpuUsage);
+                                        // System.out.println("--------cpuUsage-------" + cpuUsage);
                                     }
                                 }
                             }
@@ -107,11 +107,7 @@ public class MetricCommandHandler {
     }
 
     if (!metricDTOs.isEmpty()) {
-        // Only persist the last MetricDTO, outside the loop
         metricDtoRepo.persist(metricDTOs.subList(metricDTOs.size() - 1, metricDTOs.size()));
-        
-        System.out.println("----Last MetricDTO----: " + metricDTOs);
-        System.out.println("Last MetricDTO: " + metricDTOs.get(metricDTOs.size() - 1));
     }
 } catch (Exception e) {
     // Handle exceptions here
