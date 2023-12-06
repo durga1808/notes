@@ -8,9 +8,8 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-
 public class Value {
     private String stringValue;
-    private int intValue;
+    private Integer intValue;
     private ArrayValue arrayValue;
 }

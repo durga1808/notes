@@ -1,8 +1,10 @@
 package com.zaga.entity.queryentity.trace;
 
+import java.util.Date;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.zaga.entity.oteltrace.scopeSpans.Spans;
 
 import io.quarkus.mongodb.panache.PanacheMongoEntity;
 import io.quarkus.mongodb.panache.common.MongoEntity;
@@ -16,17 +18,25 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = false)
 @JsonIgnoreProperties("id")
-@MongoEntity(collection="TraceDto",database="OtelTrace")
+@MongoEntity(collection="TraceDTO",database="OtelTrace")
 public class TraceDTO extends PanacheMongoEntity{
- private String traceId;
+    private String traceId;
     private String serviceName;
     private String methodName;
-    private String duration;
-    private String statusCode;
+    private String operationName;
+    private Long duration;
+    private Long statusCode;
     private String spanCount;
-    private String createdTime;
+    private Date createdTime;
     private List<Spans> spans;
 }
+
+
+
+
+
+
+   
 
 
 

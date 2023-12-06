@@ -1,6 +1,7 @@
 package com.zaga.entity.oteltrace.scopeSpans.spans;
 
-import com.zaga.entity.oteltrace.resource.attributes.Value;
+
+import com.zaga.entity.oteltrace.scopeSpans.spans.attributes.Value;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,4 +13,5 @@ import lombok.NoArgsConstructor;
 public class Attributes {
     private String key;
     private Value value;
+   
 }
