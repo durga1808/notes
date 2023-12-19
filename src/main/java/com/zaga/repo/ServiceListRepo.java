@@ -1,13 +1,16 @@
 package com.zaga.repo;
 
-
 import com.zaga.entity.auth.ServiceList;
+import com.zaga.entity.auth.ServiceListNew;
 
 import io.quarkus.mongodb.panache.PanacheMongoRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 
-
 @ApplicationScoped
-public class ServiceListRepo implements PanacheMongoRepository<ServiceList> {
-    
+public class ServiceListRepo implements PanacheMongoRepository<ServiceListNew> {
+
+    public ServiceListNew findMetricByServiceName(String serviceName) {
+        return find("serviceName = ?1 and rules.ruleType = ?2", serviceName, "metric").firstResult();
+    }
+
 }

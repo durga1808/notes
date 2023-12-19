@@ -2,6 +2,7 @@ package com.zaga.handler;
 
 import com.zaga.entity.auth.UserCredentials;
 import com.zaga.entity.auth.ServiceList;
+import com.zaga.entity.auth.ServiceListNew;
 import com.zaga.repo.AuthRepo;
 import com.zaga.repo.ServiceListRepo;
 
@@ -21,24 +22,22 @@ public class AuthCommandHandler {
 
   public Response getUserInfo(final UserCredentials credentials) {
     try {
-        UserCredentials userCreds = authRepo
-                .find("username = ?1 and password = ?2", credentials.getUsername(), credentials.getPassword())
-                .firstResult();
-        if (userCreds != null) {
-            return Response.status(200).entity(userCreds).build();
-        } else {
-            return Response
-                .status(Response.Status.UNAUTHORIZED)
-                .entity("Username or password is incorrect")
-                .build();
-        }
+      UserCredentials userCreds = authRepo
+          .find("username = ?1 and password = ?2", credentials.getUsername(), credentials.getPassword())
+          .firstResult();
+      if (userCreds != null) {
+        return Response.status(200).entity(userCreds).build();
+      } else {
+        return Response
+            .status(Response.Status.UNAUTHORIZED)
+            .entity("Username or password is incorrect")
+            .build();
+      }
     } catch (Exception e) {
-        e.printStackTrace();
-        return Response.serverError().build();
+      e.printStackTrace();
+      return Response.serverError().build();
     }
-}
-
-
+  }
 
   public Response saveUserInfo(final UserCredentials credentials) {
     try {
@@ -63,8 +62,6 @@ public class AuthCommandHandler {
     }
   }
 
-
-
   public UserCredentials getUserInfoByUsername(String username) {
     return authRepo.find("username", username).firstResult();
   }
@@ -74,59 +71,60 @@ public class AuthCommandHandler {
   // .execute();
   // }
 
-
-  public Response addServiceList(final ServiceList serviceList) {
-    try {
-      ServiceList serviceData = serviceListRepo
-          .find("serviceName = ?1", serviceList.getServiceName())
-          .firstResult();
-      // System.out.println("------Register service---- " + serviceData.getServiceName());
-      if (serviceData == null) {
-        serviceListRepo.persist(serviceList);
-        return Response
-            .status(201)
-            .entity("Service registered successfully")
-            .build();
-      } else {
-        return Response
-            .status(Response.Status.NOT_FOUND)
-            .entity("Service Already exists")
-            .build();
-      }
-    } catch (Exception e) {
-      e.printStackTrace();
-      return Response.status(501).entity(e).build();
-    }
-  }
+  // public Response addServiceList(final ServiceList serviceList) {
+  // try {
+  // ServiceList serviceData = serviceListRepo
+  // .find("serviceName = ?1", serviceList.getServiceName())
+  // .firstResult();
+  // // System.out.println("------Register service---- " +
+  // serviceData.getServiceName());
+  // if (serviceData == null) {
+  // serviceListRepo.persist(serviceList);
+  // return Response
+  // .status(201)
+  // .entity("Service registered successfully")
+  // .build();
+  // } else {
+  // return Response
+  // .status(Response.Status.NOT_FOUND)
+  // .entity("Service Already exists")
+  // .build();
+  // }
+  // } catch (Exception e) {
+  // e.printStackTrace();
+  // return Response.status(501).entity(e).build();
+  // }
+  // }
 
   public Response getServiceList(final UserCredentials userCredentials) {
     try {
-      java.util.List<ServiceList> serviceData = serviceListRepo
-        .find("roles in ?1", userCredentials.getRoles())
-        .list();
+      // java.util.List<ServiceListNew> serviceData = serviceListRepo
+      // .find("roles in ?1", userCredentials.getRoles())
+      // .list();
+      ServiceListNew serviceData = serviceListRepo.findMetricByServiceName("vendor-srv-2");
       if (serviceData != null) {
         return Response.status(201).entity(serviceData).build();
       } else {
-          return Response
-          .status(Response.Status.NOT_FOUND)
-          .entity("Data not found for this role")
-          .build();
+        return Response
+            .status(Response.Status.NOT_FOUND)
+            .entity("Data not found for this role")
+            .build();
       }
     } catch (Exception e) {
       e.printStackTrace();
       return null;
     }
   }
-//   public UserCredentials getUserInfoByUsername(String username) {
-//     return authRepo.find("username", username).firstResult();
-// }
+  // public UserCredentials getUserInfoByUsername(String username) {
+  // return authRepo.find("username", username).firstResult();
+  // }
 
-  public UserCredentials updateUserCredentials(UserCredentials userCredentials){
+  public UserCredentials updateUserCredentials(UserCredentials userCredentials) {
     // UserCredentials userData = authRepo.getUser(userCredentials.getUsername());
     // System.out.println(userData);
     UserCredentials existingUser = authRepo.getUser(userCredentials.getUsername());
     if (existingUser == null) {
-          throw new WebApplicationException("User Not Found ", 500);
+      throw new WebApplicationException("User Not Found ", 500);
     }
     UserCredentials user = userCredentials;
     System.out.println(user);
@@ -135,6 +133,6 @@ public class AuthCommandHandler {
     user.setUsername(existingUser.getUsername());
     UserCredentials.update(user);
     System.out.println(user);
-    return userCredentials;   
+    return userCredentials;
   }
 }
