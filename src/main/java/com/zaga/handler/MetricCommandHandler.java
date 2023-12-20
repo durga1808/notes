@@ -54,7 +54,8 @@ public class MetricCommandHandler {
     ServiceListRepo serviceListRepo;
 
     public void createMetricProduct(OtelMetric metrics) {
-        // metricCommandRepo.persist(metrics);
+        metricCommandRepo.persist(metrics);
+        
         List<MetricDTO> metricDTOs = extractAndMapData(metrics);
         ServiceListNew serviceListData1 = new ServiceListNew();
         for (MetricDTO metricDTOSingle : metricDTOs) {

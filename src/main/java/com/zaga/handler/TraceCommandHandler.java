@@ -1,21 +1,32 @@
 package com.zaga.handler;
 
+import com.zaga.entity.auth.Rule;
+import com.zaga.entity.auth.ServiceListNew;
 import com.zaga.entity.oteltrace.OtelTrace;
 import com.zaga.entity.oteltrace.ResourceSpans;
 import com.zaga.entity.oteltrace.ScopeSpans;
 import com.zaga.entity.oteltrace.scopeSpans.Spans;
 import com.zaga.entity.oteltrace.scopeSpans.spans.Attributes;
 import com.zaga.entity.queryentity.trace.TraceDTO;
+import com.zaga.kafka.websocket.WebsocketAlertProducer;
+import com.zaga.repo.ServiceListRepo;
 import com.zaga.repo.TraceCommandRepo;
 import com.zaga.repo.TraceQueryRepo;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.websocket.EncodeException;
+
+import java.io.IOException;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @ApplicationScoped
 public class TraceCommandHandler {
@@ -26,14 +37,99 @@ public class TraceCommandHandler {
   @Inject
   TraceQueryRepo traceQueryRepo;
 
+   @Inject
+    private WebsocketAlertProducer sessions;
+
+    @Inject
+    ServiceListRepo serviceListRepo;
+
   public void createTraceProduct(OtelTrace trace) {
-    System.out.println("Tracesss" + trace);
-    traceCommandRepo.persist(trace);
+    // System.out.println("Tracesss" + trace);
+    // traceCommandRepo.persist(trace);
 
     List<TraceDTO> traceDTOs = extractAndMapData(trace);
-    System.out.println(traceDTOs);
+    ServiceListNew serviceListNew = new ServiceListNew();
+    for (TraceDTO traceDTOSingle : traceDTOs) {
+      serviceListNew = serviceListRepo.find("serviceName= ?1",traceDTOSingle.getServiceName()).firstResult();
+      break;
+    }
+    for (TraceDTO traceDTO : traceDTOs)  {
+      processRuleManipulation(traceDTO, serviceListNew);
+    }
+    // System.out.println("---------TraceDTOs:---------- " + traceDTOs.size());
   }
 
+
+  public void processRuleManipulation(TraceDTO traceDTO, ServiceListNew serviceListNew) {
+    System.out.println("entered -------------------------------------------------------");
+    try{
+      // ServiceListNew serviceListData = gson.fromJson(reader1,
+            // ServiceListNew.class);
+            // System.out.println("Service Data " + serviceListData.getServiceName());
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+            LocalDateTime currentDateTime = LocalDateTime.now();
+            if (serviceListNew.getRules().size() != 0) {
+                for (Rule sData : serviceListNew.getRules()) {
+                    if (sData.getRuleType().equals("trace")) {
+                        LocalDateTime startDate = sData.getStartDateTime();
+                        LocalDateTime expiryDate = sData.getExpiryDateTime();
+                        if (startDate != null && expiryDate != null) {
+                            // Existing formatting and printing
+                            String startDateTimeString = startDate.format(formatter);
+                            System.out.println("Start DateTime: " + startDateTimeString);
+                            String expiryDateTimeString = expiryDate.format(formatter);
+                            System.out.println("Expiry DateTime: " + expiryDateTimeString);
+
+                            // Update the startDateTime and expiryDateTime parsing
+                            // Parse startDateTime
+                            LocalDateTime startDateTime = LocalDateTime.parse(startDateTimeString, formatter);
+                            // Set startDateTime in your Rule object
+                            sData.setStartDateTime(startDateTime);
+
+                            // Parse expiryDateTime
+                            LocalDateTime expiryDateTime = LocalDateTime.parse(expiryDateTimeString, formatter);
+                            // Set expiryDateTime in your Rule object
+                            sData.setExpiryDateTime(expiryDateTime);
+
+                            Long duration = traceDTO.getDuration();
+                            System.out.println("duraation"+duration);
+                            
+                            Map<String, String> alertPayload = new HashMap<>();
+                            alertPayload.put("serviceName",traceDTO.getServiceName());
+
+                            boolean isDurationExceeded = false;
+                            if(duration != null && duration != 0){
+                              if( duration >=sData.getDuration()){
+                                isDurationExceeded = true;
+                                alertPayload.put("isDurationExceeded","true");
+                                System.out.println("Trace Duration exceeds limit.");
+                              }
+ 
+                            }
+                            if(isDurationExceeded){
+                              alertPayload.put("isDurationExceeded","true");
+                              sessions.getSessions().forEach(session -> {
+                                try{
+                                  if(session == null){
+                                    System.out.println("No session");
+                                  }else{
+                                    session.getBasicRemote().sendObject(alertPayload);
+                                    System.out.println("Message Trace sent");
+                                  }
+                                }catch(IOException | EncodeException e){
+                                  e.printStackTrace();
+                                }
+                              });
+                            }
+                        }
+                      }
+                    }
+                  }
+                
+    }catch (Exception e) {
+      System.out.println("ERROR " + e.getLocalizedMessage());
+  }
+  }
   // logic for getting serviceName
   private String getServiceName(ResourceSpans resourceSpans) {
     return resourceSpans
@@ -59,7 +155,7 @@ public class TraceCommandHandler {
     ZonedDateTime istTime = startInstant.atZone(istZone);
 
     Date date = Date.from(istTime.toInstant());
-    System.out.println("Date--------" + date);
+    // System.out.println("Date--------" + date);
     return date;
   }
 
@@ -158,7 +254,7 @@ public class TraceCommandHandler {
         }
         
           traceQueryRepo.persist(traceDTO);
-          System.out.println("TraceDto: " + traceDTO.toString());
+          // System.out.println("TraceDto: " + traceDTO.toString());
         }
       }
       return traceDTOs;
