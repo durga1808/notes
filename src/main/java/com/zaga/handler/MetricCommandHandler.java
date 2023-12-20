@@ -147,46 +147,60 @@ public class MetricCommandHandler {
                             // }
 
                             // Check for memoryUsage
-                            if (memoryUsage != null && memoryUsage != 0) {
+                            if (memoryUsage != null && memoryUsage != 0 && cpuUsage != null && cpuUsage != 0) {
                                 if (memoryUsage >= sData.getMemoryLimit() &&
                                         currentDateTime.isAfter(sData.getStartDateTime()) &&
                                         currentDateTime.isBefore(sData.getExpiryDateTime())) {
-                                    isMetricExceeded = true;
-                                    alertPayload.put("isMemoryExceeded", "true");
+                                    String alertMessage = "Memory Usage " +  memoryUsage + " peaked in this service " + metricDTO.getServiceName();
+                                    alertPayload.put("alertMessage", alertMessage);
                                     System.out.println("Memory Usage exceeds limit.");
+                                    sessions.getSessions().forEach(session -> {
+                                        try {
+                                            if (session == null) {
+                                                System.out.println("No session");
+                                            } else {
+                                                session.getBasicRemote().sendObject(alertPayload);
+                                                System.out.println("Message Metric sent");
+                                            }
+                                        } catch (IOException | EncodeException e) {
+                                            e.printStackTrace();
+                                        }
+                                    });
                                     // Any specific action for memory usage exceeding the limit
                                 }
                             }
 
                             // Check for cpuUsage
-                            if (cpuUsage != null && cpuUsage != 0) {
+                            if (cpuUsage != null && cpuUsage != 0 && memoryUsage != null && memoryUsage != 0) {
                                 if (cpuUsage >= cpuLimitMilliCores &&
                                         currentDateTime.isAfter(sData.getStartDateTime()) &&
                                         currentDateTime.isBefore(sData.getExpiryDateTime())) {
                                     isMetricExceeded = true;
-                                    alertPayload.put("isCpuExceeded", "true");
+                                    String alertMessage = "CPU Usage " +  Math.ceil(cpuLimitMilliCores) + "  peaked in this service " + metricDTO.getServiceName();
+                                    alertPayload.put("alertMessage", alertMessage);
                                     System.out.println("CPU Usage exceeds limit.");
+                                    sessions.getSessions().forEach(session -> {
+                                        try {
+                                            if (session == null) {
+                                                System.out.println("No session");
+                                            } else {
+                                                session.getBasicRemote().sendObject(alertPayload);
+                                                System.out.println("Message Metric sent");
+                                            }
+                                        } catch (IOException | EncodeException e) {
+                                            e.printStackTrace();
+                                        }
+                                    });
                                     // Any specific action for CPU usage exceeding the limit
                                 }
                             }
 
                             if (isMetricExceeded) {
                                 // Add other relevant details to the alertPayload if necessary
-                                alertPayload.put("isMetricExceeded", "true");
+                                // alertPayload.put("isMetricExceeded", "true");
 
                                 // Send alerts to sessions
-                                sessions.getSessions().forEach(session -> {
-                                    try {
-                                        if (session == null) {
-                                            System.out.println("No session");
-                                        } else {
-                                            session.getBasicRemote().sendObject(alertPayload);
-                                            System.out.println("Message Metric sent");
-                                        }
-                                    } catch (IOException | EncodeException e) {
-                                        e.printStackTrace();
-                                    }
-                                });
+
                             }
 
                         }
