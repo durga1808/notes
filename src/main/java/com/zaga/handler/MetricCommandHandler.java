@@ -53,6 +53,8 @@ public class MetricCommandHandler {
     @Inject
     ServiceListRepo serviceListRepo;
 
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+
     public void createMetricProduct(OtelMetric metrics) {
         // metricCommandRepo.persist(metrics);
         List<MetricDTO> metricDTOs = extractAndMapData(metrics);
@@ -61,158 +63,79 @@ public class MetricCommandHandler {
             serviceListData1 = serviceListRepo.find("serviceName = ?1", metricDTOSingle.getServiceName()).firstResult();
             break;
         }
-        // System.out.println("Queried Data " + serviceListData1);
         for (MetricDTO metricDTO : metricDTOs) {
-            // System.out.println("Metric DTOS " + metricDTO.toString());
             processRuleManipulation(metricDTO, serviceListData1);
-
-            // break;
         }
         System.out.println("---------MetricDTOs:---------- " + metricDTOs.size());
     }
 
     public void processRuleManipulation(MetricDTO metricDTO, ServiceListNew serviceListData) {
-        // System.out.println("Output " + metricDTO + " sdata " + serviceListData);
-        // Gson gson = new Gson();
-
-        // File file = new
-        // File("./src/main/java/com/zaga/kafka/consumer/MetricRule.json");
-
+        LocalDateTime currentDateTime = LocalDateTime.now();
         try {
-
-            // ServiceListNew serviceListData = gson.fromJson(reader1,
-            // ServiceListNew.class);
-            // System.out.println("Service Data " + serviceListData.getServiceName());
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-            LocalDateTime currentDateTime = LocalDateTime.now();
-            if (serviceListData.getRules().size() != 0) {
+            if (!serviceListData.getRules().isEmpty()) {
                 for (Rule sData : serviceListData.getRules()) {
-                    if (sData.getRuleType().equals("metric")) {
+                    if ("metric".equals(sData.getRuleType())) {
                         LocalDateTime startDate = sData.getStartDateTime();
                         LocalDateTime expiryDate = sData.getExpiryDateTime();
                         if (startDate != null && expiryDate != null) {
-                            // Existing formatting and printing
-                            String startDateTimeString = startDate.format(formatter);
-                            System.out.println("Start DateTime: " + startDateTimeString);
-                            String expiryDateTimeString = expiryDate.format(formatter);
-                            System.out.println("Expiry DateTime: " + expiryDateTimeString);
+                            String startDateTimeString = startDate.format(FORMATTER);
+                            String expiryDateTimeString = expiryDate.format(FORMATTER);
 
-                            // Update the startDateTime and expiryDateTime parsing
-                            // Parse startDateTime
-                            LocalDateTime startDateTime = LocalDateTime.parse(startDateTimeString, formatter);
-                            // Set startDateTime in your Rule object
+                            LocalDateTime startDateTime = LocalDateTime.parse(startDateTimeString, FORMATTER);
                             sData.setStartDateTime(startDateTime);
 
-                            // Parse expiryDateTime
-                            LocalDateTime expiryDateTime = LocalDateTime.parse(expiryDateTimeString, formatter);
-                            // Set expiryDateTime in your Rule object
+                            LocalDateTime expiryDateTime = LocalDateTime.parse(expiryDateTimeString, FORMATTER);
                             sData.setExpiryDateTime(expiryDateTime);
 
-                            // Other computations based on your conditions
                             Double cpuUsage = metricDTO.getCpuUsage();
                             Double cpuLimitMilliCores = sData.getCpuLimit() * 1000;
                             Integer memoryUsage = metricDTO.getMemoryUsage();
 
-                            System.out.println("CPU USAGE " + cpuUsage + " MEMORY USAGE " + memoryUsage + " MILLICORES "
-                                    + cpuLimitMilliCores);
-
                             Map<String, String> alertPayload = new HashMap<>();
 
-                            alertPayload.put("serviceName", metricDTO.getServiceName());
-
-                            boolean isMetricExceeded = false;
-
-                            // if ((cpuUsage != null && cpuUsage != 0) && (memoryUsage != null &&
-                            // memoryUsage != 0)) {
-                            // if ((cpuUsage >= cpuLimitMilliCores || memoryUsage >= sData.getMemoryLimit())
-                            // &&
-                            // currentDateTime.isAfter(sData.getStartDateTime()) &&
-                            // currentDateTime.isBefore(sData.getExpiryDateTime())) {
-                            // System.out.println(
-                            // "Metric Data values " + cpuUsage + " " + memoryUsage + " exceed limits.");
-                            // sessions.getSessions().forEach(session -> {
-                            // try {
-                            // if (session == null) {
-                            // System.out.println("No session");
-                            // } else {
-                            // session.getBasicRemote().sendObject("Alert for Metric");
-                            // System.out.println("Message Metric sent");
-                            // }
-                            // } catch (IOException | EncodeException e) {
-                            // e.printStackTrace();
-                            // }
-                            // });
-                            // // Perform actions when values exceed limits and fall within the date range
-                            // }
-                            // }
-
-                            // Check for memoryUsage
                             if (memoryUsage != null && memoryUsage != 0 && cpuUsage != null && cpuUsage != 0) {
                                 if (memoryUsage >= sData.getMemoryLimit() &&
-                                        currentDateTime.isAfter(sData.getStartDateTime()) &&
-                                        currentDateTime.isBefore(sData.getExpiryDateTime())) {
-                                    String alertMessage = "Memory Usage " +  memoryUsage + " peaked in this service " + metricDTO.getServiceName();
-                                    alertPayload.put("alertMessage", alertMessage);
-                                    System.out.println("Memory Usage exceeds limit.");
-                                    sessions.getSessions().forEach(session -> {
-                                        try {
-                                            if (session == null) {
-                                                System.out.println("No session");
-                                            } else {
-                                                session.getBasicRemote().sendObject(alertPayload);
-                                                System.out.println("Message Metric sent");
-                                            }
-                                        } catch (IOException | EncodeException e) {
-                                            e.printStackTrace();
-                                        }
-                                    });
-                                    // Any specific action for memory usage exceeding the limit
+                                        currentDateTime.isAfter(startDateTime) &&
+                                        currentDateTime.isBefore(expiryDateTime)) {
+                                    // Handle Memory Usage exceeded limit
+                                    sendAlert(alertPayload, "Memory Usage " + memoryUsage + " peaked in this service "
+                                            + metricDTO.getServiceName());
                                 }
                             }
 
-                            // Check for cpuUsage
                             if (cpuUsage != null && cpuUsage != 0 && memoryUsage != null && memoryUsage != 0) {
                                 if (cpuUsage >= cpuLimitMilliCores &&
-                                        currentDateTime.isAfter(sData.getStartDateTime()) &&
-                                        currentDateTime.isBefore(sData.getExpiryDateTime())) {
-                                    isMetricExceeded = true;
-                                    String alertMessage = "CPU Usage " +  Math.ceil(cpuLimitMilliCores) + "  peaked in this service " + metricDTO.getServiceName();
-                                    alertPayload.put("alertMessage", alertMessage);
-                                    System.out.println("CPU Usage exceeds limit.");
-                                    sessions.getSessions().forEach(session -> {
-                                        try {
-                                            if (session == null) {
-                                                System.out.println("No session");
-                                            } else {
-                                                session.getBasicRemote().sendObject(alertPayload);
-                                                System.out.println("Message Metric sent");
-                                            }
-                                        } catch (IOException | EncodeException e) {
-                                            e.printStackTrace();
-                                        }
-                                    });
-                                    // Any specific action for CPU usage exceeding the limit
+                                        currentDateTime.isAfter(startDateTime) &&
+                                        currentDateTime.isBefore(expiryDateTime)) {
+                                    // Handle CPU Usage exceeded limit
+                                    sendAlert(alertPayload, "CPU Usage " + Math.ceil(cpuLimitMilliCores)
+                                            + "  peaked in this service " + metricDTO.getServiceName());
                                 }
                             }
-
-                            if (isMetricExceeded) {
-                                // Add other relevant details to the alertPayload if necessary
-                                // alertPayload.put("isMetricExceeded", "true");
-
-                                // Send alerts to sessions
-
-                            }
-
                         }
-
                     }
                 }
             }
-
         } catch (Exception e) {
+            // Handle or log the exception appropriately
             System.out.println("ERROR " + e.getLocalizedMessage());
         }
+    }
 
+    private void sendAlert(Map<String, String> alertPayload, String message) {
+        alertPayload.put("alertMessage", message);
+        sessions.getSessions().forEach(session -> {
+            try {
+                if (session == null) {
+                    System.out.println("No session");
+                } else {
+                    session.getBasicRemote().sendObject(alertPayload);
+                    System.out.println("Message Metric sent");
+                }
+            } catch (IOException | EncodeException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     public List<MetricDTO> extractAndMapData(OtelMetric metrics) {
