@@ -1,22 +1,12 @@
 package com.zaga.kafka.consumer;
 
 import com.google.gson.Gson;
-import com.zaga.entity.auth.ServiceListNew;
-import com.zaga.entity.kepler.KeplerMetric;
 import com.zaga.entity.otelmetric.OtelMetric;
-import com.zaga.entity.queryentity.kepler.KeplerMetricDTO;
-import com.zaga.entity.queryentity.metrics.MetricDTO;
-import com.zaga.handler.KeplerMetricCommandHandler;
 import com.zaga.handler.MetricCommandHandler;
-import com.zaga.repo.ServiceListRepo;
 
 import jakarta.inject.Inject;
 
 import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.Reader;
-import java.util.List;
 
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 
@@ -25,7 +15,7 @@ public class MetricConsumerService {
   @Inject
   MetricCommandHandler metricCommandHandler;
 
-  // @Incoming("metric-in")
+  @Incoming("metric-in")
   public void consumeMetricDetails(OtelMetric metrics) {
     // System.out.println("consumer++++++++++++++" + metrics);
     if (metrics != null) {

@@ -56,7 +56,8 @@ public class MetricCommandHandler {
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 
     public void createMetricProduct(OtelMetric metrics) {
-        // metricCommandRepo.persist(metrics);
+        metricCommandRepo.persist(metrics);
+        
         List<MetricDTO> metricDTOs = extractAndMapData(metrics);
         ServiceListNew serviceListData1 = new ServiceListNew();
         for (MetricDTO metricDTOSingle : metricDTOs) {
