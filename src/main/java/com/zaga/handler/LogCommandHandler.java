@@ -1,23 +1,33 @@
 package com.zaga.handler;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import com.zaga.entity.auth.Rule;
+import com.zaga.entity.auth.ServiceListNew;
 import com.zaga.entity.otellog.OtelLog;
 import com.zaga.entity.otellog.ResourceLogs;
 import com.zaga.entity.otellog.ScopeLogs;
 import com.zaga.entity.otellog.scopeLogs.LogRecord;
 import com.zaga.entity.queryentity.log.LogDTO;
+import com.zaga.entity.queryentity.trace.TraceDTO;
+import com.zaga.kafka.websocket.WebsocketAlertProducer;
 import com.zaga.repo.LogCommandRepo;
 import com.zaga.repo.LogQueryRepo;
+import com.zaga.repo.ServiceListRepo;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.websocket.EncodeException;
 
 @ApplicationScoped
 public class LogCommandHandler {
@@ -28,11 +38,117 @@ public class LogCommandHandler {
     @Inject
     LogQueryRepo logQueryRepo;
 
-    public void createLogProduct(OtelLog logs) {
-        logCommandRepo.persist(logs);
+    @Inject
+    private WebsocketAlertProducer sessions;
 
+    @Inject
+    ServiceListRepo serviceListRepo;
+
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+
+    private Map<String, Integer> alertCountMap = new HashMap<>();
+    private Map<String, String> previousTraceIdMap = new HashMap<>();
+
+    public void createLogProduct(OtelLog logs) {
+        // logCommandRepo.persist(logs);
         List<LogDTO> logDTOs = marshalLogData(logs);
         System.out.println("log sizes" + logDTOs.size());
+
+        ServiceListNew serviceListNew = new ServiceListNew();
+        for (LogDTO logDTOSingle : logDTOs) {
+            try {
+                serviceListNew = serviceListRepo.find("serviceName = ?1", logDTOSingle.getServiceName())
+                        .firstResult();
+                break;
+            } catch (Exception e) {
+                System.out.println("ERROR " + e.getLocalizedMessage());
+            }
+        }
+
+        System.out.println("Log DTO size " + logDTOs.size());
+
+        if (!serviceListNew.equals(null)) {
+            for (LogDTO logDto : logDTOs) {
+                System.out.println("Log DTO's " + logDto);
+                processRuleManipulation(logDto, serviceListNew);
+            }
+        }
+
+    }
+
+    public void processRuleManipulation(LogDTO logDTO, ServiceListNew serviceListNew) {
+        LocalDateTime currentDateTime = LocalDateTime.now();
+        // Map<String, Integer> alertCountMap = new HashMap<>();
+
+        try {
+            if (!serviceListNew.getRules().isEmpty()) {
+                for (Rule sData : serviceListNew.getRules()) {
+                    if ("log".equals(sData.getRuleType())) {
+                        LocalDateTime startDate = sData.getStartDateTime();
+                        LocalDateTime expiryDate = sData.getExpiryDateTime();
+                        if (startDate != null && expiryDate != null) {
+                            String startDateTimeString = startDate.format(FORMATTER);
+                            String expiryDateTimeString = expiryDate.format(FORMATTER);
+
+                            LocalDateTime startDateTime = LocalDateTime.parse(startDateTimeString, FORMATTER);
+                            sData.setStartDateTime(startDateTime);
+
+                            LocalDateTime expiryDateTime = LocalDateTime.parse(expiryDateTimeString, FORMATTER);
+                            sData.setExpiryDateTime(expiryDateTime);
+
+                            String severityText = logDTO.getSeverityText();
+                            String traceId = logDTO.getTraceId();
+                            System.out.println("Log Severity " + logDTO.getSeverityText());
+
+                            if (severityText != null && severityText != "") {
+                                if (sData.getSeverityText().contains(severityText) &&
+                                        currentDateTime.isAfter(startDateTime) &&
+                                        currentDateTime.isBefore(expiryDateTime)) {
+                                    String serviceName = logDTO.getServiceName();
+                                    int alertCount = alertCountMap.getOrDefault(serviceName, 0);
+
+                                    String previousTraceId = previousTraceIdMap.getOrDefault(serviceName, "");
+
+                                    // Check if traceId changed from the previous log entry
+                                    if (!traceId.equals(previousTraceId) && traceId != null && !traceId.isEmpty()) {
+                                        // Increment alert count only if traceId is different
+                                        alertCount++;
+                                        previousTraceIdMap.put(serviceName, traceId); // Update previous traceId
+                                    }
+
+                                    if (alertCount > 3) {
+                                        System.out.println("Exceeded");
+                                        // Throw an alert as the count exceeds 3 for the same service
+                                        sendAlert(new HashMap<>(), "Critical Severity Alert call exceeded for this service: " + serviceName);
+                                    } else {
+                                        System.out.println("Not Exceeded" + alertCount);
+                                        alertCountMap.put(serviceName, alertCount);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("ERROR " + e.getLocalizedMessage());
+        }
+    }
+
+    private void sendAlert(Map<String, String> alertPayload, String message) {
+        alertPayload.put("alertMessage", message);
+        sessions.getSessions().forEach(session -> {
+            try {
+                if (session == null) {
+                    System.out.println("No session");
+                } else {
+                    session.getBasicRemote().sendObject(alertPayload);
+                    System.out.println(message);
+                }
+            } catch (IOException | EncodeException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     public List<LogDTO> marshalLogData(OtelLog logs) {
@@ -64,8 +180,8 @@ public class LogCommandHandler {
                         logDTO.setScopeLogs(Collections.singletonList(newScopeLogs));
 
                         System.out.println("Log Data DTo " + logDTO);
-                        // logDTOs.add(logDTO);
-                        logQueryRepo.persist(logDTO);
+                        logDTOs.add(logDTO);
+                        // logQueryRepo.persist(logDTO);
 
                     }
 

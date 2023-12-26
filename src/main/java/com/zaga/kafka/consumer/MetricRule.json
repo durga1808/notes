@@ -17,12 +17,12 @@
       }
     },
     {
-      "cpuLimit": 0.0000001,
+      "cpuLimit": 0,
       "duration": 30,
       "expiryDateTime": {
         "$date": "2023-12-15T17:00:00.000Z"
       },
-      "memoryLimit": 2048,
+      "memoryLimit": 0,
       "reoccuringCount": 0,
       "ruleType": "trace",
       "severityText": [],

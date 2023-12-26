@@ -37,109 +37,159 @@ public class TraceCommandHandler {
   @Inject
   TraceQueryRepo traceQueryRepo;
 
-   @Inject
-    private WebsocketAlertProducer sessions;
+  @Inject
+  private WebsocketAlertProducer sessions;
 
-    @Inject
-    ServiceListRepo serviceListRepo;
+  @Inject
+  ServiceListRepo serviceListRepo;
+
+  private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+
+  private Map<String, Integer> alertCountMap = new HashMap<>();
 
   public void createTraceProduct(OtelTrace trace) {
-    // System.out.println("Tracesss" + trace);
-    // traceCommandRepo.persist(trace);
-
     List<TraceDTO> traceDTOs = extractAndMapData(trace);
     ServiceListNew serviceListNew = new ServiceListNew();
     for (TraceDTO traceDTOSingle : traceDTOs) {
-      serviceListNew = serviceListRepo.find("serviceName= ?1",traceDTOSingle.getServiceName()).firstResult();
-      break;
+      try {
+        serviceListNew = serviceListRepo.find("serviceName = ?1", traceDTOSingle.getServiceName()).firstResult();
+        break;
+      } catch (Exception e) {
+        System.out.println("ERROR " + e.getLocalizedMessage());
+      }
     }
-    for (TraceDTO traceDTO : traceDTOs)  {
-      processRuleManipulation(traceDTO, serviceListNew);
+
+    System.out.println("Trace DTO size " + traceDTOs.size());
+
+    if (!serviceListNew.equals(null)) {
+      for (TraceDTO traceDTO : traceDTOs) {
+        // System.out.println("Trace DTO's " + traceDTO.toString());
+        processRuleManipulation(traceDTO, serviceListNew);
+      }
     }
-    // System.out.println("---------TraceDTOs:---------- " + traceDTOs.size());
   }
 
+  // public void processRuleManipulation(TraceDTO traceDTO, ServiceListNew
+  // serviceListNew) {
+  // LocalDateTime currentDateTime = LocalDateTime.now();
+  // try {
+  // if (!serviceListNew.getRules().isEmpty()) {
+  // for (Rule sData : serviceListNew.getRules()) {
+  // if ("trace".equals(sData.getRuleType())) {
+  // LocalDateTime startDate = sData.getStartDateTime();
+  // LocalDateTime expiryDate = sData.getExpiryDateTime();
+  // if (startDate != null && expiryDate != null) {
+  // String startDateTimeString = startDate.format(FORMATTER);
+  // String expiryDateTimeString = expiryDate.format(FORMATTER);
+
+  // LocalDateTime startDateTime = LocalDateTime.parse(startDateTimeString,
+  // FORMATTER);
+  // sData.setStartDateTime(startDateTime);
+
+  // LocalDateTime expiryDateTime = LocalDateTime.parse(expiryDateTimeString,
+  // FORMATTER);
+  // sData.setExpiryDateTime(expiryDateTime);
+
+  // Long duration = traceDTO.getDuration();
+  // System.out.println("Trace duration " + traceDTO.getDuration());
+
+  // Map<String, String> alertPayload = new HashMap<>();
+
+  // if (duration != null && duration != 0) {
+  // if (duration >= sData.getDuration() &&
+  // currentDateTime.isAfter(startDateTime) &&
+  // currentDateTime.isBefore(expiryDateTime)) {
+  // System.out.println("Trace Exceeded!");
+  // sendAlert(alertPayload, "Trace Duration got exceeded " +
+  // traceDTO.getDuration() + " for this service "
+  // + traceDTO.getServiceName());
+  // }
+  // }
+  // }
+  // }
+  // }
+  // }
+  // } catch (Exception e) {
+  // System.out.println("ERROR " + e.getLocalizedMessage());
+  // }
+  // }
 
   public void processRuleManipulation(TraceDTO traceDTO, ServiceListNew serviceListNew) {
-    System.out.println("entered -------------------------------------------------------");
-    try{
-      // ServiceListNew serviceListData = gson.fromJson(reader1,
-            // ServiceListNew.class);
-            // System.out.println("Service Data " + serviceListData.getServiceName());
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-            LocalDateTime currentDateTime = LocalDateTime.now();
-            if (serviceListNew.getRules().size() != 0) {
-                for (Rule sData : serviceListNew.getRules()) {
-                    if (sData.getRuleType().equals("trace")) {
-                        LocalDateTime startDate = sData.getStartDateTime();
-                        LocalDateTime expiryDate = sData.getExpiryDateTime();
-                        if (startDate != null && expiryDate != null) {
-                            // Existing formatting and printing
-                            String startDateTimeString = startDate.format(formatter);
-                            System.out.println("Start DateTime: " + startDateTimeString);
-                            String expiryDateTimeString = expiryDate.format(formatter);
-                            System.out.println("Expiry DateTime: " + expiryDateTimeString);
+    LocalDateTime currentDateTime = LocalDateTime.now();
+    // Map<String, Integer> alertCountMap = new HashMap<>(); 
 
-                            // Update the startDateTime and expiryDateTime parsing
-                            // Parse startDateTime
-                            LocalDateTime startDateTime = LocalDateTime.parse(startDateTimeString, formatter);
-                            // Set startDateTime in your Rule object
-                            sData.setStartDateTime(startDateTime);
+    try {
+      if (!serviceListNew.getRules().isEmpty()) {
+        for (Rule sData : serviceListNew.getRules()) {
+          if ("trace".equals(sData.getRuleType())) {
+            LocalDateTime startDate = sData.getStartDateTime();
+            LocalDateTime expiryDate = sData.getExpiryDateTime();
+            if (startDate != null && expiryDate != null) {
+              String startDateTimeString = startDate.format(FORMATTER);
+              String expiryDateTimeString = expiryDate.format(FORMATTER);
 
-                            // Parse expiryDateTime
-                            LocalDateTime expiryDateTime = LocalDateTime.parse(expiryDateTimeString, formatter);
-                            // Set expiryDateTime in your Rule object
-                            sData.setExpiryDateTime(expiryDateTime);
+              LocalDateTime startDateTime = LocalDateTime.parse(startDateTimeString, FORMATTER);
+              sData.setStartDateTime(startDateTime);
 
-                            Long duration = traceDTO.getDuration();
-                            System.out.println("duraation"+duration);
-                            
-                            Map<String, String> alertPayload = new HashMap<>();
-                            alertPayload.put("serviceName",traceDTO.getServiceName());
+              LocalDateTime expiryDateTime = LocalDateTime.parse(expiryDateTimeString, FORMATTER);
+              sData.setExpiryDateTime(expiryDateTime);
 
-                            boolean isDurationExceeded = false;
-                            if(duration != null && duration != 0){
-                              if( duration >=sData.getDuration()){
-                                isDurationExceeded = true;
-                                alertPayload.put("isDurationExceeded","true");
-                                System.out.println("Trace Duration exceeds limit.");
-                              }
- 
-                            }
-                            if(isDurationExceeded){
-                              alertPayload.put("isDurationExceeded","true");
-                              sessions.getSessions().forEach(session -> {
-                                try{
-                                  if(session == null){
-                                    System.out.println("No session");
-                                  }else{
-                                    session.getBasicRemote().sendObject(alertPayload);
-                                    System.out.println("Message Trace sent");
-                                  }
-                                }catch(IOException | EncodeException e){
-                                  e.printStackTrace();
-                                }
-                              });
-                            }
-                        }
-                      }
-                    }
+              Long duration = traceDTO.getDuration();
+              System.out.println("Trace duration " + traceDTO.getDuration());
+
+              if (duration != null && duration != 0) {
+                if (duration >= sData.getDuration() &&
+                    currentDateTime.isAfter(startDateTime) &&
+                    currentDateTime.isBefore(expiryDateTime)) {
+                  String serviceName = traceDTO.getServiceName();
+                  int alertCount = alertCountMap.getOrDefault(serviceName, 0);
+                  alertCount++;
+
+                  if (alertCount > 3) {
+                    System.out.println("Exceeded");
+                    // Throw an alert as the count exceeds 3 for the same service
+                    sendAlert(new HashMap<>(), "Critical Alert - Duration " + traceDTO.getDuration() + " exceeded for this service: " + serviceName);
+                  } else {
+                    System.out.println("Not Exceeded" + alertCount);
+                    alertCountMap.put(serviceName, alertCount);
                   }
-                
-    }catch (Exception e) {
+                }
+              }
+            }
+          }
+        }
+      }
+    } catch (Exception e) {
       System.out.println("ERROR " + e.getLocalizedMessage());
+    }
   }
+
+  private void sendAlert(Map<String, String> alertPayload, String message) {
+    alertPayload.put("alertMessage", message);
+    sessions.getSessions().forEach(session -> {
+      try {
+        if (session == null) {
+          System.out.println("No session");
+        } else {
+          session.getBasicRemote().sendObject(alertPayload);
+          System.out.println(message);
+        }
+      } catch (IOException | EncodeException e) {
+        e.printStackTrace();
+      }
+    });
   }
+
   // logic for getting serviceName
   private String getServiceName(ResourceSpans resourceSpans) {
     return resourceSpans
-      .getResource()
-      .getAttributes()
-      .stream()
-      .filter(attribute -> "service.name".equals(attribute.getKey()))
-      .findFirst()
-      .map(attribute -> attribute.getValue().getStringValue())
-      .orElse(null);
+        .getResource()
+        .getAttributes()
+        .stream()
+        .filter(attribute -> "service.name".equals(attribute.getKey()))
+        .findFirst()
+        .map(attribute -> attribute.getValue().getStringValue())
+        .orElse(null);
   }
 
   // logic for calculating the createdtime
@@ -147,9 +197,8 @@ public class TraceCommandHandler {
     String startTimeUnixNano = span.getStartTimeUnixNano();
     long startUnixNanoTime = Long.parseLong(startTimeUnixNano);
     Instant startInstant = Instant.ofEpochSecond(
-      startUnixNanoTime / 1_000_000_000L,
-      startUnixNanoTime % 1_000_000_000L
-    );
+        startUnixNanoTime / 1_000_000_000L,
+        startUnixNanoTime % 1_000_000_000L);
     ZoneId istZone = ZoneId.of("Asia/Kolkata");
 
     ZonedDateTime istTime = startInstant.atZone(istZone);
@@ -201,59 +250,59 @@ public class TraceCommandHandler {
 
           for (ScopeSpans scopeSpans : resourceSpans.getScopeSpans()) {
             List<Spans> spans = scopeSpans.getSpans();
-        
+
             for (Spans span : spans) {
-                String traceId = span.getTraceId();
-        
-                if (traceId.contains(traceIdLoop)) {
-                    traceDTO.setServiceName(serviceName);
-                    traceDTO.setTraceId(traceId);
-        
-                    if (span.getParentSpanId() == null || span.getParentSpanId().isEmpty()) {
-                        traceDTO.setOperationName(span.getName());
-                        traceDTO.setCreatedTime(calculateCreatedTime(span));
-                        traceDTO.setDuration(calculateDuration(span));
-        
-                        // Check for "http.status_code" attribute
-                        List<Attributes> attributes = span.getAttributes();
-                        for (Attributes attribute : attributes) {
-                            if ("http.status_code".equals(attribute.getKey())) {
-                                String statusCodeString = attribute.getValue().getIntValue();
-        
-                                if (statusCodeString != null) {
-                                    try {
-                                        Long statusCode = Long.parseLong(statusCodeString);
-                                        traceDTO.setStatusCode(statusCode);
-                                        System.out.println("Status Code stored successfully: " + statusCode);
-                                    } catch (NumberFormatException e) {
-                                        System.err.println("Failed to parse status code: " + statusCodeString);
-                                        e.printStackTrace();
-                                    }
-                                } else {
-                                    System.err.println("Status code is null. Cannot parse.");
-                                }
-                            }
+              String traceId = span.getTraceId();
+
+              if (traceId.contains(traceIdLoop)) {
+                traceDTO.setServiceName(serviceName);
+                traceDTO.setTraceId(traceId);
+
+                if (span.getParentSpanId() == null || span.getParentSpanId().isEmpty()) {
+                  traceDTO.setOperationName(span.getName());
+                  traceDTO.setCreatedTime(calculateCreatedTime(span));
+                  traceDTO.setDuration(calculateDuration(span));
+
+                  // Check for "http.status_code" attribute
+                  List<Attributes> attributes = span.getAttributes();
+                  for (Attributes attribute : attributes) {
+                    if ("http.status_code".equals(attribute.getKey())) {
+                      String statusCodeString = attribute.getValue().getIntValue();
+
+                      if (statusCodeString != null) {
+                        try {
+                          Long statusCode = Long.parseLong(statusCodeString);
+                          traceDTO.setStatusCode(statusCode);
+                          System.out.println("Status Code stored successfully: " + statusCode);
+                        } catch (NumberFormatException e) {
+                          System.err.println("Failed to parse status code: " + statusCodeString);
+                          e.printStackTrace();
                         }
-                    } else {
-                        // Code to handle when span.getParentSpanId() is not empty (if needed)
+                      } else {
+                        System.err.println("Status code is null. Cannot parse.");
+                      }
                     }
-        
-                    // Rest of your code
-                    List<Attributes> attributes = span.getAttributes();
-                    for (Attributes attribute : attributes) {
-                        if ("http.method".equals(attribute.getKey())) {
-                            traceDTO.setMethodName(attribute.getValue().getStringValue());
-                        }
-                        // Handle other attributes as needed
-                    }
-                    objectList.add(span);
-                    traceDTO.setSpanCount(String.valueOf(objectList.size()));
-                    traceDTO.setSpans(objectList);
+                  }
+                } else {
+                  // Code to handle when span.getParentSpanId() is not empty (if needed)
                 }
+
+                // Rest of your code
+                List<Attributes> attributes = span.getAttributes();
+                for (Attributes attribute : attributes) {
+                  if ("http.method".equals(attribute.getKey())) {
+                    traceDTO.setMethodName(attribute.getValue().getStringValue());
+                  }
+                  // Handle other attributes as needed
+                }
+                objectList.add(span);
+                traceDTO.setSpanCount(String.valueOf(objectList.size()));
+                traceDTO.setSpans(objectList);
+              }
             }
-        }
-        
-          traceQueryRepo.persist(traceDTO);
+          }
+          traceDTOs.add(traceDTO);
+          // traceQueryRepo.persist(traceDTO);
           // System.out.println("TraceDto: " + traceDTO.toString());
         }
       }
