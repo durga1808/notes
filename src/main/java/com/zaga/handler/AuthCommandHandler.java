@@ -99,10 +99,9 @@ public class AuthCommandHandler {
 
   public Response getServiceList(final UserCredentials userCredentials) {
     try {
-      // java.util.List<ServiceListNew> serviceData = serviceListRepo
-      // .find("roles in ?1", userCredentials.getRoles())
-      // .list();
-      ServiceListNew serviceData = serviceListRepo.findMetricByServiceName("vendor-srv-2");
+      java.util.List<ServiceListNew> serviceData = serviceListRepo
+          .find("roles in ?1", userCredentials.getRoles())
+          .list();
       if (serviceData != null) {
         return Response.status(201).entity(serviceData).build();
       } else {
