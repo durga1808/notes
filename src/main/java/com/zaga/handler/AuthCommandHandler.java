@@ -102,6 +102,7 @@ public class AuthCommandHandler {
       java.util.List<ServiceListNew> serviceData = serviceListRepo
           .find("roles in ?1", userCredentials.getRoles())
           .list();
+          System.out.println("serviceData--------"+serviceData);
       if (serviceData != null) {
         return Response.status(201).entity(serviceData).build();
       } else {
