@@ -168,6 +168,7 @@ public class MetricCommandHandler {
 
     private void sendAlert(Map<String, String> alertPayload, String message) {
         alertPayload.put("alertMessage", message);
+        alertPayload.put("alertType", "metric");
         sessions.getSessions().forEach(session -> {
             try {
                 if (session == null) {

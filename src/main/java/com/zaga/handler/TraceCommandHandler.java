@@ -203,6 +203,7 @@ public class TraceCommandHandler {
 
   private void sendAlert(Map<String, String> alertPayload, String message) {
     alertPayload.put("alertMessage", message);
+    alertPayload.put("alertType", "trace");
     sessions.getSessions().forEach(session -> {
       try {
         if (session == null) {

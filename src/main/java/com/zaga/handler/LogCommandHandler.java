@@ -175,6 +175,7 @@ public class LogCommandHandler {
 
     private void sendAlert(Map<String, String> alertPayload, String message) {
         alertPayload.put("alertMessage", message);
+        alertPayload.put("alertType", "log");
         sessions.getSessions().forEach(session -> {
             try {
                 if (session == null) {
