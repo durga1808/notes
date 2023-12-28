@@ -28,13 +28,11 @@ public class Rule {
     // private LocalDateTime expiryDateTime;
 
     private String memoryConstraint;
-    @JsonbDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSX")
     private LocalDateTime expiryDateTime;
     private long duration;
     private double cpuLimit;
     private Integer memoryLimit;
     private String ruleType;
-    @JsonbDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSX")
     private LocalDateTime startDateTime;
     private String cpuConstraint;
     private String durationConstraint;

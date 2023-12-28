@@ -97,16 +97,16 @@ public class MetricCommandHandler {
                                 String cpuConstraint = sData.getCpuConstraint();
                                 switch (cpuConstraint) {
                                     case "greaterThan":
-                                        isCpuViolation = cpuUsage > cpuLimit;
+                                        isCpuViolation = cpuUsage > cpuLimitMilliCores;
                                         break;
                                     case "lessThan":
-                                        isCpuViolation = cpuUsage < cpuLimit;
+                                        isCpuViolation = cpuUsage < cpuLimitMilliCores;
                                         break;
                                     case "greaterThanOrEqual":
-                                        isCpuViolation = cpuUsage >= cpuLimit;
+                                        isCpuViolation = cpuUsage >= cpuLimitMilliCores;
                                         break;
                                     case "lessThanOrEqual":
-                                        isCpuViolation = cpuUsage <= cpuLimit;
+                                        isCpuViolation = cpuUsage <= cpuLimitMilliCores;
                                         break;
                                 }
                             
@@ -161,7 +161,6 @@ public class MetricCommandHandler {
                 }
             }
         } catch (Exception e) {
-            // Handle or log the exception appropriately
             System.out.println("ERROR " + e.getLocalizedMessage());
         }
     }
@@ -235,7 +234,6 @@ public class MetricCommandHandler {
 
                                 Integer memoryUsageInMb = (memoryUsage / (1024 * 1024));
 
-                                // Create a MetricDTO and add it to the list
                                 MetricDTO metricDTO = new MetricDTO();
                                 metricDTO.setMemoryUsage(memoryUsageInMb);
                                 metricDTO.setDate(createdTime);
@@ -249,15 +247,10 @@ public class MetricCommandHandler {
             }
 
             if (!metricDTOs.isEmpty()) {
-                // Only persist the last MetricDTO, outside the loop
                 metricDtoRepo.persist(metricDTOs.subList(metricDTOs.size() - 1, metricDTOs.size()));
 
-                // System.out.println("----Last MetricDTO----: " + metricDTOs);
-                // System.out.println("Last MetricDTO: " + metricDTOs.get(metricDTOs.size() -
-                // 1));
             }
         } catch (Exception e) {
-            // Handle exceptions here
         }
 
         return metricDTOs;
