@@ -19,7 +19,6 @@ import com.zaga.entity.otellog.ResourceLogs;
 import com.zaga.entity.otellog.ScopeLogs;
 import com.zaga.entity.otellog.scopeLogs.LogRecord;
 import com.zaga.entity.queryentity.log.LogDTO;
-import com.zaga.entity.queryentity.trace.TraceDTO;
 import com.zaga.kafka.websocket.WebsocketAlertProducer;
 import com.zaga.repo.LogCommandRepo;
 import com.zaga.repo.LogQueryRepo;
@@ -100,25 +99,33 @@ public class LogCommandHandler {
                             String traceId = logDTO.getTraceId();
                             System.out.println("Log Severity " + logDTO.getSeverityText());
 
-                            if (severityText != null && severityText != "") {
-                                if (sData.getSeverityText().contains(severityText) &&
-                                        currentDateTime.isAfter(startDateTime) &&
-                                        currentDateTime.isBefore(expiryDateTime)) {
+                            if (severityText != null && !severityText.isEmpty()) {
+                                boolean isSeverityViolation = false;
+                            
+                                String severityConstraint = sData.getSeverityConstraint();
+
+                                switch (severityConstraint) {
+                                    case "present":
+                                        isSeverityViolation = sData.getSeverityText().contains(severityText);
+                                        break;
+                                    case "notpresent":
+                                        isSeverityViolation = !sData.getSeverityText().contains(severityText);
+                                        break;
+                                }
+                            
+                                if (isSeverityViolation && currentDateTime.isAfter(startDateTime) && currentDateTime.isBefore(expiryDateTime)) {
                                     String serviceName = logDTO.getServiceName();
                                     int alertCount = alertCountMap.getOrDefault(serviceName, 0);
-
+                            
                                     String previousTraceId = previousTraceIdMap.getOrDefault(serviceName, "");
-
-                                    // Check if traceId changed from the previous log entry
+                            
                                     if (!traceId.equals(previousTraceId) && traceId != null && !traceId.isEmpty()) {
-                                        // Increment alert count only if traceId is different
                                         alertCount++;
-                                        previousTraceIdMap.put(serviceName, traceId); // Update previous traceId
+                                        previousTraceIdMap.put(serviceName, traceId); 
                                     }
-
+                            
                                     if (alertCount > 3) {
                                         System.out.println("Exceeded");
-                                        // Throw an alert as the count exceeds 3 for the same service
                                         sendAlert(new HashMap<>(), "Critical Severity Alert call exceeded for this service: " + serviceName);
                                     } else {
                                         System.out.println("Not Exceeded" + alertCount);
@@ -126,6 +133,37 @@ public class LogCommandHandler {
                                     }
                                 }
                             }
+                            
+
+                            // if (severityText != null && severityText != "") {
+                            //     if (sData.getSeverityText().contains(severityText) &&
+                            //             currentDateTime.isAfter(startDateTime) &&
+                            //             currentDateTime.isBefore(expiryDateTime)) {
+                            //         String serviceName = logDTO.getServiceName();
+                            //         int alertCount = alertCountMap.getOrDefault(serviceName, 0);
+
+                            //         String previousTraceId = previousTraceIdMap.getOrDefault(serviceName, "");
+
+                            //         // Check if traceId changed from the previous log entry
+                            //         if (!traceId.equals(previousTraceId) && traceId != null && !traceId.isEmpty()) {
+                            //             // Increment alert count only if traceId is different
+                            //             alertCount++;
+                            //             previousTraceIdMap.put(serviceName, traceId); // Update previous traceId
+                            //         }
+
+                            //         if (alertCount > 3) {
+                            //             System.out.println("Exceeded");
+                            //             // Throw an alert as the count exceeds 3 for the same service
+                            //             sendAlert(new HashMap<>(), "Critical Severity Alert call exceeded for this service: " + serviceName);
+                            //         } else {
+                            //             System.out.println("Not Exceeded" + alertCount);
+                            //             alertCountMap.put(serviceName, alertCount);
+                            //         }
+                            //     }
+                            // }
+
+
+
                         }
                     }
                 }

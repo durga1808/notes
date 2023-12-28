@@ -135,26 +135,63 @@ public class TraceCommandHandler {
               sData.setExpiryDateTime(expiryDateTime);
 
               Long duration = traceDTO.getDuration();
-              System.out.println("Trace duration " + traceDTO.getDuration());
-
+              System.out.println("Trace duration------------------" + traceDTO.getDuration());
               if (duration != null && duration != 0) {
-                if (duration >= sData.getDuration() &&
-                    currentDateTime.isAfter(startDateTime) &&
-                    currentDateTime.isBefore(expiryDateTime)) {
-                  String serviceName = traceDTO.getServiceName();
-                  int alertCount = alertCountMap.getOrDefault(serviceName, 0);
-                  alertCount++;
-
-                  if (alertCount > 3) {
-                    System.out.println("Exceeded");
-                    // Throw an alert as the count exceeds 3 for the same service
-                    sendAlert(new HashMap<>(), "Critical Alert - Duration " + traceDTO.getDuration() + " exceeded for this service: " + serviceName);
-                  } else {
-                    System.out.println("Not Exceeded" + alertCount);
-                    alertCountMap.put(serviceName, alertCount);
-                  }
+                boolean isDurationViolation = false;
+                long durationLimit = sData.getDuration();
+                String durationConstraint = sData.getDurationConstraint();
+            
+                switch (durationConstraint) {
+                    case "greaterThan":
+                        isDurationViolation = duration > durationLimit;
+                        break;
+                    case "lessThan":
+                        isDurationViolation = duration < durationLimit;
+                        break;
+                    case "greaterThanOrEqual":
+                        isDurationViolation = duration >= durationLimit;
+                        break;
+                    case "lessThanOrEqual":
+                        isDurationViolation = duration <= durationLimit;
+                        break;
                 }
-              }
+            
+                if (isDurationViolation && currentDateTime.isAfter(startDateTime) && currentDateTime.isBefore(expiryDateTime)) {
+                    String serviceName = traceDTO.getServiceName();
+                    int alertCount = alertCountMap.getOrDefault(serviceName, 0);
+                    alertCount++;
+                  
+
+                    if (alertCount > 3) {
+                        System.out.println("Exceeded");
+                        sendAlert(new HashMap<>(), "Critical Alert - Duration " + traceDTO.getDuration() + " exceeded for this service: " + serviceName);
+                    } else {
+                        System.out.println("Not Exceeded" + alertCount);
+                        alertCountMap.put(serviceName, alertCount);
+                    }
+                }
+            }
+            
+
+              // if (duration != null && duration != 0) {
+              //   if (duration >= sData.getDuration() &&
+              //       currentDateTime.isAfter(startDateTime) &&
+              //       currentDateTime.isBefore(expiryDateTime)) {
+              //     String serviceName = traceDTO.getServiceName();
+              //     int alertCount = alertCountMap.getOrDefault(serviceName, 0);
+              //     alertCount++;
+
+              //     if (alertCount > 3) {
+              //       System.out.println("Exceeded");
+              //       // Throw an alert as the count exceeds 3 for the same service
+              //       sendAlert(new HashMap<>(), "Critical Alert - Duration " + traceDTO.getDuration() + " exceeded for this service: " + serviceName);
+              //     } else {
+              //       System.out.println("Not Exceeded" + alertCount);
+              //       alertCountMap.put(serviceName, alertCount);
+              //     }
+              //   }
+              // }
+
             }
           }
         }

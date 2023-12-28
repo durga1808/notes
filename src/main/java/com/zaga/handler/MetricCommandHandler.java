@@ -1,9 +1,6 @@
 package com.zaga.handler;
 
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.Reader;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -15,9 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.bson.types.ObjectId;
-
-import com.google.gson.Gson;
 import com.zaga.entity.auth.Rule;
 import com.zaga.entity.auth.ServiceListNew;
 import com.zaga.entity.otelmetric.OtelMetric;
@@ -94,25 +88,74 @@ public class MetricCommandHandler {
 
                             Map<String, String> alertPayload = new HashMap<>();
 
-                            if (memoryUsage != null && memoryUsage != 0 && cpuUsage != null && cpuUsage != 0) {
-                                if (memoryUsage >= sData.getMemoryLimit() &&
-                                        currentDateTime.isAfter(startDateTime) &&
-                                        currentDateTime.isBefore(expiryDateTime)) {
-                                    // Handle Memory Usage exceeded limit
-                                    sendAlert(alertPayload, "Memory Usage " + memoryUsage + " peaked in this service "
-                                            + metricDTO.getServiceName());
+                            if (cpuUsage != null && memoryUsage != null && cpuUsage != 0 && memoryUsage != 0) {
+                                boolean isCpuViolation = false;
+                                boolean isMemoryViolation = false;
+                                double cpuLimit = sData.getCpuLimit();
+                                Integer memoryLimit = sData.getMemoryLimit();
+                                String memoryConstraint = sData.getMemoryConstraint();
+                                String cpuConstraint = sData.getCpuConstraint();
+                                switch (cpuConstraint) {
+                                    case "greaterThan":
+                                        isCpuViolation = cpuUsage > cpuLimit;
+                                        break;
+                                    case "lessThan":
+                                        isCpuViolation = cpuUsage < cpuLimit;
+                                        break;
+                                    case "greaterThanOrEqual":
+                                        isCpuViolation = cpuUsage >= cpuLimit;
+                                        break;
+                                    case "lessThanOrEqual":
+                                        isCpuViolation = cpuUsage <= cpuLimit;
+                                        break;
+                                }
+                            
+                                switch (memoryConstraint) {
+                                    case "greaterThan":
+                                        isMemoryViolation = memoryUsage > memoryLimit;
+                                        break;
+                                    case "lessThan":
+                                        isMemoryViolation = memoryUsage < memoryLimit;
+                                        break;
+                                    case "greaterThanOrEqual":
+                                        isMemoryViolation = memoryUsage >= memoryLimit;
+                                        break;
+                                    case "lessThanOrEqual":
+                                        isMemoryViolation = memoryUsage <= memoryLimit;
+                                        break;
+                                }
+                            
+                                if (isCpuViolation && currentDateTime.isAfter(startDateTime) && currentDateTime.isBefore(expiryDateTime)) {
+                                    System.out.println("OUT");
+                                    sendAlert(alertPayload, "CPU Usage " + Math.ceil(cpuLimit) + " peaked in this service " + metricDTO.getServiceName());
+                                }
+                            
+                                if (isMemoryViolation && currentDateTime.isAfter(startDateTime) && currentDateTime.isBefore(expiryDateTime)) {
+                                    System.out.println("OUT");
+                                    sendAlert(alertPayload, "Memory Usage " + memoryUsage + " peaked in this service " + metricDTO.getServiceName());
                                 }
                             }
+                            
 
-                            if (cpuUsage != null && cpuUsage != 0 && memoryUsage != null && memoryUsage != 0) {
-                                if (cpuUsage >= cpuLimitMilliCores &&
-                                        currentDateTime.isAfter(startDateTime) &&
-                                        currentDateTime.isBefore(expiryDateTime)) {
-                                    // Handle CPU Usage exceeded limit
-                                    sendAlert(alertPayload, "CPU Usage " + Math.ceil(cpuLimitMilliCores)
-                                            + "  peaked in this service " + metricDTO.getServiceName());
-                                }
-                            }
+                            // if (memoryUsage != null && memoryUsage != 0 && cpuUsage != null && cpuUsage != 0) {
+                            //     if (memoryUsage >= sData.getMemoryLimit() &&
+                            //             currentDateTime.isAfter(startDateTime) &&
+                            //             currentDateTime.isBefore(expiryDateTime)) {
+                            //         // Handle Memory Usage exceeded limit
+                            //         sendAlert(alertPayload, "Memory Usage " + memoryUsage + " peaked in this service "
+                            //                 + metricDTO.getServiceName());
+                            //     }
+                            // }
+
+                            // if (cpuUsage != null && cpuUsage != 0 && memoryUsage != null && memoryUsage != 0) {
+                            //     if (cpuUsage >= cpuLimitMilliCores &&
+                            //             currentDateTime.isAfter(startDateTime) &&
+                            //             currentDateTime.isBefore(expiryDateTime)) {
+                            //         // Handle CPU Usage exceeded limit
+                            //         sendAlert(alertPayload, "CPU Usage " + Math.ceil(cpuLimitMilliCores)
+                            //                 + "  peaked in this service " + metricDTO.getServiceName());
+                            //     }
+                            // }
                         }
                     }
                 }

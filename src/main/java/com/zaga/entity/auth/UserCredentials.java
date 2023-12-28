@@ -27,4 +27,5 @@ public class UserCredentials extends PanacheMongoEntity {
     private String password;
     @JsonbNillable
     private List<String> roles;
+    private List<Environments> environments;
 }

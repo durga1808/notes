@@ -1,7 +1,6 @@
 package com.zaga.controller;
 
 import com.zaga.entity.auth.UserCredentials;
-import com.zaga.entity.auth.ServiceList;
 import com.zaga.entity.auth.ServiceListNew;
 import com.zaga.handler.AuthCommandHandler;
 import com.zaga.repo.AuthRepo;
@@ -22,6 +21,7 @@ public class AuthController {
 
     @Inject
     AuthRepo repo;
+
 
     @POST
     @Path("/login")
@@ -87,6 +87,7 @@ public class AuthController {
         }
     }
 
+  
     @POST
     @Path("/getServiceList")
     @Produces(MediaType.APPLICATION_JSON)
@@ -99,6 +100,9 @@ public class AuthController {
             return Response.serverError().build();
         }
     }
+
+
+
 
     // @POST
     // @Path("/forgotPassword")

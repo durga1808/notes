@@ -1,7 +1,6 @@
 package com.zaga.handler;
 
 import com.zaga.entity.auth.UserCredentials;
-import com.zaga.entity.auth.ServiceList;
 import com.zaga.entity.auth.ServiceListNew;
 import com.zaga.repo.AuthRepo;
 import com.zaga.repo.ServiceListRepo;
@@ -40,11 +39,13 @@ public class AuthCommandHandler {
   }
 
   public Response saveUserInfo(final UserCredentials credentials) {
+    System.out.println("----------------Saving user info just enttered---------------");
     try {
       UserCredentials userCreds = authRepo
           .find("username = ?1", credentials.getUsername())
           .firstResult();
       if (userCreds == null) {
+        System.out.println("userCredentials--------------------"+userCreds);
         authRepo.persist(credentials);
         return Response
             .status(201)
