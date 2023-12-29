@@ -100,18 +100,21 @@ public class KeplerMetricCommandHandler {
 
   public void createKeplerMetric(KeplerMetric metric) {
     keplerMetricRepo.persist(metric);
-
+    System.out.println("Entered=----------------------------------");
     List<KeplerMetricDTO> metricDTOs = extractAndMapData(metric);
 
     if (!metricDTOs.isEmpty()) {
+      
+                System.out.println("keplerMetricDTO-------------"+metricDTOs.size());
       for (KeplerMetricDTO keplerMetDTO : metricDTOs) {
         KeplerMetricDTORepo.persist(keplerMetDTO);
+
       }
-      System.out.println("keplerMetric DTO Count: " + metricDTOs.size());
     }
   }
 
   public List<KeplerMetricDTO> extractAndMapData(KeplerMetric keplerMetric) {
+        System.out.println("DTO creation=----------------------------------");
     List<KeplerMetricDTO> keplerMetricDTOLst = new ArrayList<>();
 
     List<ResourceMetric> resourceMetrics = keplerMetric.getResourceMetrics();
@@ -355,6 +358,7 @@ public class KeplerMetricCommandHandler {
         keplerMetricDTO.setServiceName(
             keys.toString().isEmpty() ? metricName : keys.toString());
 
+            System.out.println("keplerMetricDTO--------"+keplerMetricDTO);
         // Add the new KeplerMetricDTO to the map
         podNameToDTO.put(podName, keplerMetricDTO);
       }
@@ -365,10 +369,10 @@ public class KeplerMetricCommandHandler {
       String podName1 = entry.getKey();
       KeplerMetricDTO dto = entry.getValue();
 
-      // System.out.println("Pod Name: " + podName1);
+      System.out.println("Pod Name: " + podName1);
       keplerMetricDTOList.add(dto);
+      System.out.println("----------------------------------");
     }
-          // System.out.println("----------------------------------");
 
     return keplerMetricDTOList;
   }
@@ -381,7 +385,7 @@ public class KeplerMetricCommandHandler {
 
     KeplerMetricDTO keplerMetricDTO = new KeplerMetricDTO();
 
-    // System.out.println("METRIC: " + metricName);
+    System.out.println("METRIC: " + metricName);
     for (KeplerMetricsNames metricsEnum : KeplerMetricsNames.values()) {
       String matchName = metricsEnum.toString();
       String typeName = metricsEnum.getMetricsName();
@@ -392,15 +396,15 @@ public class KeplerMetricCommandHandler {
         // System.out.println("CONTAINER " + metricsEnum);
         // keplerMetricDTO.setType(type);
         if (typeName.startsWith("CONT")) {
-          // System.out.println("CONTAINER " + metricsEnum);
+          System.out.println("CONTAINER " + metricsEnum);
           keplerMetricDTO.setType("container");
           type = "pod";
         } else if (typeName.startsWith("HOST")) {
-          // System.out.println("HOST " + metricsEnum);
+          System.out.println("HOST " + metricsEnum);
           keplerMetricDTO.setType("host");
           type = "host";
         } else if (typeName.startsWith("NODE")) {
-          // System.out.println("NODE " + metricsEnum);
+          System.out.println("NODE " + metricsEnum);
           keplerMetricDTO.setType("node");
           type = "node";
         }
@@ -450,7 +454,7 @@ public class KeplerMetricCommandHandler {
 
       if (dobulevle != null) {
         usage = Double.parseDouble(dobulevle);
-        // System.out.println("Usage: -----------------" + usage);
+        System.out.println("Usage: -----------------" + usage);
       }
 
       String startTimeStm = gaugeDataPoint.getTimeUnixNano();

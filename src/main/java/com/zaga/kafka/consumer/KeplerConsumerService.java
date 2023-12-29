@@ -24,6 +24,7 @@ public class KeplerConsumerService {
 
     @Incoming("kepler-in")
     public void consumeKeplerDetails(KeplerMetric keplerMetric) {
+      
 
         if (keplerMetric != null) {
             System.out.println("consumed Kepler data ------------------");
