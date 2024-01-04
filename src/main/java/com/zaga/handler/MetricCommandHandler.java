@@ -81,9 +81,9 @@ public class MetricCommandHandler {
 
                             LocalDateTime expiryDateTime = LocalDateTime.parse(expiryDateTimeString, FORMATTER);
                             sData.setExpiryDateTime(expiryDateTime);
-
+                            Double cpuLimit = sData.getCpuLimit();
                             Double cpuUsage = metricDTO.getCpuUsage();
-                            Double cpuLimitMilliCores = sData.getCpuLimit() * 1000;
+                            Double cpuLimitMilliCores = cpuLimit * 1000;
                             Integer memoryUsage = metricDTO.getMemoryUsage();
 
                             Map<String, String> alertPayload = new HashMap<>();
@@ -91,10 +91,11 @@ public class MetricCommandHandler {
                             if (cpuUsage != null && memoryUsage != null && cpuUsage != 0 && memoryUsage != 0) {
                                 boolean isCpuViolation = false;
                                 boolean isMemoryViolation = false;
-                                double cpuLimit = sData.getCpuLimit();
+                                // double cpuLimit = sData.getCpuLimit();
                                 Integer memoryLimit = sData.getMemoryLimit();
                                 String memoryConstraint = sData.getMemoryConstraint();
                                 String cpuConstraint = sData.getCpuConstraint();
+                            
                                 switch (cpuConstraint) {
                                     case "greaterThan":
                                         isCpuViolation = cpuUsage > cpuLimitMilliCores;
@@ -127,13 +128,21 @@ public class MetricCommandHandler {
                             
                                 if (isCpuViolation && currentDateTime.isAfter(startDateTime) && currentDateTime.isBefore(expiryDateTime)) {
                                     System.out.println("OUT");
-                                    sendAlert(alertPayload, "CPU Usage " + Math.ceil(cpuLimit) + " peaked in this service " + metricDTO.getServiceName());
+                                    String cpuSeverity = calculateSeverity(cpuUsage, cpuLimitMilliCores);
+                                    System.out.println(cpuSeverity + " Alert - CPU Usage " + Math.ceil(cpuUsage) + " peaked in this service " + metricDTO.getServiceName());
+                                    sendAlert(alertPayload,"" + cpuSeverity + "- CPU Usage " + Math.ceil(cpuLimitMilliCores)
+                                            + "  peaked in this service " + metricDTO.getServiceName());
+                                    System.out.println("peaked in this service------------ " + alertPayload);
                                 }
                             
                                 if (isMemoryViolation && currentDateTime.isAfter(startDateTime) && currentDateTime.isBefore(expiryDateTime)) {
                                     System.out.println("OUT");
-                                    sendAlert(alertPayload, "Memory Usage " + memoryUsage + " peaked in this service " + metricDTO.getServiceName());
+                                    String memorySeverity = calculateSeverity(memoryUsage, memoryLimit);
+                                sendAlert(alertPayload,"" + memorySeverity + " - Memory Usage " + memoryUsage + " peaked in this service "
+                                            + metricDTO.getServiceName() + "at" + metricDTO.getDate());
+                                    System.out.println(memorySeverity + " Alert - Memory Usage " + memoryUsage + " peaked in this service " + metricDTO.getServiceName());
                                 }
+                                
                             }
                             
 
@@ -157,14 +166,30 @@ public class MetricCommandHandler {
                             //     }
                             // }
                         }
+                        
                     }
+                    
                 }
+                
             }
+            
         } catch (Exception e) {
             System.out.println("ERROR " + e.getLocalizedMessage());
         }
     }
 
+public String calculateSeverity(double actualUsage, double limit) {
+                                double percentageExceeded = ((actualUsage - limit) / limit) * 100;
+                            
+                                if (percentageExceeded > 50) {
+                                    return "Critical Alert";
+                                    
+                                } else if (percentageExceeded >= 5 && percentageExceeded <= 15) {
+                                    return "Medium Alert";
+                                } else {
+                                    return "Low Alert";
+                                }
+                            }
     private void sendAlert(Map<String, String> alertPayload, String message) {
         alertPayload.put("alertMessage", message);
         alertPayload.put("alertType", "metric");
@@ -173,6 +198,7 @@ public class MetricCommandHandler {
                 if (session == null) {
                     System.out.println("No session");
                 } else {
+                    System.out.println("Message sent to session " + session);
                     session.getBasicRemote().sendObject(alertPayload);
                     System.out.println("Message Metric sent");
                 }

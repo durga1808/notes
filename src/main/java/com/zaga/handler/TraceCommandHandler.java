@@ -160,11 +160,23 @@ public class TraceCommandHandler {
                     String serviceName = traceDTO.getServiceName();
                     int alertCount = alertCountMap.getOrDefault(serviceName, 0);
                     alertCount++;
-                  
-
+            
+                    double percentageExceeded = ((double) (duration - durationLimit) / durationLimit) * 100;
+            
                     if (alertCount > 3) {
                         System.out.println("Exceeded");
-                        sendAlert(new HashMap<>(), "Critical Alert - Duration " + traceDTO.getDuration() + " exceeded for this service: " + serviceName);
+                        String severity;
+                        if (percentageExceeded > 50) {
+                            severity = "Critical Alert";
+                        } else if (percentageExceeded >= 5 && percentageExceeded <= 15) {
+                            severity = "Medium Alert";
+                        } else {
+                            severity = "Low Alert";
+                        }
+                        System.out.println(severity + " - Duration " + traceDTO.getDuration() + " exceeded for this service: " + serviceName);
+
+                        sendAlert(new HashMap<>(), severity + " - Duration " + traceDTO.getDuration() + " exceeded for this service: " + serviceName);
+                        System.out.println("sl");
                     } else {
                         System.out.println("Not Exceeded" + alertCount);
                         alertCountMap.put(serviceName, alertCount);

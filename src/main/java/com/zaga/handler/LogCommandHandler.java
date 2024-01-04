@@ -101,40 +101,55 @@ public class LogCommandHandler {
 
                             if (severityText != null && !severityText.isEmpty()) {
                                 boolean isSeverityViolation = false;
-                            
+                                List<String> severityPresent = sData.getSeverityText();
                                 String severityConstraint = sData.getSeverityConstraint();
 
                                 switch (severityConstraint) {
                                     case "present":
-                                        isSeverityViolation = sData.getSeverityText().contains(severityText);
+                                        isSeverityViolation = severityPresent.contains(severityText);
                                         break;
                                     case "notpresent":
-                                        isSeverityViolation = !sData.getSeverityText().contains(severityText);
+                                        isSeverityViolation = severityPresent.contains(severityText);
                                         break;
                                 }
                             
                                 if (isSeverityViolation && currentDateTime.isAfter(startDateTime) && currentDateTime.isBefore(expiryDateTime)) {
                                     String serviceName = logDTO.getServiceName();
                                     int alertCount = alertCountMap.getOrDefault(serviceName, 0);
-                            
+                                
                                     String previousTraceId = previousTraceIdMap.getOrDefault(serviceName, "");
-                            
-                                    if (!traceId.equals(previousTraceId) && traceId != null && !traceId.isEmpty()) {
+                                
+                                    if (!traceId.equals(previousTraceId) && (traceId != null && !traceId.isEmpty()) || severityText== "ERROR" || severityText=="SEVERE") {                                            
                                         alertCount++;
-                                        previousTraceIdMap.put(serviceName, traceId); 
+                                        previousTraceIdMap.put(serviceName, traceId);
+                                    } else {
+                                        System.out.println("Alert count is not incremented------------------");
                                     }
-                            
-                                    if (alertCount > 3) {
+                                    System.out.println("alertCount: " + alertCount);
+                                
+                                    if (alertCount >= 2) { 
                                         System.out.println("Exceeded");
-                                        sendAlert(new HashMap<>(), "Critical Severity Alert call exceeded for this service: " + serviceName);
+                                        double percentageExceeded = ((double) (alertCount - 1) / 1) * 100;
+                                
+                                        String severity;
+                                        if (percentageExceeded > 50) {
+                                            severity = "Critical Alert";
+                                        } else if (percentageExceeded >= 5 && percentageExceeded <= 15) {
+                                            severity = "Medium Alert";
+                                        } else {
+                                            severity = "Low Alert";
+                                        }
+                                
+                                        System.out.println(severity + " - Log call exceeded for this service: " + serviceName);
+                                        // Optionally send the alert here or perform other actions based on severity
+                                        sendAlert(new HashMap<>(), severity + " - Log call exceeded for this service: " + serviceName);
                                     } else {
                                         System.out.println("Not Exceeded" + alertCount);
                                         alertCountMap.put(serviceName, alertCount);
                                     }
                                 }
-                            }
-                            
-
+                            }                                
+                                
                             // if (severityText != null && severityText != "") {
                             //     if (sData.getSeverityText().contains(severityText) &&
                             //             currentDateTime.isAfter(startDateTime) &&

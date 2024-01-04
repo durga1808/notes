@@ -192,7 +192,7 @@
               "flags": 1,
               "observedTimeUnixNano": "1703146666278932000",
               "severityNumber": 9,
-              "severityText": "INFO",
+              "severityText": "ERROR",
               "spanId": "64347688693de4b8",
               "timeUnixNano": "1703146666278917000",
               "traceId": "fb5fdc87a61f215882bab819132e676c"
@@ -219,7 +219,7 @@
               "flags": 1,
               "observedTimeUnixNano": "1703146666260157000",
               "severityNumber": 9,
-              "severityText": "INFO",
+              "severityText": "ERROR",
               "spanId": "64347688693de4b8",
               "timeUnixNano": "1703146666260147000",
               "traceId": "fb5fdc87a61f215882bab819132e676c"
@@ -239,7 +239,7 @@
               "flags": 1,
               "observedTimeUnixNano": "1703146666279661000",
               "severityNumber": 9,
-              "severityText": "INFO",
+              "severityText": "ERROR",
               "spanId": "64347688693de4b8",
               "timeUnixNano": "1703146666279656000",
               "traceId": "fb5fdc87a61f215882bab819132e676c"

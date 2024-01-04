@@ -1,12 +1,10 @@
 package com.zaga.kafka.consumer;
 
-import com.google.gson.Gson;
 import com.zaga.entity.otelmetric.OtelMetric;
 import com.zaga.handler.MetricCommandHandler;
 
 import jakarta.inject.Inject;
 
-import java.io.File;
 
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 
@@ -15,7 +13,7 @@ public class MetricConsumerService {
   @Inject
   MetricCommandHandler metricCommandHandler;
 
-  // @Incoming("metric-in")
+  @Incoming("metric-in")
   public void consumeMetricDetails(OtelMetric metrics) {
     // System.out.println("consumer++++++++++++++" + metrics);
     if (metrics != null) {
@@ -26,9 +24,9 @@ public class MetricConsumerService {
   }
 
   public static void main(String[] args) {
-    Gson gson = new Gson();
+    // Gson gson = new Gson();
 
-    File file = new File("./src/main/java/com/zaga/kafka/consumer/MetricSample.json");
+    // File file = new File("./src/main/java/com/zaga/kafka/consumer/MetricSample.json");
 
     // try (Reader reader1 = new FileReader(file)) {
 
