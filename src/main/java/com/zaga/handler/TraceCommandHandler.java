@@ -48,6 +48,7 @@ public class TraceCommandHandler {
   private Map<String, Integer> alertCountMap = new HashMap<>();
 
   public void createTraceProduct(OtelTrace trace) {
+     traceCommandRepo.persist(trace);
     List<TraceDTO> traceDTOs = extractAndMapData(trace);
     ServiceListNew serviceListNew = new ServiceListNew();
     for (TraceDTO traceDTOSingle : traceDTOs) {
@@ -354,7 +355,7 @@ public class TraceCommandHandler {
             }
           }
           traceDTOs.add(traceDTO);
-          // traceQueryRepo.persist(traceDTO);
+          traceQueryRepo.persist(traceDTO);
           // System.out.println("TraceDto: " + traceDTO.toString());
         }
       }

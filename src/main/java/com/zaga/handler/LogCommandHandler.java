@@ -49,7 +49,7 @@ public class LogCommandHandler {
     private Map<String, String> previousTraceIdMap = new HashMap<>();
 
     public void createLogProduct(OtelLog logs) {
-        // logCommandRepo.persist(logs);
+        logCommandRepo.persist(logs);
         List<LogDTO> logDTOs = marshalLogData(logs);
         System.out.println("log sizes" + logDTOs.size());
 
@@ -245,7 +245,7 @@ public class LogCommandHandler {
             }
 
             if (!logDTOs.isEmpty()) {
-                // logQueryRepo.persist(logDTOs);
+                logQueryRepo.persist(logDTOs);
                 return logDTOs;
             }
 
