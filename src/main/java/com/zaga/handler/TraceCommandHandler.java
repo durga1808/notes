@@ -166,12 +166,14 @@ public class TraceCommandHandler {
                     if (alertCount > 3) {
                         System.out.println("Exceeded");
                         String severity;
-                        if (percentageExceeded > 50) {
+                        if (percentageExceeded > 80) {
                             severity = "Critical Alert";
-                        } else if (percentageExceeded >= 5 && percentageExceeded <= 15) {
+                        } else if (percentageExceeded >= 50 && percentageExceeded <= 80) {
                             severity = "Medium Alert";
-                        } else {
+                        } else if(percentageExceeded >= 5 && percentageExceeded <= 15){
                             severity = "Low Alert";
+                        }else {
+                          severity = "No Alert";
                         }
                         System.out.println(severity + " - Duration " + traceDTO.getDuration() + " exceeded for this service: " + serviceName);
 

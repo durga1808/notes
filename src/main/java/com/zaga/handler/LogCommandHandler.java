@@ -132,12 +132,14 @@ public class LogCommandHandler {
                                         double percentageExceeded = ((double) (alertCount - 1) / 1) * 100;
                                 
                                         String severity;
-                                        if (percentageExceeded > 50) {
+                                        if (percentageExceeded > 80) {
                                             severity = "Critical Alert";
-                                        } else if (percentageExceeded >= 5 && percentageExceeded <= 15) {
+                                        } else if (percentageExceeded >= 50 && percentageExceeded <= 80) {
                                             severity = "Medium Alert";
-                                        } else {
+                                        } else if (percentageExceeded >= 5 && percentageExceeded <= 15){
                                             severity = "Low Alert";
+                                        } else{
+                                            severity = "No Alert";
                                         }
                                 
                                         System.out.println(severity + " - Log call exceeded for this service: " + serviceName);

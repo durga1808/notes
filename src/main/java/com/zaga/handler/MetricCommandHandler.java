@@ -181,13 +181,15 @@ public class MetricCommandHandler {
 public String calculateSeverity(double actualUsage, double limit) {
                                 double percentageExceeded = ((actualUsage - limit) / limit) * 100;
                             
-                                if (percentageExceeded > 50) {
+                                if (percentageExceeded > 80) {
                                     return "Critical Alert";
                                     
-                                } else if (percentageExceeded >= 5 && percentageExceeded <= 15) {
+                                } else if (percentageExceeded >= 50 && percentageExceeded <= 80) {
                                     return "Medium Alert";
-                                } else {
+                                } else if(percentageExceeded >= 5 && percentageExceeded <= 15){
                                     return "Low Alert";
+                                } else{
+                                    return "No Alert";
                                 }
                             }
     private void sendAlert(Map<String, String> alertPayload, String message) {
