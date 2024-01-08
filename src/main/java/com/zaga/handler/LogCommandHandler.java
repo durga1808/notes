@@ -49,7 +49,7 @@ public class LogCommandHandler {
     private Map<String, String> previousTraceIdMap = new HashMap<>();
 
     public void createLogProduct(OtelLog logs) {
-        // logCommandRepo.persist(logs);
+        logCommandRepo.persist(logs);
         List<LogDTO> logDTOs = marshalLogData(logs);
         System.out.println("log sizes" + logDTOs.size());
 
@@ -68,7 +68,7 @@ public class LogCommandHandler {
 
         if (!serviceListNew.equals(null)) {
             for (LogDTO logDto : logDTOs) {
-                System.out.println("Log DTO's " + logDto);
+                // System.out.println("Log DTO's " + logDto);
                 processRuleManipulation(logDto, serviceListNew);
             }
         }
@@ -233,9 +233,9 @@ public class LogCommandHandler {
 
                         logDTO.setScopeLogs(Collections.singletonList(newScopeLogs));
 
-                        System.out.println("Log Data DTo " + logDTO);
+                        // System.out.println("Log Data DTo " + logDTO);
                         logDTOs.add(logDTO);
-                        // logQueryRepo.persist(logDTO);
+                        logQueryRepo.persist(logDTO);
 
                     }
 
