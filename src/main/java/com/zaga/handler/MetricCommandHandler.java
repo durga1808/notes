@@ -55,24 +55,36 @@ public class MetricCommandHandler {
         List<MetricDTO> metricDTOs = extractAndMapData(metrics);
         ServiceListNew serviceListData1 = new ServiceListNew();
         for (MetricDTO metricDTOSingle : metricDTOs) {
+            System.out.println("The metric rule fetching from the data base");
             serviceListData1 = serviceListRepo.find("serviceName = ?1", metricDTOSingle.getServiceName()).firstResult();
+
+            System.out.println("The metric rule fetched from the data base"+serviceListData1);
             break;
         }
         for (MetricDTO metricDTO : metricDTOs) {
+            System.out.println("The Process rule entered");
             processRuleManipulation(metricDTO, serviceListData1);
         }
         System.out.println("---------MetricDTOs:---------- " + metricDTOs.size());
     }
 
     public void processRuleManipulation(MetricDTO metricDTO, ServiceListNew serviceListData) {
+
+                    System.out.println("The Process rule is triggered "+serviceListData);
         LocalDateTime currentDateTime = LocalDateTime.now();
         try {
+            System.out.println("the try block entered");
             if (!serviceListData.getRules().isEmpty()) {
+                System.out.println("the serviceLisData is not emoty"+serviceListData.getRules());
+
                 for (Rule sData : serviceListData.getRules()) {
+                    System.out.println("The rule execution is triggered"+sData);
                     if ("metric".equals(sData.getRuleType())) {
+                    System.out.println("The rule execution is triggered"+sData.getRuleType());
                         LocalDateTime startDate = sData.getStartDateTime();
                         LocalDateTime expiryDate = sData.getExpiryDateTime();
                         if (startDate != null && expiryDate != null) {
+                            System.out.println("The startData and expiryDat are not null"+startDate + expiryDate);
                             String startDateTimeString = startDate.format(FORMATTER);
                             String expiryDateTimeString = expiryDate.format(FORMATTER);
 
@@ -89,6 +101,8 @@ public class MetricCommandHandler {
                             Map<String, String> alertPayload = new HashMap<>();
 
                             if (cpuUsage != null && memoryUsage != null && cpuUsage != 0 && memoryUsage != 0) {
+                                System.out.println("The CPU Usage and MEMROY USSAGE"+cpuUsage + memoryUsage);
+                                System.out.println("The checking the rule -----------------------------------"+sData);
                                 boolean isCpuViolation = false;
                                 boolean isMemoryViolation = false;
                                 // double cpuLimit = sData.getCpuLimit();
@@ -97,6 +111,7 @@ public class MetricCommandHandler {
                                 String cpuConstraint = sData.getCpuConstraint();
                             
                                 switch (cpuConstraint) {
+                                
                                     case "greaterThan":
                                         isCpuViolation = cpuUsage > cpuLimitMilliCores;
                                         break;

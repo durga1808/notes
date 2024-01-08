@@ -56,8 +56,11 @@ public class LogCommandHandler {
         ServiceListNew serviceListNew = new ServiceListNew();
         for (LogDTO logDTOSingle : logDTOs) {
             try {
+                System.out.println("The log service rule getting from database");
                 serviceListNew = serviceListRepo.find("serviceName = ?1", logDTOSingle.getServiceName())
+                
                         .firstResult();
+                                        System.out.println("The log service rule gotten from database");
                 break;
             } catch (Exception e) {
                 System.out.println("ERROR " + e.getLocalizedMessage());
@@ -67,6 +70,7 @@ public class LogCommandHandler {
         System.out.println("Log DTO size " + logDTOs.size());
 
         if (!serviceListNew.equals(null)) {
+            System.out.println("The log rule is entered");
             for (LogDTO logDto : logDTOs) {
                 System.out.println("Log DTO's " + logDto);
                 processRuleManipulation(logDto, serviceListNew);
@@ -81,6 +85,7 @@ public class LogCommandHandler {
 
         try {
             if (!serviceListNew.getRules().isEmpty()) {
+                System.out.println("the rules are empty");
                 for (Rule sData : serviceListNew.getRules()) {
                     if ("log".equals(sData.getRuleType())) {
                         LocalDateTime startDate = sData.getStartDateTime();
