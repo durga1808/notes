@@ -139,12 +139,12 @@ public class LogCommandHandler {
                                         } else if (percentageExceeded >= 5 && percentageExceeded <= 15){
                                             severity = "Low Alert";
                                         } else{
-                                            severity = "No Alert";
+                                            severity = "Low Alert";
                                         }
                                 
                                         System.out.println(severity + " - Log call exceeded for this service: " + serviceName);
                                         // Optionally send the alert here or perform other actions based on severity
-                                        sendAlert(new HashMap<>(), severity + " - Log call exceeded for this service: " + serviceName);
+                                        sendAlert(new HashMap<>(), severity + " - Log call exceeded for this service: " + serviceName + "at" + logDTO.getCreatedTime());
                                     } else {
                                         System.out.println("Not Exceeded" + alertCount);
                                         alertCountMap.put(serviceName, alertCount);

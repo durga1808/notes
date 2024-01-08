@@ -174,11 +174,11 @@ public class TraceCommandHandler {
                         } else if(percentageExceeded >= 5 && percentageExceeded <= 15){
                             severity = "Low Alert";
                         }else {
-                          severity = "No Alert";
+                          severity = "Low Alert";
                         }
                         System.out.println(severity + " - Duration " + traceDTO.getDuration() + " exceeded for this service: " + serviceName);
 
-                        sendAlert(new HashMap<>(), severity + " - Duration " + traceDTO.getDuration() + " exceeded for this service: " + serviceName);
+                        sendAlert(new HashMap<>(), severity + " - Duration " + traceDTO.getDuration() + " exceeded for this service: " + serviceName + "at" + traceDTO.getCreatedTime());
                         System.out.println("sl");
                     } else {
                         System.out.println("Not Exceeded" + alertCount);

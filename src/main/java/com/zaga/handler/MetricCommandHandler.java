@@ -131,7 +131,7 @@ public class MetricCommandHandler {
                                     String cpuSeverity = calculateSeverity(cpuUsage, cpuLimitMilliCores);
                                     System.out.println(cpuSeverity + " Alert - CPU Usage " + Math.ceil(cpuUsage) + " peaked in this service " + metricDTO.getServiceName());
                                     sendAlert(alertPayload,"" + cpuSeverity + "- CPU Usage " + Math.ceil(cpuLimitMilliCores)
-                                            + "  peaked in this service " + metricDTO.getServiceName());
+                                            + "  peaked in this service " + metricDTO.getServiceName() + "at" + metricDTO.getDate());
                                     System.out.println("peaked in this service------------ " + alertPayload);
                                 }
                             
@@ -189,7 +189,7 @@ public String calculateSeverity(double actualUsage, double limit) {
                                 } else if(percentageExceeded >= 5 && percentageExceeded <= 15){
                                     return "Low Alert";
                                 } else{
-                                    return "No Alert";
+                                    return "Low Alert";
                                 }
                             }
     private void sendAlert(Map<String, String> alertPayload, String message) {
