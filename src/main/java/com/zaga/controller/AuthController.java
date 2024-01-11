@@ -36,6 +36,19 @@ public class AuthController {
         }
     }
 
+    // @POST
+    // @Path("/getClusterInfo")
+    // @Produces(MediaType.APPLICATION_JSON)
+    // public Response getClusterInfo(final UserCredentials credentials){
+    //        try {
+    //         Response response = authCommandHandler.getClusterInfo(credentials);
+    //         return response;
+    //     } catch (Exception e) {
+    //         e.printStackTrace();
+    //         return Response.serverError().build();
+    //     }
+    // }
+
     @POST
     @Path("/register")
     public Response saveUserData(final UserCredentials credentials) {

@@ -1,6 +1,13 @@
 package com.zaga.handler;
 
 import com.zaga.entity.auth.UserCredentials;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
+
+import com.mongodb.MongoWriteException;
+import com.zaga.entity.auth.Environments;
 import com.zaga.entity.auth.ServiceListNew;
 import com.zaga.repo.AuthRepo;
 import com.zaga.repo.ServiceListRepo;
@@ -38,30 +45,91 @@ public class AuthCommandHandler {
     }
   }
 
-  public Response saveUserInfo(final UserCredentials credentials) {
-    System.out.println("----------------Saving user info just enttered---------------");
-    try {
-      UserCredentials userCreds = authRepo
-          .find("username = ?1", credentials.getUsername())
-          .firstResult();
-      if (userCreds == null) {
-        System.out.println("userCredentials--------------------"+userCreds);
+
+
+
+
+  
+
+
+public Response saveUserInfo(final UserCredentials credentials) {
+    System.out.println("----------------Saving user info just entered---------------");
+
+    UserCredentials existingUser = authRepo
+            .find("username", credentials.getUsername())
+            .firstResult();
+
+    if (existingUser != null) {
+        // User already exists, append the new environments to the existing user
+        System.out.println("User found. Appending new environments.");
+
+        AtomicReference<List<Environments>> existingEnvironments = new AtomicReference<>(
+                existingUser.getEnvironments() != null ? new ArrayList<>(existingUser.getEnvironments()) : new ArrayList<>()
+        );
+
+        // Increment clusterId for each new environment
+        credentials.getEnvironments().forEach(environment -> {
+            Long maxClusterId = existingEnvironments.get().stream()
+                    .map(Environments::getClusterId)
+                    .max(Long::compare)
+                    .orElse(0L);
+            environment.setClusterId(maxClusterId + 1);
+        });
+
+        existingEnvironments.get().addAll(credentials.getEnvironments());
+        existingUser.setEnvironments(existingEnvironments.get());
+
+        authRepo.update(existingUser);  // Update the existing user
+        System.out.println("User environments updated successfully.");
+        return Response
+                .status(200)
+                .entity("User environments updated successfully")
+                .build();
+    } else {
+        // User does not exist, persist the new user
+        System.out.println("User credentials not found. Registering a new user.");
+
+        AtomicReference<List<Environments>> existingEnvironments = new AtomicReference<>(
+                credentials.getEnvironments() != null ? new ArrayList<>(credentials.getEnvironments()) : new ArrayList<>()
+        );
+
+        // Increment clusterId for each new environment
+        credentials.getEnvironments().forEach(environment -> {
+            Long maxClusterId = existingEnvironments.get().stream()
+                    .map(Environments::getClusterId)
+                    .max(Long::compare)
+                    .orElse(0L);
+            environment.setClusterId(maxClusterId + 1);
+        });
+
         authRepo.persist(credentials);
         return Response
-            .status(201)
-            .entity("User registered successfully")
-            .build();
-      } else {
-        return Response
-            .status(Response.Status.NOT_FOUND)
-            .entity("User Already exists")
-            .build();
-      }
-    } catch (Exception e) {
-      e.printStackTrace();
-      return null;
+                .status(201)
+                .entity("User registered successfully")
+                .build();
     }
-  }
+}
+
+
+// private Response createUser(UserCredentials credentials) {
+//     authRepo.persist(credentials);
+//     return Response
+//             .status(201)
+//             .entity("User registered successfully")
+//             .build();
+// }
+
+// private Response updateUser(UserCredentials existingUser, UserCredentials newCredentials) {
+//     existingUser.setEnvironments(newCredentials.getEnvironments());
+//     authRepo.persist(existingUser);
+//     System.out.println("User environments updated successfully.");
+//     return Response
+//             .status(200)
+//             .entity("User environments updated successfully")
+//             .build();
+// }
+
+
 
   public UserCredentials getUserInfoByUsername(String username) {
     return authRepo.find("username", username).firstResult();
