@@ -8,6 +8,7 @@ import com.zaga.repo.ServiceListRepo;
 
 import jakarta.inject.Inject;
 import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.Produces;
@@ -61,6 +62,18 @@ public class AuthController {
         }
     }
 
+
+    @PUT
+    @Path("/clusterDataUpdate")
+    public Response updateUserData(final UserCredentials credentials){
+       try {
+            Response response = authCommandHandler.updateUserInfo(credentials);
+            return response;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Response.serverError().build();
+        }
+    }
     /**
      * Add a new service to the user's service list.
      *

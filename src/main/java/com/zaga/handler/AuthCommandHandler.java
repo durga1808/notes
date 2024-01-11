@@ -4,6 +4,7 @@ import com.zaga.entity.auth.UserCredentials;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.mongodb.MongoWriteException;
@@ -12,6 +13,7 @@ import com.zaga.entity.auth.ServiceListNew;
 import com.zaga.repo.AuthRepo;
 import com.zaga.repo.ServiceListRepo;
 
+import io.vertx.mutiny.ext.auth.User;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.WebApplicationException;
@@ -110,25 +112,60 @@ public Response saveUserInfo(final UserCredentials credentials) {
     }
 }
 
+public Response updateUserInfo(UserCredentials userInfo) {
+  UserCredentials existingUser = authRepo
+          .find("username", userInfo.getUsername())
+          .firstResult();
 
-// private Response createUser(UserCredentials credentials) {
-//     authRepo.persist(credentials);
-//     return Response
-//             .status(201)
-//             .entity("User registered successfully")
-//             .build();
-// }
+  if (existingUser != null) {
+      List<Environments> existingEnvironments = existingUser.getEnvironments() != null ?
+              new ArrayList<>(existingUser.getEnvironments()) :
+              new ArrayList<>();
 
-// private Response updateUser(UserCredentials existingUser, UserCredentials newCredentials) {
-//     existingUser.setEnvironments(newCredentials.getEnvironments());
-//     authRepo.persist(existingUser);
-//     System.out.println("User environments updated successfully.");
-//     return Response
-//             .status(200)
-//             .entity("User environments updated successfully")
-//             .build();
-// }
+      userInfo.getEnvironments().forEach(environment -> {
+          Optional<Environments> existingEnvironment = existingEnvironments.stream()
+                  .filter(e -> e.getClusterId() == environment.getClusterId())
+                  .findFirst();
 
+          if (existingEnvironment.isPresent()) {
+              // Update the existing environment with the new data
+              Environments existingEnv = existingEnvironment.get();
+              existingEnv.setClusterUsername(environment.getClusterUsername());
+              existingEnv.setClusterPassword(environment.getClusterPassword());
+              existingEnv.setHostUrl(environment.getHostUrl());
+              existingEnv.setClusterType(environment.getClusterType());
+              
+              // Update other properties as needed
+
+              System.out.println("Environment with clusterId " + environment.getClusterId() + " updated successfully.");
+          } else {
+              // Increment clusterId for new environment
+              Long maxClusterId = existingEnvironments.stream()
+                      .map(Environments::getClusterId)
+                      .max(Long::compare)
+                      .orElse(0L);
+              environment.setClusterId(maxClusterId + 1);
+
+              existingEnvironments.add(environment);
+
+              System.out.println("New environment with clusterId " + environment.getClusterId() + " added successfully.");
+          }
+      });
+
+      existingUser.setEnvironments(existingEnvironments);
+      authRepo.update(existingUser);  // Update the existing user
+
+      System.out.println("User environments updated successfully.");
+      return Response
+              .status(200)
+              .entity("User environments updated successfully")
+              .build();
+  }
+
+  return Response.status(200).entity(userInfo.getEnvironments()).build();
+}
+
+ 
 
 
   public UserCredentials getUserInfoByUsername(String username) {
