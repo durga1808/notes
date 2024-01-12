@@ -113,7 +113,7 @@ public class MetricCommandHandler {
                             Map<String, String> alertPayload = new HashMap<>();
 
                             if (cpuUsage != null && memoryUsage != null && cpuUsage != 0 && memoryUsage != 0) {
-                                System.out.println("The CPU Usage and MEMROY USSAGE"+cpuUsage + memoryUsage);
+                                // System.out.println("The CPU Usage and MEMROY USSAGE"+cpuUsage + memoryUsage);
                                 // System.out.println("The checking the rule -----------------------------------"+sData);
                                 boolean isCpuViolation = false;
                                 boolean isMemoryViolation = false;
@@ -154,7 +154,7 @@ public class MetricCommandHandler {
                                 }
                             
                                 if (isCpuViolation && currentDateTime.isAfter(startDateTime) && currentDateTime.isBefore(expiryDateTime)) {
-                                    System.out.println("OUT");
+                                    // System.out.println("OUT");
                                     String cpuSeverity = calculateSeverity(cpuUsage, cpuLimitMilliCores);
                                     System.out.println(cpuSeverity + " Alert - CPU Usage " + Math.ceil(cpuUsage) + " peaked in this service " + metricDTO.getServiceName());
                                     sendAlert(alertPayload,"" + cpuSeverity + "- CPU Usage " + Math.ceil(cpuLimitMilliCores)
@@ -163,7 +163,7 @@ public class MetricCommandHandler {
                                 }
                             
                                 if (isMemoryViolation && currentDateTime.isAfter(startDateTime) && currentDateTime.isBefore(expiryDateTime)) {
-                                    System.out.println("OUT");
+                                    // System.out.println("OUT");
                                     String memorySeverity = calculateSeverity(memoryUsage, memoryLimit);
                                 sendAlert(alertPayload,"" + memorySeverity + " - Memory Usage " + memoryUsage + " peaked in this service "
                                             + metricDTO.getServiceName() + "at" + metricDTO.getDate());
@@ -266,7 +266,7 @@ public String calculateSeverity(double actualUsage, double limit) {
                                             if (sumDataPoint.getAsInt() != null && !sumDataPoint.getAsInt().isEmpty()) {
                                                 String asInt = sumDataPoint.getAsInt();
                                                 int currentMemoryUsage = Integer.parseInt(asInt);
-                                                System.out.println("--------Memory usage:----- " + currentMemoryUsage);
+                                                // System.out.println("--------Memory usage:----- " + currentMemoryUsage);
 
                                                 memoryUsage += currentMemoryUsage;
                                             }
@@ -280,9 +280,9 @@ public String calculateSeverity(double actualUsage, double limit) {
                                         if (isCpuMetric(metricName)) {
                                             if (gaugeDataPoint.getAsDouble() != null) {
                                                 String asDouble = gaugeDataPoint.getAsDouble();
-                                                System.out.println("--------asDOUBLE------" + asDouble);
+                                                // System.out.println("--------asDOUBLE------" + asDouble);
                                                 cpuUsage = Double.parseDouble(asDouble);
-                                                System.out.println("--------cpuUsage-------" + cpuUsage);
+                                                // System.out.println("--------cpuUsage-------" + cpuUsage);
                                             }
                                         }
                                     }
@@ -290,7 +290,7 @@ public String calculateSeverity(double actualUsage, double limit) {
 
                                 Integer memoryUsageInMb = (memoryUsage / (1024 * 1024));
 
-                                MetricDTO metricDTO = new MetricDTO();
+                                 MetricDTO metricDTO = new MetricDTO();
                                 metricDTO.setMemoryUsage(memoryUsageInMb);
                                 metricDTO.setDate(createdTime);
                                 metricDTO.setServiceName(serviceName);

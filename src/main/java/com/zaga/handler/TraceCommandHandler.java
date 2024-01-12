@@ -113,7 +113,7 @@ public class TraceCommandHandler {
                               sData.setExpiryDateTime(expiryDateTime);
   
                               Long duration = traceDTO.getDuration();
-                              System.out.println("Trace duration------------------" + traceDTO.getDuration());
+                              // System.out.println("Trace duration------------------" + traceDTO.getDuration());
                               if (duration != null && duration != 0) {
                                   boolean isDurationViolation = false;
                                   long durationLimit = sData.getDuration();
@@ -156,7 +156,7 @@ public class TraceCommandHandler {
                                           System.out.println(severity + " - Duration " + traceDTO.getDuration() + " exceeded for this service: " + serviceName);
   
                                           sendAlert(new HashMap<>(), severity + " - Duration " + traceDTO.getDuration() + " exceeded for this service: " + serviceName + "at" + traceDTO.getCreatedTime());
-                                          System.out.println("sl");
+                                          // System.out.println("sl");
                                       } else {
                                           System.out.println("Not Exceeded" + alertCount);
                                           alertCountMap.put(serviceName, alertCount);
@@ -290,13 +290,13 @@ public class TraceCommandHandler {
                         try {
                           Long statusCode = Long.parseLong(statusCodeString);
                           traceDTO.setStatusCode(statusCode);
-                          System.out.println("Status Code stored successfully: " + statusCode);
+                          // System.out.println("Status Code stored successfully: " + statusCode);
                         } catch (NumberFormatException e) {
-                          System.err.println("Failed to parse status code: " + statusCodeString);
+                          // System.err.println("Failed to parse status code: " + statusCodeString);
                           e.printStackTrace();
                         }
                       } else {
-                        System.err.println("Status code is null. Cannot parse.");
+                        // System.err.println("Status code is null. Cannot parse.");
                       }
                     }
                   }

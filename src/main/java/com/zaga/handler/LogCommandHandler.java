@@ -62,10 +62,10 @@ public class LogCommandHandler {
                 ServiceListNew serviceListNew = new ServiceListNew();
                 for (LogDTO logDTOSingle : logDTOs) {
                     try {
-                        System.out.println("The log service rule getting from database");
+                        // System.out.println("The log service rule getting from database");
                         serviceListNew = serviceListRepo.find("serviceName = ?1", logDTOSingle.getServiceName())
                                 .firstResult();
-                        System.out.println("The log service rule gotten from the database");
+                        // System.out.println("The log service rule gotten from the database");
                         break;
                     } catch (Exception e) {
                         System.out.println("ERROR " + e.getLocalizedMessage());
@@ -75,9 +75,9 @@ public class LogCommandHandler {
                 System.out.println("Log DTO size " + logDTOs.size());
     
                 if (serviceListNew != null) {
-                    System.out.println("The log rule is entered");
+                    // System.out.println("The log rule is entered");
                     for (LogDTO logDto : logDTOs) {
-                        System.out.println("Log DTO's " + logDto);
+                        // System.out.println("Log DTO's " + logDto);
                         processRuleManipulation(logDto, serviceListNew);
                     }
                 }
@@ -117,7 +117,7 @@ public class LogCommandHandler {
     
                                 String severityText = logDTO.getSeverityText();
                                 String traceId = logDTO.getTraceId();
-                                System.out.println("Log Severity " + logDTO.getSeverityText());
+                                // System.out.println("Log Severity " + logDTO.getSeverityText());
     
                                 if (severityText != null && !severityText.isEmpty()) {
                                     boolean isSeverityViolation = false;
@@ -143,7 +143,7 @@ public class LogCommandHandler {
                                             alertCount++;
                                             previousTraceIdMap.put(serviceName, traceId);
                                         } else {
-                                            System.out.println("Alert count is not incremented------------------");
+                                            // System.out.println("Alert count is not incremented------------------");
                                         }
                                         System.out.println("alertCount: " + alertCount);
     
@@ -233,7 +233,7 @@ public class LogCommandHandler {
 
                         logDTO.setScopeLogs(Collections.singletonList(newScopeLogs));
 
-                        System.out.println("Log Data DTo " + logDTO);
+                        // System.out.println("Log Data DTo " + logDTO);
                         logDTOs.add(logDTO);
                         // logQueryRepo.persist(logDTO);
 

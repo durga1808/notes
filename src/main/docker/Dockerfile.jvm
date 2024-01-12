@@ -3,7 +3,12 @@
 #
 # podman build -f src/main/docker/Dockerfile.jvm -t quay.io/zagaos/observai-persistance-api .
 #
+# docker build -t quay.io/zagaos/observai-persistance-backend -f .\src\main\docker\Dockerfile.jvm .
+#
 # podman run -i --rm -p 8080:8080 quay.io/zagaos/observai-persistance-api
+#
+# docker push quay.io/zagaos/observai-persistance-backend 
+#
 ####
 
 FROM registry.access.redhat.com/ubi8/openjdk-11:1.16
