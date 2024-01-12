@@ -12,6 +12,8 @@ import com.zaga.kafka.websocket.WebsocketAlertProducer;
 import com.zaga.repo.ServiceListRepo;
 import com.zaga.repo.TraceCommandRepo;
 import com.zaga.repo.TraceQueryRepo;
+
+import io.vertx.core.Vertx;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.websocket.EncodeException;
@@ -43,179 +45,141 @@ public class TraceCommandHandler {
   @Inject
   ServiceListRepo serviceListRepo;
 
+  @Inject 
+  Vertx vertx;
+
   private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 
   private Map<String, Integer> alertCountMap = new HashMap<>();
 
   public void createTraceProduct(OtelTrace trace) {
-     traceCommandRepo.persist(trace);
-    List<TraceDTO> traceDTOs = extractAndMapData(trace);
-    ServiceListNew serviceListNew = new ServiceListNew();
-    for (TraceDTO traceDTOSingle : traceDTOs) {
-      try {
-        serviceListNew = serviceListRepo.find("serviceName = ?1", traceDTOSingle.getServiceName()).firstResult();
-        break;
-      } catch (Exception e) {
-        System.out.println("ERROR " + e.getLocalizedMessage());
-      }
-    }
-
-    System.out.println("Trace DTO size " + traceDTOs.size());
-
-    if (!serviceListNew.equals(null)) {
-      for (TraceDTO traceDTO : traceDTOs) {
-        // System.out.println("Trace DTO's " + traceDTO.toString());
-        processRuleManipulation(traceDTO, serviceListNew);
-      }
-    }
-  }
-
-  // public void processRuleManipulation(TraceDTO traceDTO, ServiceListNew
-  // serviceListNew) {
-  // LocalDateTime currentDateTime = LocalDateTime.now();
-  // try {
-  // if (!serviceListNew.getRules().isEmpty()) {
-  // for (Rule sData : serviceListNew.getRules()) {
-  // if ("trace".equals(sData.getRuleType())) {
-  // LocalDateTime startDate = sData.getStartDateTime();
-  // LocalDateTime expiryDate = sData.getExpiryDateTime();
-  // if (startDate != null && expiryDate != null) {
-  // String startDateTimeString = startDate.format(FORMATTER);
-  // String expiryDateTimeString = expiryDate.format(FORMATTER);
-
-  // LocalDateTime startDateTime = LocalDateTime.parse(startDateTimeString,
-  // FORMATTER);
-  // sData.setStartDateTime(startDateTime);
-
-  // LocalDateTime expiryDateTime = LocalDateTime.parse(expiryDateTimeString,
-  // FORMATTER);
-  // sData.setExpiryDateTime(expiryDateTime);
-
-  // Long duration = traceDTO.getDuration();
-  // System.out.println("Trace duration " + traceDTO.getDuration());
-
-  // Map<String, String> alertPayload = new HashMap<>();
-
-  // if (duration != null && duration != 0) {
-  // if (duration >= sData.getDuration() &&
-  // currentDateTime.isAfter(startDateTime) &&
-  // currentDateTime.isBefore(expiryDateTime)) {
-  // System.out.println("Trace Exceeded!");
-  // sendAlert(alertPayload, "Trace Duration got exceeded " +
-  // traceDTO.getDuration() + " for this service "
-  // + traceDTO.getServiceName());
-  // }
-  // }
-  // }
-  // }
-  // }
-  // }
-  // } catch (Exception e) {
-  // System.out.println("ERROR " + e.getLocalizedMessage());
-  // }
-  // }
-
-  public void processRuleManipulation(TraceDTO traceDTO, ServiceListNew serviceListNew) {
-    LocalDateTime currentDateTime = LocalDateTime.now();
-    // Map<String, Integer> alertCountMap = new HashMap<>(); 
-
-    try {
-      if (!serviceListNew.getRules().isEmpty()) {
-        for (Rule sData : serviceListNew.getRules()) {
-          if ("trace".equals(sData.getRuleType())) {
-            LocalDateTime startDate = sData.getStartDateTime();
-            LocalDateTime expiryDate = sData.getExpiryDateTime();
-            if (startDate != null && expiryDate != null) {
-              String startDateTimeString = startDate.format(FORMATTER);
-              String expiryDateTimeString = expiryDate.format(FORMATTER);
-
-              LocalDateTime startDateTime = LocalDateTime.parse(startDateTimeString, FORMATTER);
-              sData.setStartDateTime(startDateTime);
-
-              LocalDateTime expiryDateTime = LocalDateTime.parse(expiryDateTimeString, FORMATTER);
-              sData.setExpiryDateTime(expiryDateTime);
-
-              Long duration = traceDTO.getDuration();
-              System.out.println("Trace duration------------------" + traceDTO.getDuration());
-              if (duration != null && duration != 0) {
-                boolean isDurationViolation = false;
-                long durationLimit = sData.getDuration();
-                String durationConstraint = sData.getDurationConstraint();
-            
-                switch (durationConstraint) {
-                    case "greaterThan":
-                        isDurationViolation = duration > durationLimit;
-                        break;
-                    case "lessThan":
-                        isDurationViolation = duration < durationLimit;
-                        break;
-                    case "greaterThanOrEqual":
-                        isDurationViolation = duration >= durationLimit;
-                        break;
-                    case "lessThanOrEqual":
-                        isDurationViolation = duration <= durationLimit;
-                        break;
-                }
-            
-                if (isDurationViolation && currentDateTime.isAfter(startDateTime) && currentDateTime.isBefore(expiryDateTime)) {
-                    String serviceName = traceDTO.getServiceName();
-                    int alertCount = alertCountMap.getOrDefault(serviceName, 0);
-                    alertCount++;
-            
-                    double percentageExceeded = ((double) (duration - durationLimit) / durationLimit) * 100;
-            
-                    if (alertCount > 3) {
-                        System.out.println("Exceeded");
-                        String severity;
-                        if (percentageExceeded > 80) {
-                            severity = "Critical Alert";
-                        } else if (percentageExceeded >= 50 && percentageExceeded <= 80) {
-                            severity = "Medium Alert";
-                        } else if(percentageExceeded >= 5 && percentageExceeded <= 15){
-                            severity = "Low Alert";
-                        }else {
-                          severity = "Low Alert";
-                        }
-                        System.out.println(severity + " - Duration " + traceDTO.getDuration() + " exceeded for this service: " + serviceName);
-
-                        sendAlert(new HashMap<>(), severity + " - Duration " + traceDTO.getDuration() + " exceeded for this service: " + serviceName + "at" + traceDTO.getCreatedTime());
-                        System.out.println("sl");
-                    } else {
-                        System.out.println("Not Exceeded" + alertCount);
-                        alertCountMap.put(serviceName, alertCount);
-                    }
-                }
-            }
-            
-
-              // if (duration != null && duration != 0) {
-              //   if (duration >= sData.getDuration() &&
-              //       currentDateTime.isAfter(startDateTime) &&
-              //       currentDateTime.isBefore(expiryDateTime)) {
-              //     String serviceName = traceDTO.getServiceName();
-              //     int alertCount = alertCountMap.getOrDefault(serviceName, 0);
-              //     alertCount++;
-
-              //     if (alertCount > 3) {
-              //       System.out.println("Exceeded");
-              //       // Throw an alert as the count exceeds 3 for the same service
-              //       sendAlert(new HashMap<>(), "Critical Alert - Duration " + traceDTO.getDuration() + " exceeded for this service: " + serviceName);
-              //     } else {
-              //       System.out.println("Not Exceeded" + alertCount);
-              //       alertCountMap.put(serviceName, alertCount);
-              //     }
-              //   }
-              // }
-
-            }
-          }
+    vertx.executeBlocking(promise -> {
+        try {
+            traceCommandRepo.persist(trace);
+            promise.complete();
+        } catch (Exception e) {
+            promise.fail(e);
         }
-      }
-    } catch (Exception e) {
-      System.out.println("ERROR " + e.getLocalizedMessage());
-    }
-  }
+    }, result -> {
+        if (result.succeeded()) {
+            List<TraceDTO> traceDTOs = extractAndMapData(trace);
+            ServiceListNew serviceListNew = new ServiceListNew();
+            for (TraceDTO traceDTOSingle : traceDTOs) {
+                try {
+                    serviceListNew = serviceListRepo.find("serviceName = ?1", traceDTOSingle.getServiceName()).firstResult();
+                    break;
+                } catch (Exception e) {
+                    System.out.println("ERROR " + e.getLocalizedMessage());
+                }
+            }
 
+            System.out.println("Trace DTO size " + traceDTOs.size());
+
+            if (!serviceListNew.equals(null)) {
+                for (TraceDTO traceDTO : traceDTOs) {
+                    processRuleManipulation(traceDTO, serviceListNew);
+                }
+            }
+        } else {
+            System.err.println("Error persisting traces: " + result.cause().getMessage());
+            // Handle the error appropriately (e.g., logging, notifying, etc.)
+        }
+    });
+}
+
+
+  // public void processRuleManipulation(TraceDTO traceDTO, ServiceListNew serviceListNew) {
+  //   // Map<String, Integer> alertCountMap = new HashMap<>(); 
+
+  //   try {
+    public void processRuleManipulation(TraceDTO traceDTO, ServiceListNew serviceListNew) {
+      LocalDateTime currentDateTime = LocalDateTime.now();
+  
+      vertx.executeBlocking(promise -> {
+          try {
+              if (!serviceListNew.getRules().isEmpty()) {
+                  for (Rule sData : serviceListNew.getRules()) {
+                      if ("trace".equals(sData.getRuleType())) {
+                          LocalDateTime startDate = sData.getStartDateTime();
+                          LocalDateTime expiryDate = sData.getExpiryDateTime();
+                          if (startDate != null && expiryDate != null) {
+                              String startDateTimeString = startDate.format(FORMATTER);
+                              String expiryDateTimeString = expiryDate.format(FORMATTER);
+  
+                              LocalDateTime startDateTime = LocalDateTime.parse(startDateTimeString, FORMATTER);
+                              sData.setStartDateTime(startDateTime);
+  
+                              LocalDateTime expiryDateTime = LocalDateTime.parse(expiryDateTimeString, FORMATTER);
+                              sData.setExpiryDateTime(expiryDateTime);
+  
+                              Long duration = traceDTO.getDuration();
+                              System.out.println("Trace duration------------------" + traceDTO.getDuration());
+                              if (duration != null && duration != 0) {
+                                  boolean isDurationViolation = false;
+                                  long durationLimit = sData.getDuration();
+                                  String durationConstraint = sData.getDurationConstraint();
+  
+                                  switch (durationConstraint) {
+                                      case "greaterThan":
+                                          isDurationViolation = duration > durationLimit;
+                                          break;
+                                      case "lessThan":
+                                          isDurationViolation = duration < durationLimit;
+                                          break;
+                                      case "greaterThanOrEqual":
+                                          isDurationViolation = duration >= durationLimit;
+                                          break;
+                                      case "lessThanOrEqual":
+                                          isDurationViolation = duration <= durationLimit;
+                                          break;
+                                  }
+  
+                                  if (isDurationViolation && currentDateTime.isAfter(startDateTime) && currentDateTime.isBefore(expiryDateTime)) {
+                                      String serviceName = traceDTO.getServiceName();
+                                      int alertCount = alertCountMap.getOrDefault(serviceName, 0);
+                                      alertCount++;
+  
+                                      double percentageExceeded = ((double) (duration - durationLimit) / durationLimit) * 100;
+  
+                                      if (alertCount > 3) {
+                                          System.out.println("Exceeded");
+                                          String severity;
+                                          if (percentageExceeded > 80) {
+                                              severity = "Critical Alert";
+                                          } else if (percentageExceeded >= 50 && percentageExceeded <= 80) {
+                                              severity = "Medium Alert";
+                                          } else if(percentageExceeded >= 5 && percentageExceeded <= 15){
+                                              severity = "Low Alert";
+                                          }else {
+                                              severity = "Low Alert";
+                                          }
+                                          System.out.println(severity + " - Duration " + traceDTO.getDuration() + " exceeded for this service: " + serviceName);
+  
+                                          sendAlert(new HashMap<>(), severity + " - Duration " + traceDTO.getDuration() + " exceeded for this service: " + serviceName + "at" + traceDTO.getCreatedTime());
+                                          System.out.println("sl");
+                                      } else {
+                                          System.out.println("Not Exceeded" + alertCount);
+                                          alertCountMap.put(serviceName, alertCount);
+                                      }
+                                  }
+                              }
+                          }
+                      }
+                  }
+              }
+              promise.complete();
+          } catch (Exception e) {
+              System.out.println("ERROR " + e.getLocalizedMessage());
+              promise.fail(e);
+          }
+      }, result -> {
+          if (result.failed()) {
+              System.err.println("Error processing trace rule: " + result.cause().getMessage());
+              // Handle the error appropriately (e.g., logging, notifying, etc.)
+          }
+      });
+  }
+  
   private void sendAlert(Map<String, String> alertPayload, String message) {
     alertPayload.put("alertMessage", message);
     alertPayload.put("alertType", "trace");

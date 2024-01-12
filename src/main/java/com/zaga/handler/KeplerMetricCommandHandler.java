@@ -20,6 +20,8 @@ import com.zaga.entity.queryentity.kepler.KeplerMetricDTO;
 import com.zaga.entity.queryentity.kepler.Resource;
 import com.zaga.repo.KeplerMetricDTORepo;
 import com.zaga.repo.KeplerMetricRepo;
+
+import io.vertx.core.Vertx;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.time.Instant;
@@ -39,6 +41,9 @@ public class KeplerMetricCommandHandler {
 
   @Inject
   KeplerMetricDTORepo KeplerMetricDTORepo;
+
+  @Inject
+  Vertx vertx;
 
   public enum KeplerMetricsNames {
     kepler_container_joules_total("CONT1001"),
@@ -98,20 +103,34 @@ public class KeplerMetricCommandHandler {
     }
   }
 
-  public void createKeplerMetric(KeplerMetric metric) {
-    keplerMetricRepo.persist(metric);
+        public void createKeplerMetric(KeplerMetric metric) {
+                    keplerMetricRepo.persist(metric);
     System.out.println("Entered=----------------------------------");
-    List<KeplerMetricDTO> metricDTOs = extractAndMapData(metric);
+    List<KeplerMetricDTO> metricDTOs = new ArrayList<>();
 
-    if (!metricDTOs.isEmpty()) {
-      
-                System.out.println("keplerMetricDTO-------------"+metricDTOs.size());
-      for (KeplerMetricDTO keplerMetDTO : metricDTOs) {
-        KeplerMetricDTORepo.persist(keplerMetDTO);
+    vertx.executeBlocking(promise -> {
+        try {
+            metricDTOs.addAll(extractAndMapData(metric));
 
-      }
-    }
-  }
+            if (!metricDTOs.isEmpty()) {
+                System.out.println("keplerMetricDTO-------------" + metricDTOs.size());
+                for (KeplerMetricDTO keplerMetDTO : metricDTOs) {
+                    KeplerMetricDTORepo.persist(keplerMetDTO);
+                }
+            }
+
+            promise.complete();
+        } catch (Exception e) {
+            System.out.println("ERROR " + e.getLocalizedMessage());
+            promise.fail(e);
+        }
+    }, result -> {
+        if (result.failed()) {
+            System.err.println("Error creating Kepler metric: " + result.cause().getMessage());
+            // Handle the error appropriately (e.g., logging, notifying, etc.)
+        }
+    });
+}
 
   public List<KeplerMetricDTO> extractAndMapData(KeplerMetric keplerMetric) {
         System.out.println("DTO creation=----------------------------------");

@@ -31,6 +31,7 @@ import com.zaga.repo.ServiceListRepo;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.websocket.EncodeException;
+import io.vertx.core.Vertx;
 
 @ApplicationScoped
 public class MetricCommandHandler {
@@ -47,44 +48,55 @@ public class MetricCommandHandler {
     @Inject
     ServiceListRepo serviceListRepo;
 
+    @Inject
+    Vertx vertx;
+
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 
     public void createMetricProduct(OtelMetric metrics) {
-        metricCommandRepo.persist(metrics);
-        
-        List<MetricDTO> metricDTOs = extractAndMapData(metrics);
-        ServiceListNew serviceListData1 = new ServiceListNew();
-        for (MetricDTO metricDTOSingle : metricDTOs) {
-            System.out.println("The metric rule fetching from the data base");
-            serviceListData1 = serviceListRepo.find("serviceName = ?1", metricDTOSingle.getServiceName()).firstResult();
-
-            System.out.println("The metric rule fetched from the data base"+serviceListData1);
-            break;
-        }
-        for (MetricDTO metricDTO : metricDTOs) {
-            System.out.println("The Process rule entered");
-            processRuleManipulation(metricDTO, serviceListData1);
-        }
-        System.out.println("---------MetricDTOs:---------- " + metricDTOs.size());
+        vertx.executeBlocking(promise -> {
+            try {
+                metricCommandRepo.persist(metrics);
+                promise.complete();
+            } catch (Exception e) {
+                promise.fail(e);
+            }
+        }, result -> {
+            if (result.succeeded()) {
+                List<MetricDTO> metricDTOs = extractAndMapData(metrics);
+                ServiceListNew serviceListData1 = new ServiceListNew();
+                for (MetricDTO metricDTOSingle : metricDTOs) {
+                    serviceListData1 = serviceListRepo.find("serviceName = ?1", metricDTOSingle.getServiceName()).firstResult();
+                    break;
+                }
+                for (MetricDTO metricDTO : metricDTOs) {
+                    processRuleManipulation(metricDTO, serviceListData1);
+                }
+                System.out.println("---------MetricDTOs:---------- " + metricDTOs.size());
+            } else {
+                System.err.println("Error persisting metrics: " + result.cause().getMessage());
+                // Handle the error appropriately (e.g., logging, notifying, etc.)
+            }
+        });
     }
 
     public void processRuleManipulation(MetricDTO metricDTO, ServiceListNew serviceListData) {
 
-                    System.out.println("The Process rule is triggered "+serviceListData);
+                    // System.out.println("The Process rule is triggered "+serviceListData);
         LocalDateTime currentDateTime = LocalDateTime.now();
         try {
-            System.out.println("the try block entered");
+            // System.out.println("the try block entered");
             if (!serviceListData.getRules().isEmpty()) {
-                System.out.println("the serviceLisData is not emoty"+serviceListData.getRules());
+                // System.out.println("the serviceLisData is not emoty"+serviceListData.getRules());
 
                 for (Rule sData : serviceListData.getRules()) {
-                    System.out.println("The rule execution is triggered"+sData);
+                    // System.out.println("The rule execution is triggered"+sData);
                     if ("metric".equals(sData.getRuleType())) {
-                    System.out.println("The rule execution is triggered"+sData.getRuleType());
+                    // System.out.println("The rule execution is triggered"+sData.getRuleType());
                         LocalDateTime startDate = sData.getStartDateTime();
                         LocalDateTime expiryDate = sData.getExpiryDateTime();
                         if (startDate != null && expiryDate != null) {
-                            System.out.println("The startData and expiryDat are not null"+startDate + expiryDate);
+                            // System.out.println("The startData and expiryDat are not null"+startDate + expiryDate);
                             String startDateTimeString = startDate.format(FORMATTER);
                             String expiryDateTimeString = expiryDate.format(FORMATTER);
 
@@ -102,7 +114,7 @@ public class MetricCommandHandler {
 
                             if (cpuUsage != null && memoryUsage != null && cpuUsage != 0 && memoryUsage != 0) {
                                 System.out.println("The CPU Usage and MEMROY USSAGE"+cpuUsage + memoryUsage);
-                                System.out.println("The checking the rule -----------------------------------"+sData);
+                                // System.out.println("The checking the rule -----------------------------------"+sData);
                                 boolean isCpuViolation = false;
                                 boolean isMemoryViolation = false;
                                 // double cpuLimit = sData.getCpuLimit();
@@ -189,7 +201,7 @@ public class MetricCommandHandler {
             }
             
         } catch (Exception e) {
-            System.out.println("ERROR " + e.getLocalizedMessage());
+            // System.out.println("Alert " + e.getLocalizedMessage());
         }
     }
 
