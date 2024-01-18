@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.zaga.entity.auth.AlertPayload;
 import com.zaga.entity.auth.Rule;
 import com.zaga.entity.auth.ServiceListNew;
 import com.zaga.entity.otelmetric.OtelMetric;
@@ -23,6 +24,7 @@ import com.zaga.entity.otelmetric.scopeMetric.MetricSum;
 import com.zaga.entity.otelmetric.scopeMetric.gauge.GaugeDataPoint;
 import com.zaga.entity.otelmetric.scopeMetric.sum.SumDataPoint;
 import com.zaga.entity.queryentity.metrics.MetricDTO;
+import com.zaga.kafka.alertProducer.AlertProducer;
 import com.zaga.kafka.websocket.WebsocketAlertProducer;
 import com.zaga.repo.MetricCommandRepo;
 import com.zaga.repo.MetricDTORepo;
@@ -46,6 +48,9 @@ public class MetricCommandHandler {
 
     @Inject
     ServiceListRepo serviceListRepo;
+
+    @Inject
+    AlertProducer metricAlertProducer;
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 
@@ -125,14 +130,23 @@ public class MetricCommandHandler {
                                         isMemoryViolation = memoryUsage <= memoryLimit;
                                         break;
                                 }
-                            
+                                
+                                AlertPayload alertPayload2 = new AlertPayload();
+
                                 if (isCpuViolation && currentDateTime.isAfter(startDateTime) && currentDateTime.isBefore(expiryDateTime)) {
                                     System.out.println("OUT");
                                     String cpuSeverity = calculateSeverity(cpuUsage, cpuLimitMilliCores);
-                                    System.out.println(cpuSeverity + " Alert - CPU Usage " + Math.ceil(cpuUsage) + " peaked in this service " + metricDTO.getServiceName());
+                                    System.out.println(cpuSeverity + " - CPU Usage " + Math.ceil(cpuUsage) + " peaked in this service " + metricDTO.getServiceName());
                                     sendAlert(alertPayload,"" + cpuSeverity + "- CPU Usage " + Math.ceil(cpuLimitMilliCores)
                                             + "  peaked in this service " + metricDTO.getServiceName());
                                     System.out.println("peaked in this service------------ " + alertPayload);
+                                    String cpuAlertMessage = cpuSeverity + "- CPU Usage " + Math.ceil(cpuUsage) + " peaked in this service " + metricDTO.getServiceName();
+
+                                    alertPayload2.setServiceName(metricDTO.getServiceName());
+                                    alertPayload2.setCreatedTime(metricDTO.getDate());
+                                    alertPayload2.setType(sData.getRuleType());
+                                    alertPayload2.setAlertMessage(cpuAlertMessage);
+                                    metricAlertProducer.kafkaSend(alertPayload2);
                                 }
                             
                                 if (isMemoryViolation && currentDateTime.isAfter(startDateTime) && currentDateTime.isBefore(expiryDateTime)) {

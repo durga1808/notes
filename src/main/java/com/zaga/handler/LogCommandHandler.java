@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.zaga.entity.auth.AlertPayload;
 import com.zaga.entity.auth.Rule;
 import com.zaga.entity.auth.ServiceListNew;
 import com.zaga.entity.otellog.OtelLog;
@@ -19,6 +20,7 @@ import com.zaga.entity.otellog.ResourceLogs;
 import com.zaga.entity.otellog.ScopeLogs;
 import com.zaga.entity.otellog.scopeLogs.LogRecord;
 import com.zaga.entity.queryentity.log.LogDTO;
+import com.zaga.kafka.alertProducer.AlertProducer;
 import com.zaga.kafka.websocket.WebsocketAlertProducer;
 import com.zaga.repo.LogCommandRepo;
 import com.zaga.repo.LogQueryRepo;
@@ -43,6 +45,9 @@ public class LogCommandHandler {
     @Inject
     ServiceListRepo serviceListRepo;
 
+    @Inject
+    AlertProducer alertLogProducer;
+
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 
     private Map<String, Integer> alertCountMap = new HashMap<>();
@@ -51,7 +56,7 @@ public class LogCommandHandler {
     public void createLogProduct(OtelLog logs) {
         // logCommandRepo.persist(logs);
         List<LogDTO> logDTOs = marshalLogData(logs);
-        System.out.println("log sizes" + logDTOs.size());
+        // System.out.println("log sizes" + logDTOs.size());
 
         ServiceListNew serviceListNew = new ServiceListNew();
         for (LogDTO logDTOSingle : logDTOs) {
@@ -64,11 +69,11 @@ public class LogCommandHandler {
             }
         }
 
-        System.out.println("Log DTO size " + logDTOs.size());
+        // System.out.println("Log DTO size " + logDTOs.size());
 
         if (!serviceListNew.equals(null)) {
             for (LogDTO logDto : logDTOs) {
-                System.out.println("Log DTO's " + logDto);
+                // System.out.println("Log DTO's " + logDto);
                 processRuleManipulation(logDto, serviceListNew);
             }
         }
@@ -97,7 +102,7 @@ public class LogCommandHandler {
 
                             String severityText = logDTO.getSeverityText();
                             String traceId = logDTO.getTraceId();
-                            System.out.println("Log Severity " + logDTO.getSeverityText());
+                            // System.out.println("Log Severity " + logDTO.getSeverityText());
 
                             if (severityText != null && !severityText.isEmpty()) {
                                 boolean isSeverityViolation = false;
@@ -132,17 +137,34 @@ public class LogCommandHandler {
                                         double percentageExceeded = ((double) (alertCount - 1) / 1) * 100;
                                 
                                         String severity;
-                                        if (percentageExceeded > 50) {
+                                        if (percentageExceeded > 80) {
                                             severity = "Critical Alert";
-                                        } else if (percentageExceeded >= 5 && percentageExceeded <= 15) {
+                                        } else if (percentageExceeded >= 50 && percentageExceeded <= 80) {
                                             severity = "Medium Alert";
-                                        } else {
+                                        } else if (percentageExceeded >= 5 && percentageExceeded <= 15) {
                                             severity = "Low Alert";
+                                        }else{
+                                            severity = "No alert";
                                         }
                                 
                                         System.out.println(severity + " - Log call exceeded for this service: " + serviceName);
                                         // Optionally send the alert here or perform other actions based on severity
                                         sendAlert(new HashMap<>(), severity + " - Log call exceeded for this service: " + serviceName);
+                                         
+                                        String logAlertMessage = severity + " - Log call exceeded for this service: " + serviceName;
+
+
+                                        AlertPayload alertLogPayload = new AlertPayload();
+
+                                        alertLogPayload.setServiceName(serviceName);
+                                        alertLogPayload.setCreatedTime(logDTO.getCreatedTime());
+                                        alertLogPayload.setTraceId(logDTO.getTraceId());
+                                        alertLogPayload.setType(sData.getRuleType());
+                                        alertLogPayload.setAlertMessage(logAlertMessage);
+
+
+                                        alertLogProducer.kafkaSend(alertLogPayload);
+
                                     } else {
                                         System.out.println("Not Exceeded" + alertCount);
                                         alertCountMap.put(serviceName, alertCount);

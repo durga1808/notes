@@ -13,4 +13,7 @@ public class ServiceListRepo implements PanacheMongoRepository<ServiceListNew> {
         return find("serviceName = ?1 and rules.ruleType = ?2", serviceName, "metric").firstResult();
     }
 
+    public ServiceListNew findByServiceNameAndRuleType(String serviceName, String ruleType) {
+        return find("serviceName = ?1 and rules.ruleType = ?2", serviceName, ruleType).firstResult();
+    }
 }

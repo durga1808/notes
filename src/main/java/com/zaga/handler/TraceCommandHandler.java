@@ -1,5 +1,6 @@
 package com.zaga.handler;
 
+import com.zaga.entity.auth.AlertPayload;
 import com.zaga.entity.auth.Rule;
 import com.zaga.entity.auth.ServiceListNew;
 import com.zaga.entity.oteltrace.OtelTrace;
@@ -8,6 +9,7 @@ import com.zaga.entity.oteltrace.ScopeSpans;
 import com.zaga.entity.oteltrace.scopeSpans.Spans;
 import com.zaga.entity.oteltrace.scopeSpans.spans.Attributes;
 import com.zaga.entity.queryentity.trace.TraceDTO;
+import com.zaga.kafka.alertProducer.AlertProducer;
 import com.zaga.kafka.websocket.WebsocketAlertProducer;
 import com.zaga.repo.ServiceListRepo;
 import com.zaga.repo.TraceCommandRepo;
@@ -42,6 +44,9 @@ public class TraceCommandHandler {
 
   @Inject
   ServiceListRepo serviceListRepo;
+
+  @Inject
+  AlertProducer alertProducer;
 
   private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 
@@ -176,6 +181,18 @@ public class TraceCommandHandler {
                         System.out.println(severity + " - Duration " + traceDTO.getDuration() + " exceeded for this service: " + serviceName);
 
                         sendAlert(new HashMap<>(), severity + " - Duration " + traceDTO.getDuration() + " exceeded for this service: " + serviceName);
+                        String traceAlertMessage = severity + " - Duration " + traceDTO.getDuration() + " exceeded for this service: " + serviceName;
+                        
+                        AlertPayload alertTracePayload = new AlertPayload();
+                        
+                        alertTracePayload.setServiceName(serviceName);
+                        alertTracePayload.setAlertMessage(traceAlertMessage);
+                        alertTracePayload.setTraceId(traceDTO.getTraceId());
+                        alertTracePayload.setCreatedTime(traceDTO.getCreatedTime());
+                        alertTracePayload.setType(sData.getRuleType());
+                        String text = "hello";
+                        alertProducer.kafkaSend(alertTracePayload);
+                        
                         System.out.println("sl");
                     } else {
                         System.out.println("Not Exceeded" + alertCount);
