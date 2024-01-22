@@ -1,10 +1,9 @@
 package com.zaga.controller;
 
-import static com.mongodb.client.model.Filters.and;
-import static com.mongodb.client.model.Filters.elemMatch;
-import static com.mongodb.client.model.Filters.eq;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.zaga.entity.auth.Rule;
 import com.zaga.entity.auth.ServiceListNew;
@@ -20,8 +19,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import org.bson.Document;
-import org.bson.conversions.Bson;
+
 
 @Path("/AuthController")
 public class AuthController {
@@ -84,30 +82,72 @@ public class AuthController {
   @Path("/addServiceListNew")
   public Response addServiceListNew(final ServiceListNew serviceListNew) {
       try {
+  
           List<Rule> rules = serviceListNew.getRules();
           String serviceName = serviceListNew.getServiceName();
-          
+  
           if (rules != null && !rules.isEmpty()) {
               String ruleType = rules.get(0).getRuleType();
   
+              // Check if a service with the same serviceName and ruleType exists
               if (isServiceAlreadyExists(serviceName, ruleType, rules)) {
-                  return Response.status(Response.Status.FORBIDDEN)
-                                 .entity("Service with the same name and ruleType already exists")
+                  return Response.status(Response.Status.BAD_REQUEST)
+                                 .entity("Service with serviceName '" + serviceName + "' and ruleType '" + ruleType + "' already exists.")
                                  .build();
+              }
+  
+              // Check if a service with the same serviceName exists
+              ServiceListNew existingService = serviceListRepo.findByServiceName(serviceName);
+  
+              if (existingService != null) {
+                  // Check if the existing service already has "log", "trace", and "metrics" rule types
+                  if (hasLogTraceMetricsRuleTypes(existingService)) {
+                      return Response.status(Response.Status.BAD_REQUEST)
+                                     .entity("Cannot persist rules. The existing service already has 'log', 'trace', and 'metrics' rule types.")
+                                     .build();
+                  }
+  
+                  List<Rule> existingRules = existingService.getRules();
+                  existingRules.addAll(rules);
+  
+                  existingService.setRules(existingRules);
+  
+                  serviceListRepo.update(existingService);
+  
+                  return Response.status(Response.Status.OK).build();
               }
           }
   
+          // If no existing service, persist the new service
           serviceListRepo.persist(serviceListNew);
   
           return Response.status(Response.Status.OK).build();
   
       } catch (Exception e) {
-          e.printStackTrace();
+          System.out.println("Error processing request: " + e);
+
           return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                         .entity("Internal Server Error")
+                         .entity("Internal Server Error: " + e.getMessage())
                          .build();
       }
   }
+  
+
+// Additional method to check if the existing service already has "log", "trace", and "metrics" rule types
+private boolean hasLogTraceMetricsRuleTypes(ServiceListNew existingService) {
+  
+    List<Rule> existingRules = existingService.getRules();
+
+    // Collect unique rule types from existing rules
+    Set<String> uniqueRuleTypes = existingRules.stream()
+                                               .map(Rule::getRuleType)
+                                               .collect(Collectors.toSet());
+
+    // Check if "log", "trace", and "metrics" rule types are present
+    return uniqueRuleTypes.contains("log") && uniqueRuleTypes.contains("trace") && uniqueRuleTypes.contains("metrics");
+}
+
+
   
   private boolean isServiceAlreadyExists(String serviceName, String ruleType, List<Rule> rules) {
       return serviceListRepo.findByServiceNameAndRuleTypeMatch(serviceName, ruleType, rules) != null;

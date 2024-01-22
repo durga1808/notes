@@ -12,6 +12,10 @@ import jakarta.enterprise.context.ApplicationScoped;
 @ApplicationScoped
 public class ServiceListRepo implements PanacheMongoRepository<ServiceListNew> {
 
+
+    public ServiceListNew findByServiceName(String serviceName) {
+        return find("serviceName = ?1 ", serviceName).firstResult();
+    }
     
     public ServiceListNew findByServiceNameAndRuleTypeMatch(String serviceName, String ruleType, List<Rule> rules) {
         List<ServiceListNew> results = find("serviceName = ?1", serviceName).list();
