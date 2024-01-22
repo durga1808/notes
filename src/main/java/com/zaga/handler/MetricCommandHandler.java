@@ -303,15 +303,18 @@ public String calculateSeverity(double actualUsage, double limit) {
                 "process.runtime.jvm.system.cpu.utilization",
                 "process.runtime.jvm.system.cpu.load_1m",
                 "process.runtime.jvm.memory.usage",
-                "process.runtime.jvm.memory.limit").contains(metricName);
+                "process.runtime.jvm.memory.limit",
+                "jvm.cpu.recent_utilization",
+                "jvm.memory.used",
+                "jvm.memory.limit").contains(metricName);
     }
 
     private boolean isMemoryMetric(String metricName) {
-        return Set.of("process.runtime.jvm.memory.usage").contains(metricName);
+        return Set.of("process.runtime.jvm.memory.usage","jvm.memory.used").contains(metricName);
     }
 
     private boolean isCpuMetric(String metricName) {
-        return Set.of("process.runtime.jvm.cpu.utilization", "process.runtime.jvm.system.cpu.utilization")
+        return Set.of("process.runtime.jvm.cpu.utilization", "process.runtime.jvm.system.cpu.utilization","jvm.cpu.recent_utilization")
                 .contains(metricName);
     }
 
