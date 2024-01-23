@@ -30,6 +30,7 @@ import com.zaga.repo.MetricCommandRepo;
 import com.zaga.repo.MetricDTORepo;
 import com.zaga.repo.ServiceListRepo;
 
+import io.vertx.core.Vertx;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.websocket.EncodeException;
@@ -52,146 +53,138 @@ public class MetricCommandHandler {
     @Inject
     AlertProducer metricAlertProducer;
 
+    @Inject
+    Vertx vertx;
+
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 
     public void createMetricProduct(OtelMetric metrics) {
         metricCommandRepo.persist(metrics);
         
-        List<MetricDTO> metricDTOs = extractAndMapData(metrics);
-        ServiceListNew serviceListData1 = new ServiceListNew();
-        for (MetricDTO metricDTOSingle : metricDTOs) {
-            serviceListData1 = serviceListRepo.find("serviceName = ?1", metricDTOSingle.getServiceName()).firstResult();
-            break;
-        }
-        for (MetricDTO metricDTO : metricDTOs) {
-            processRuleManipulation(metricDTO, serviceListData1);
-        }
-        System.out.println("---------MetricDTOs:---------- " + metricDTOs.size());
+        vertx.executeBlocking(promise -> {
+            List<MetricDTO> metricDTOs = extractAndMapData(metrics);
+            ServiceListNew serviceListData1 = new ServiceListNew();
+            for (MetricDTO metricDTOSingle : metricDTOs) {
+                serviceListData1 = serviceListRepo.find("serviceName = ?1", metricDTOSingle.getServiceName()).firstResult();
+                break;
+            }
+            for (MetricDTO metricDTO : metricDTOs) {
+                processRuleManipulation(metricDTO, serviceListData1);
+            }
+            System.out.println("---------MetricDTOs:---------- " + metricDTOs.size());
+            promise.complete();
+        }, result -> {
+            if (result.failed()) {
+                System.out.println("Error executing blocking code: " + result.cause());
+            }
+        });
     }
-
+    
     public void processRuleManipulation(MetricDTO metricDTO, ServiceListNew serviceListData) {
         LocalDateTime currentDateTime = LocalDateTime.now();
         try {
-            if (!serviceListData.getRules().isEmpty()) {
-                for (Rule sData : serviceListData.getRules()) {
-                    if ("metric".equals(sData.getRuleType())) {
-                        LocalDateTime startDate = sData.getStartDateTime();
-                        LocalDateTime expiryDate = sData.getExpiryDateTime();
-                        if (startDate != null && expiryDate != null) {
-                            String startDateTimeString = startDate.format(FORMATTER);
-                            String expiryDateTimeString = expiryDate.format(FORMATTER);
-
-                            LocalDateTime startDateTime = LocalDateTime.parse(startDateTimeString, FORMATTER);
-                            sData.setStartDateTime(startDateTime);
-
-                            LocalDateTime expiryDateTime = LocalDateTime.parse(expiryDateTimeString, FORMATTER);
-                            sData.setExpiryDateTime(expiryDateTime);
-                            Double cpuLimit = sData.getCpuLimit();
-                            Double cpuUsage = metricDTO.getCpuUsage();
-                            Double cpuLimitMilliCores = cpuLimit * 1000;
-                            Integer memoryUsage = metricDTO.getMemoryUsage();
-
-                            Map<String, String> alertPayload = new HashMap<>();
-
-                            if (cpuUsage != null && memoryUsage != null && cpuUsage != 0 && memoryUsage != 0) {
-                                boolean isCpuViolation = false;
-                                boolean isMemoryViolation = false;
-                                // double cpuLimit = sData.getCpuLimit();
-                                Integer memoryLimit = sData.getMemoryLimit();
-                                String memoryConstraint = sData.getMemoryConstraint();
-                                String cpuConstraint = sData.getCpuConstraint();
-                            
-                                switch (cpuConstraint) {
-                                    case "greaterThan":
-                                        isCpuViolation = cpuUsage > cpuLimitMilliCores;
-                                        break;
-                                    case "lessThan":
-                                        isCpuViolation = cpuUsage < cpuLimitMilliCores;
-                                        break;
-                                    case "greaterThanOrEqual":
-                                        isCpuViolation = cpuUsage >= cpuLimitMilliCores;
-                                        break;
-                                    case "lessThanOrEqual":
-                                        isCpuViolation = cpuUsage <= cpuLimitMilliCores;
-                                        break;
-                                }
-                            
-                                switch (memoryConstraint) {
-                                    case "greaterThan":
-                                        isMemoryViolation = memoryUsage > memoryLimit;
-                                        break;
-                                    case "lessThan":
-                                        isMemoryViolation = memoryUsage < memoryLimit;
-                                        break;
-                                    case "greaterThanOrEqual":
-                                        isMemoryViolation = memoryUsage >= memoryLimit;
-                                        break;
-                                    case "lessThanOrEqual":
-                                        isMemoryViolation = memoryUsage <= memoryLimit;
-                                        break;
-                                }
+            vertx.executeBlocking(promise -> {
+                if (!serviceListData.getRules().isEmpty()) {
+                    for (Rule sData : serviceListData.getRules()) {
+                        if ("metric".equals(sData.getRuleType())) {
+                            LocalDateTime startDate = sData.getStartDateTime();
+                            LocalDateTime expiryDate = sData.getExpiryDateTime();
+                            if (startDate != null && expiryDate != null) {
+                                String startDateTimeString = startDate.format(FORMATTER);
+                                String expiryDateTimeString = expiryDate.format(FORMATTER);
+    
+                                LocalDateTime startDateTime = LocalDateTime.parse(startDateTimeString, FORMATTER);
+                                sData.setStartDateTime(startDateTime);
+    
+                                LocalDateTime expiryDateTime = LocalDateTime.parse(expiryDateTimeString, FORMATTER);
+                                sData.setExpiryDateTime(expiryDateTime);
+                                Double cpuLimit = sData.getCpuLimit();
+                                Double cpuUsage = metricDTO.getCpuUsage();
+                                Double cpuLimitMilliCores = cpuLimit * 1000;
+                                Integer memoryUsage = metricDTO.getMemoryUsage();
+    
+                                Map<String, String> alertPayload = new HashMap<>();
+    
+                                if (cpuUsage != null && memoryUsage != null && cpuUsage != 0 && memoryUsage != 0) {
+                                    boolean isCpuViolation = false;
+                                    boolean isMemoryViolation = false;
+                                    // double cpuLimit = sData.getCpuLimit();
+                                    Integer memoryLimit = sData.getMemoryLimit();
+                                    String memoryConstraint = sData.getMemoryConstraint();
+                                    String cpuConstraint = sData.getCpuConstraint();
                                 
-                                AlertPayload alertPayload2 = new AlertPayload();
-
-                                if (isCpuViolation && currentDateTime.isAfter(startDateTime) && currentDateTime.isBefore(expiryDateTime)) {
-                                    System.out.println("OUT");
-                                    String cpuSeverity = calculateSeverity(cpuUsage, cpuLimitMilliCores);
-                                    System.out.println(cpuSeverity + " - CPU Usage " + Math.ceil(cpuUsage) + " peaked in this service " + metricDTO.getServiceName());
-                                    sendAlert(alertPayload,"" + cpuSeverity + "- CPU Usage " + Math.ceil(cpuLimitMilliCores)
-                                            + "  peaked in this service " + metricDTO.getServiceName());
-                                    System.out.println("peaked in this service------------ " + alertPayload);
-                                    String cpuAlertMessage = cpuSeverity + "- CPU Usage " + Math.ceil(cpuUsage) + " peaked in this service " + metricDTO.getServiceName();
-
-                                    alertPayload2.setServiceName(metricDTO.getServiceName());
-                                    alertPayload2.setCreatedTime(metricDTO.getDate());
-                                    alertPayload2.setType(sData.getRuleType());
-                                    alertPayload2.setAlertMessage(cpuAlertMessage);
-                                    metricAlertProducer.kafkaSend(alertPayload2);
-                                }
-                            
-                                if (isMemoryViolation && currentDateTime.isAfter(startDateTime) && currentDateTime.isBefore(expiryDateTime)) {
-                                    System.out.println("OUT");
-                                    String memorySeverity = calculateSeverity(memoryUsage, memoryLimit);
-                                sendAlert(alertPayload,"" + memorySeverity + " - Memory Usage " + memoryUsage + " peaked in this service "
-                                            + metricDTO.getServiceName() + "at" + metricDTO.getDate());
-                                    System.out.println(memorySeverity + " Alert - Memory Usage " + memoryUsage + " peaked in this service " + metricDTO.getServiceName());
-                                }
+                                    switch (cpuConstraint) {
+                                        case "greaterThan":
+                                            isCpuViolation = cpuUsage > cpuLimitMilliCores;
+                                            break;
+                                        case "lessThan":
+                                            isCpuViolation = cpuUsage < cpuLimitMilliCores;
+                                            break;
+                                        case "greaterThanOrEqual":
+                                            isCpuViolation = cpuUsage >= cpuLimitMilliCores;
+                                            break;
+                                        case "lessThanOrEqual":
+                                            isCpuViolation = cpuUsage <= cpuLimitMilliCores;
+                                            break;
+                                    }
                                 
+                                    switch (memoryConstraint) {
+                                        case "greaterThan":
+                                            isMemoryViolation = memoryUsage > memoryLimit;
+                                            break;
+                                        case "lessThan":
+                                            isMemoryViolation = memoryUsage < memoryLimit;
+                                            break;
+                                        case "greaterThanOrEqual":
+                                            isMemoryViolation = memoryUsage >= memoryLimit;
+                                            break;
+                                        case "lessThanOrEqual":
+                                            isMemoryViolation = memoryUsage <= memoryLimit;
+                                            break;
+                                    }
+                                    
+                                    AlertPayload alertPayload2 = new AlertPayload();
+    
+                                    if (isCpuViolation && currentDateTime.isAfter(startDateTime) && currentDateTime.isBefore(expiryDateTime)) {
+                                        System.out.println("OUT");
+                                        String cpuSeverity = calculateSeverity(cpuUsage, cpuLimitMilliCores);
+                                        System.out.println(cpuSeverity + " - CPU Usage " + Math.ceil(cpuUsage) + " peaked in this service " + metricDTO.getServiceName());
+                                        sendAlert(alertPayload,"" + cpuSeverity + "- CPU Usage " + Math.ceil(cpuLimitMilliCores)
+                                                + "  peaked in this service " + metricDTO.getServiceName());
+                                        System.out.println("peaked in this service------------ " + alertPayload);
+                                        String cpuAlertMessage = cpuSeverity + "- CPU Usage " + Math.ceil(cpuUsage) + " peaked in this service " + metricDTO.getServiceName();
+    
+                                        alertPayload2.setServiceName(metricDTO.getServiceName());
+                                        alertPayload2.setCreatedTime(metricDTO.getDate());
+                                        alertPayload2.setType(sData.getRuleType());
+                                        alertPayload2.setAlertMessage(cpuAlertMessage);
+                                        metricAlertProducer.kafkaSend(alertPayload2);
+                                    }
+                                
+                                    if (isMemoryViolation && currentDateTime.isAfter(startDateTime) && currentDateTime.isBefore(expiryDateTime)) {
+                                        System.out.println("OUT");
+                                        String memorySeverity = calculateSeverity(memoryUsage, memoryLimit);
+                                        sendAlert(alertPayload,"" + memorySeverity + " - Memory Usage " + memoryUsage + " peaked in this service "
+                                                + metricDTO.getServiceName() + "at" + metricDTO.getDate());
+                                        System.out.println(memorySeverity + " Alert - Memory Usage " + memoryUsage + " peaked in this service " + metricDTO.getServiceName());
+                                    }
+                                    
+                                }
                             }
-                            
-
-                            // if (memoryUsage != null && memoryUsage != 0 && cpuUsage != null && cpuUsage != 0) {
-                            //     if (memoryUsage >= sData.getMemoryLimit() &&
-                            //             currentDateTime.isAfter(startDateTime) &&
-                            //             currentDateTime.isBefore(expiryDateTime)) {
-                            //         // Handle Memory Usage exceeded limit
-                            //         sendAlert(alertPayload, "Memory Usage " + memoryUsage + " peaked in this service "
-                            //                 + metricDTO.getServiceName());
-                            //     }
-                            // }
-
-                            // if (cpuUsage != null && cpuUsage != 0 && memoryUsage != null && memoryUsage != 0) {
-                            //     if (cpuUsage >= cpuLimitMilliCores &&
-                            //             currentDateTime.isAfter(startDateTime) &&
-                            //             currentDateTime.isBefore(expiryDateTime)) {
-                            //         // Handle CPU Usage exceeded limit
-                            //         sendAlert(alertPayload, "CPU Usage " + Math.ceil(cpuLimitMilliCores)
-                            //                 + "  peaked in this service " + metricDTO.getServiceName());
-                            //     }
-                            // }
                         }
-                        
                     }
-                    
                 }
-                
-            }
-            
+                promise.complete();
+            }, result -> {
+                if (result.failed()) {
+                    System.out.println("Error executing blocking code: " + result.cause());
+                }
+            });
         } catch (Exception e) {
             System.out.println("ERROR " + e.getLocalizedMessage());
         }
     }
-
+    
 public String calculateSeverity(double actualUsage, double limit) {
                                 double percentageExceeded = ((actualUsage - limit) / limit) * 100;
                             

@@ -20,6 +20,8 @@ import com.zaga.entity.queryentity.kepler.KeplerMetricDTO;
 import com.zaga.entity.queryentity.kepler.Resource;
 import com.zaga.repo.KeplerMetricDTORepo;
 import com.zaga.repo.KeplerMetricRepo;
+
+import io.vertx.core.Vertx;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.time.Instant;
@@ -39,6 +41,9 @@ public class KeplerMetricCommandHandler {
 
   @Inject
   KeplerMetricDTORepo KeplerMetricDTORepo;
+
+  @Inject 
+  Vertx vertx;
 
   public enum KeplerMetricsNames {
     kepler_container_joules_total("CONT1001"),
@@ -101,69 +106,26 @@ public class KeplerMetricCommandHandler {
   public void createKeplerMetric(KeplerMetric metric) {
     keplerMetricRepo.persist(metric);
 
-    List<KeplerMetricDTO> metricDTOs = extractAndMapData(metric);
+    vertx.executeBlocking(promise -> {
+        List<KeplerMetricDTO> metricDTOs = extractAndMapData(metric);
 
-    if (!metricDTOs.isEmpty()) {
-      for (KeplerMetricDTO keplerMetDTO : metricDTOs) {
-        KeplerMetricDTORepo.persist(keplerMetDTO);
-      }
-    }
-  }
+        if (!metricDTOs.isEmpty()) {
+            for (KeplerMetricDTO keplerMetDTO : metricDTOs) {
+                KeplerMetricDTORepo.persist(keplerMetDTO);
+            }
+        }
+        promise.complete();
+    }, result -> {
+        if (result.failed()) {
+            System.out.println("Error executing blocking code: " + result.cause());
+        }
+    });
+}
 
   public List<KeplerMetricDTO> extractAndMapData(KeplerMetric keplerMetric) {
     List<KeplerMetricDTO> keplerMetricDTOLst = new ArrayList<>();
 
     List<ResourcekeplerMetric> resourceMetrics = keplerMetric.getResourceMetrics();
-
-    // List<String> podNamesList = new ArrayList<>();
-    // List<String> namespaceList = new ArrayList<>();
-
-    // for (ResourceMetric resourceMetric : resourceMetrics) {
-    //   List<ScopeMetric> scopeMetrics = resourceMetric.getScopeMetrics();
-    //   for (ScopeMetric scopeMetric : scopeMetrics) {
-    //     List<Metric> metrics = scopeMetric.getMetrics();
-    //     for (Metric metric : metrics) {
-    //       MetricSum metricSum = metric.getSum();
-    //       if (metric.getSum() != null) {
-    //         List<SumDataPoint> sumDataPoints = metricSum.getDataPoints();
-    //         for (SumDataPoint sumDataPoint : sumDataPoints) {
-    //           List<SumDataPointAttribute> sumAtt = sumDataPoint.getAttributes();
-    //           for (SumDataPointAttribute sumDataPointAttribute : sumAtt) {
-    //             String keyValue = sumDataPointAttribute.getKey();
-
-    //             String attvalue = null;
-    //             SumDataPointAttributeValue gAttValue = sumDataPointAttribute.getValue();
-
-    //             if (gAttValue != null) {
-    //               attvalue = gAttValue.getStringValue();
-    //             }
-
-    //             if ("pod_name".equals(keyValue)) {
-    //               // podName = attvalue;
-    //               if (!podNamesList.contains(attvalue)) {
-    //                 podNamesList.add(attvalue);
-    //               }
-    //             } else if ("container_namespace".equals(keyValue)) {
-    //               // containerNamespace = attvalue;
-    //               if (!namespaceList.contains(attvalue)) {
-    //                 namespaceList.add(attvalue);
-    //               }
-    //             }
-    //           }
-    //         }
-    //       }
-
-    //     }
-    //   }
-    // }
-
-    // for (String pod : podNamesList) {
-    // System.out.println("Total PodNameList------------- " + pod);
-    // }
-
-    // for (String namespace : namespaceList) {
-    // System.out.println("Total NamespaceList-------------- " + namespace);
-    // }
 
     for (ResourcekeplerMetric resourceMetric : resourceMetrics) {
       List<ScopeMetric> scopeMetrics = resourceMetric.getScopeMetrics();
