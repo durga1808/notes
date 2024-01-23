@@ -199,18 +199,19 @@ private boolean hasLogTraceMetricsRuleTypes(ServiceListNew existingService) {
    
   
   
+
   @PUT
   @Path("/updateServiceList")
+  @Produces(MediaType.APPLICATION_JSON)
   public Response updateServiceList(ServiceListNew serviceListNew) {
       try {
           String serviceName = serviceListNew.getServiceName();
           String ruleType = serviceListNew.getRules().get(0).getRuleType();
   
           if (serviceName == null || ruleType == null) {
-              throw new WebApplicationException(
-                      "serviceName and ruleType must be provided",
-                      Response.Status.BAD_REQUEST
-              );
+              return Response.status(Response.Status.BAD_REQUEST)
+                      .entity("{\"error\": \"serviceName and ruleType must be provided\"}")
+                      .build();
           }
   
           ServiceListNew existingService = serviceListRepo.findByServiceNameAndRuleType(
@@ -222,13 +223,13 @@ private boolean hasLogTraceMetricsRuleTypes(ServiceListNew existingService) {
               updateExistingService(existingService, serviceListNew);
               serviceListRepo.update(existingService);
               System.out.println("Updated service: " + existingService.getServiceName());
-              
-              return Response.ok(existingService).build();
+  
+              // Return the updated service data in JSON format
+              return Response.ok(existingService, MediaType.APPLICATION_JSON).build();
           } else {
-              throw new WebApplicationException(
-                      "Service not found",
-                      Response.Status.NOT_FOUND
-              );
+              return Response.status(Response.Status.NOT_FOUND)
+                      .entity("{\"error\": \"Service not found\"}")
+                      .build();
           }
       } catch (Exception e) {
           e.printStackTrace();
