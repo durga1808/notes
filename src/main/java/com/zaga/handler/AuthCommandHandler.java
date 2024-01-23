@@ -7,13 +7,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.mongodb.MongoWriteException;
 import com.zaga.entity.auth.Environments;
 import com.zaga.entity.auth.ServiceListNew;
 import com.zaga.repo.AuthRepo;
 import com.zaga.repo.ServiceListRepo;
 
-import io.vertx.mutiny.ext.auth.User;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.WebApplicationException;
@@ -241,4 +239,9 @@ public Response updateUserInfo(UserCredentials userInfo) {
     System.out.println(user);
     return userCredentials;
   }
+
+
+
+
+  
 }

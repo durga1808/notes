@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import io.quarkus.mongodb.panache.PanacheMongoEntity;
 import io.quarkus.mongodb.panache.common.MongoEntity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -16,16 +17,9 @@ import lombok.ToString;
 @ToString
 @JsonIgnoreProperties({ "id" })
 @MongoEntity(collection = "ServiceListNew", database = "ObservabilityCredentials")
-public class ServiceListNew  {
+public class ServiceListNew extends PanacheMongoEntity{
 
-    /**
-     * The name of the service.
-     */
     private String serviceName;
-
-    /**
-     * The list of roles associated with the service.
-     */
     private List<String> roles;
 
     private List<Rule> rules;

@@ -1,27 +1,25 @@
 package com.zaga.handler;
 
 import com.zaga.entity.kepler.KeplerMetric;
-import com.zaga.entity.otelmetric.ResourceMetric;
-import com.zaga.entity.otelmetric.ScopeMetric;
-import com.zaga.entity.otelmetric.scopeMetric.Metric;
-import com.zaga.entity.otelmetric.scopeMetric.MetricGauge;
-import com.zaga.entity.otelmetric.scopeMetric.MetricHistogram;
-import com.zaga.entity.otelmetric.scopeMetric.MetricSum;
-import com.zaga.entity.otelmetric.scopeMetric.gauge.GaugeDataPoint;
-import com.zaga.entity.otelmetric.scopeMetric.gauge.GaugeDataPointAttribute;
-import com.zaga.entity.otelmetric.scopeMetric.gauge.GaugeDataPointAttributeValue;
-import com.zaga.entity.otelmetric.scopeMetric.histogram.HistogramDataPoint;
-import com.zaga.entity.otelmetric.scopeMetric.histogram.HistogramDataPointAttribute;
-import com.zaga.entity.otelmetric.scopeMetric.histogram.HistogramDataPointAttributeValue;
-import com.zaga.entity.otelmetric.scopeMetric.sum.SumDataPoint;
-import com.zaga.entity.otelmetric.scopeMetric.sum.SumDataPointAttribute;
-import com.zaga.entity.otelmetric.scopeMetric.sum.SumDataPointAttributeValue;
+import com.zaga.entity.kepler.ResourcekeplerMetric;
+import com.zaga.entity.kepler.ScopeMetric;
+import com.zaga.entity.kepler.scopeMetric.Metric;
+import com.zaga.entity.kepler.scopeMetric.MetricGauge;
+import com.zaga.entity.kepler.scopeMetric.MetricHistogram;
+import com.zaga.entity.kepler.scopeMetric.MetricSum;
+import com.zaga.entity.kepler.scopeMetric.gauge.GaugeDataPoint;
+import com.zaga.entity.kepler.scopeMetric.gauge.GaugeDataPointAttribute;
+import com.zaga.entity.kepler.scopeMetric.gauge.GaugeDataPointAttributeValue;
+import com.zaga.entity.kepler.scopeMetric.histogram.HistogramDataPoint;
+import com.zaga.entity.kepler.scopeMetric.histogram.HistogramDataPointAttribute;
+import com.zaga.entity.kepler.scopeMetric.histogram.HistogramDataPointAttributeValue;
+import com.zaga.entity.kepler.scopeMetric.sum.SumDataPoint;
+import com.zaga.entity.kepler.scopeMetric.sum.SumDataPointAttribute;
+import com.zaga.entity.kepler.scopeMetric.sum.SumDataPointAttributeValue;
 import com.zaga.entity.queryentity.kepler.KeplerMetricDTO;
 import com.zaga.entity.queryentity.kepler.Resource;
 import com.zaga.repo.KeplerMetricDTORepo;
 import com.zaga.repo.KeplerMetricRepo;
-
-import io.vertx.core.Vertx;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.time.Instant;
@@ -41,9 +39,6 @@ public class KeplerMetricCommandHandler {
 
   @Inject
   KeplerMetricDTORepo KeplerMetricDTORepo;
-
-  @Inject
-  Vertx vertx;
 
   public enum KeplerMetricsNames {
     kepler_container_joules_total("CONT1001"),
@@ -103,40 +98,22 @@ public class KeplerMetricCommandHandler {
     }
   }
 
-        public void createKeplerMetric(KeplerMetric metric) {
-                    keplerMetricRepo.persist(metric);
-    System.out.println("Entered=----------------------------------");
-    List<KeplerMetricDTO> metricDTOs = new ArrayList<>();
+  public void createKeplerMetric(KeplerMetric metric) {
+    keplerMetricRepo.persist(metric);
 
-    vertx.executeBlocking(promise -> {
-        try {
-            metricDTOs.addAll(extractAndMapData(metric));
+    List<KeplerMetricDTO> metricDTOs = extractAndMapData(metric);
 
-            if (!metricDTOs.isEmpty()) {
-                System.out.println("keplerMetricDTO-------------" + metricDTOs.size());
-                for (KeplerMetricDTO keplerMetDTO : metricDTOs) {
-                    KeplerMetricDTORepo.persist(keplerMetDTO);
-                }
-            }
-
-            promise.complete();
-        } catch (Exception e) {
-            System.out.println("ERROR " + e.getLocalizedMessage());
-            promise.fail(e);
-        }
-    }, result -> {
-        if (result.failed()) {
-            System.err.println("Error creating Kepler metric: " + result.cause().getMessage());
-            // Handle the error appropriately (e.g., logging, notifying, etc.)
-        }
-    });
-}
+    if (!metricDTOs.isEmpty()) {
+      for (KeplerMetricDTO keplerMetDTO : metricDTOs) {
+        KeplerMetricDTORepo.persist(keplerMetDTO);
+      }
+    }
+  }
 
   public List<KeplerMetricDTO> extractAndMapData(KeplerMetric keplerMetric) {
-        System.out.println("DTO creation=----------------------------------");
     List<KeplerMetricDTO> keplerMetricDTOLst = new ArrayList<>();
 
-    List<ResourceMetric> resourceMetrics = keplerMetric.getResourceMetrics();
+    List<ResourcekeplerMetric> resourceMetrics = keplerMetric.getResourceMetrics();
 
     // List<String> podNamesList = new ArrayList<>();
     // List<String> namespaceList = new ArrayList<>();
@@ -188,7 +165,7 @@ public class KeplerMetricCommandHandler {
     // System.out.println("Total NamespaceList-------------- " + namespace);
     // }
 
-    for (ResourceMetric resourceMetric : resourceMetrics) {
+    for (ResourcekeplerMetric resourceMetric : resourceMetrics) {
       List<ScopeMetric> scopeMetrics = resourceMetric.getScopeMetrics();
 
       for (ScopeMetric scopeMetric : scopeMetrics) {
@@ -377,7 +354,6 @@ public class KeplerMetricCommandHandler {
         keplerMetricDTO.setServiceName(
             keys.toString().isEmpty() ? metricName : keys.toString());
 
-            System.out.println("keplerMetricDTO--------"+keplerMetricDTO);
         // Add the new KeplerMetricDTO to the map
         podNameToDTO.put(podName, keplerMetricDTO);
       }
@@ -652,5 +628,5 @@ public class KeplerMetricCommandHandler {
     // keplerMetricDTO.setType(type);
     // keplerMetricDTOLst.add(keplerMetricDTO);
 
-  }
+}
 }
