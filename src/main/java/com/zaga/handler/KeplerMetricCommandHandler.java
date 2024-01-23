@@ -1,21 +1,21 @@
 package com.zaga.handler;
 
 import com.zaga.entity.kepler.KeplerMetric;
-import com.zaga.entity.otelmetric.ResourceMetric;
-import com.zaga.entity.otelmetric.ScopeMetric;
-import com.zaga.entity.otelmetric.scopeMetric.Metric;
-import com.zaga.entity.otelmetric.scopeMetric.MetricGauge;
-import com.zaga.entity.otelmetric.scopeMetric.MetricHistogram;
-import com.zaga.entity.otelmetric.scopeMetric.MetricSum;
-import com.zaga.entity.otelmetric.scopeMetric.gauge.GaugeDataPoint;
-import com.zaga.entity.otelmetric.scopeMetric.gauge.GaugeDataPointAttribute;
-import com.zaga.entity.otelmetric.scopeMetric.gauge.GaugeDataPointAttributeValue;
-import com.zaga.entity.otelmetric.scopeMetric.histogram.HistogramDataPoint;
-import com.zaga.entity.otelmetric.scopeMetric.histogram.HistogramDataPointAttribute;
-import com.zaga.entity.otelmetric.scopeMetric.histogram.HistogramDataPointAttributeValue;
-import com.zaga.entity.otelmetric.scopeMetric.sum.SumDataPoint;
-import com.zaga.entity.otelmetric.scopeMetric.sum.SumDataPointAttribute;
-import com.zaga.entity.otelmetric.scopeMetric.sum.SumDataPointAttributeValue;
+import com.zaga.entity.kepler.ResourcekeplerMetric;
+import com.zaga.entity.kepler.ScopeMetric;
+import com.zaga.entity.kepler.scopeMetric.Metric;
+import com.zaga.entity.kepler.scopeMetric.MetricGauge;
+import com.zaga.entity.kepler.scopeMetric.MetricHistogram;
+import com.zaga.entity.kepler.scopeMetric.MetricSum;
+import com.zaga.entity.kepler.scopeMetric.gauge.GaugeDataPoint;
+import com.zaga.entity.kepler.scopeMetric.gauge.GaugeDataPointAttribute;
+import com.zaga.entity.kepler.scopeMetric.gauge.GaugeDataPointAttributeValue;
+import com.zaga.entity.kepler.scopeMetric.histogram.HistogramDataPoint;
+import com.zaga.entity.kepler.scopeMetric.histogram.HistogramDataPointAttribute;
+import com.zaga.entity.kepler.scopeMetric.histogram.HistogramDataPointAttributeValue;
+import com.zaga.entity.kepler.scopeMetric.sum.SumDataPoint;
+import com.zaga.entity.kepler.scopeMetric.sum.SumDataPointAttribute;
+import com.zaga.entity.kepler.scopeMetric.sum.SumDataPointAttributeValue;
 import com.zaga.entity.queryentity.kepler.KeplerMetricDTO;
 import com.zaga.entity.queryentity.kepler.Resource;
 import com.zaga.repo.KeplerMetricDTORepo;
@@ -113,7 +113,7 @@ public class KeplerMetricCommandHandler {
   public List<KeplerMetricDTO> extractAndMapData(KeplerMetric keplerMetric) {
     List<KeplerMetricDTO> keplerMetricDTOLst = new ArrayList<>();
 
-    List<ResourceMetric> resourceMetrics = keplerMetric.getResourceMetrics();
+    List<ResourcekeplerMetric> resourceMetrics = keplerMetric.getResourceMetrics();
 
     // List<String> podNamesList = new ArrayList<>();
     // List<String> namespaceList = new ArrayList<>();
@@ -165,7 +165,7 @@ public class KeplerMetricCommandHandler {
     // System.out.println("Total NamespaceList-------------- " + namespace);
     // }
 
-    for (ResourceMetric resourceMetric : resourceMetrics) {
+    for (ResourcekeplerMetric resourceMetric : resourceMetrics) {
       List<ScopeMetric> scopeMetrics = resourceMetric.getScopeMetrics();
 
       for (ScopeMetric scopeMetric : scopeMetrics) {
