@@ -201,39 +201,41 @@ private boolean hasLogTraceMetricsRuleTypes(ServiceListNew existingService) {
   
   @PUT
   @Path("/updateServiceList")
-  public void updateServiceList(ServiceListNew serviceListNew) {
-    try {
-      String serviceName = serviceListNew.getServiceName();
-      String ruleType = serviceListNew.getRules().get(0).getRuleType();
-
-      if (serviceName == null || ruleType == null) {
-        throw new WebApplicationException(
-          "serviceName and ruleType must be provided",
-          Response.Status.BAD_REQUEST
-        );
+  public Response updateServiceList(ServiceListNew serviceListNew) {
+      try {
+          String serviceName = serviceListNew.getServiceName();
+          String ruleType = serviceListNew.getRules().get(0).getRuleType();
+  
+          if (serviceName == null || ruleType == null) {
+              throw new WebApplicationException(
+                      "serviceName and ruleType must be provided",
+                      Response.Status.BAD_REQUEST
+              );
+          }
+  
+          ServiceListNew existingService = serviceListRepo.findByServiceNameAndRuleType(
+                  serviceName,
+                  ruleType
+          );
+  
+          if (existingService != null) {
+              updateExistingService(existingService, serviceListNew);
+              serviceListRepo.update(existingService);
+              System.out.println("Updated service: " + existingService.getServiceName());
+              
+              return Response.ok(existingService).build();
+          } else {
+              throw new WebApplicationException(
+                      "Service not found",
+                      Response.Status.NOT_FOUND
+              );
+          }
+      } catch (Exception e) {
+          e.printStackTrace();
+          return Response.serverError().build();
       }
-
-      ServiceListNew existingService = serviceListRepo.findByServiceNameAndRuleType(
-        serviceName,
-        ruleType
-      );
-
-      if (existingService != null) {
-        updateExistingService(existingService, serviceListNew);
-        serviceListRepo.update(existingService);
-        System.out.println(
-          "Updated service: " + existingService.getServiceName()
-        );
-      } else {
-        throw new WebApplicationException(
-          "Service not found",
-          Response.Status.NOT_FOUND
-        );
-      }
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
   }
+  
 
   private void updateExistingService(
     ServiceListNew existingService,
@@ -277,6 +279,9 @@ private boolean hasLogTraceMetricsRuleTypes(ServiceListNew existingService) {
       System.out.println("Not matched rule type: " + ruleType);
     }
   }
+
+
+
 
   @POST
   @Path("/getServiceList")
