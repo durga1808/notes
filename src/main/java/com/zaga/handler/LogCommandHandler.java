@@ -172,35 +172,6 @@ public class LogCommandHandler {
                                 }
                             }                                
                                 
-                            // if (severityText != null && severityText != "") {
-                            //     if (sData.getSeverityText().contains(severityText) &&
-                            //             currentDateTime.isAfter(startDateTime) &&
-                            //             currentDateTime.isBefore(expiryDateTime)) {
-                            //         String serviceName = logDTO.getServiceName();
-                            //         int alertCount = alertCountMap.getOrDefault(serviceName, 0);
-
-                            //         String previousTraceId = previousTraceIdMap.getOrDefault(serviceName, "");
-
-                            //         // Check if traceId changed from the previous log entry
-                            //         if (!traceId.equals(previousTraceId) && traceId != null && !traceId.isEmpty()) {
-                            //             // Increment alert count only if traceId is different
-                            //             alertCount++;
-                            //             previousTraceIdMap.put(serviceName, traceId); // Update previous traceId
-                            //         }
-
-                            //         if (alertCount > 3) {
-                            //             System.out.println("Exceeded");
-                            //             // Throw an alert as the count exceeds 3 for the same service
-                            //             sendAlert(new HashMap<>(), "Critical Severity Alert call exceeded for this service: " + serviceName);
-                            //         } else {
-                            //             System.out.println("Not Exceeded" + alertCount);
-                            //             alertCountMap.put(serviceName, alertCount);
-                            //         }
-                            //     }
-                            // }
-
-
-
                         }
                     }
                 }

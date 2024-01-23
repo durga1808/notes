@@ -66,7 +66,7 @@ public class TraceCommandHandler {
     }
 
     System.out.println("Trace DTO size " + traceDTOs.size());
-
+    // System.out.println("Trace DTO size " + traceDTOs);
     if (!serviceListNew.equals(null)) {
       for (TraceDTO traceDTO : traceDTOs) {
         // System.out.println("Trace DTO's " + traceDTO.toString());
@@ -74,51 +74,6 @@ public class TraceCommandHandler {
       }
     }
   }
-
-  // public void processRuleManipulation(TraceDTO traceDTO, ServiceListNew
-  // serviceListNew) {
-  // LocalDateTime currentDateTime = LocalDateTime.now();
-  // try {
-  // if (!serviceListNew.getRules().isEmpty()) {
-  // for (Rule sData : serviceListNew.getRules()) {
-  // if ("trace".equals(sData.getRuleType())) {
-  // LocalDateTime startDate = sData.getStartDateTime();
-  // LocalDateTime expiryDate = sData.getExpiryDateTime();
-  // if (startDate != null && expiryDate != null) {
-  // String startDateTimeString = startDate.format(FORMATTER);
-  // String expiryDateTimeString = expiryDate.format(FORMATTER);
-
-  // LocalDateTime startDateTime = LocalDateTime.parse(startDateTimeString,
-  // FORMATTER);
-  // sData.setStartDateTime(startDateTime);
-
-  // LocalDateTime expiryDateTime = LocalDateTime.parse(expiryDateTimeString,
-  // FORMATTER);
-  // sData.setExpiryDateTime(expiryDateTime);
-
-  // Long duration = traceDTO.getDuration();
-  // System.out.println("Trace duration " + traceDTO.getDuration());
-
-  // Map<String, String> alertPayload = new HashMap<>();
-
-  // if (duration != null && duration != 0) {
-  // if (duration >= sData.getDuration() &&
-  // currentDateTime.isAfter(startDateTime) &&
-  // currentDateTime.isBefore(expiryDateTime)) {
-  // System.out.println("Trace Exceeded!");
-  // sendAlert(alertPayload, "Trace Duration got exceeded " +
-  // traceDTO.getDuration() + " for this service "
-  // + traceDTO.getServiceName());
-  // }
-  // }
-  // }
-  // }
-  // }
-  // }
-  // } catch (Exception e) {
-  // System.out.println("ERROR " + e.getLocalizedMessage());
-  // }
-  // }
 
   public void processRuleManipulation(TraceDTO traceDTO, ServiceListNew serviceListNew) {
     LocalDateTime currentDateTime = LocalDateTime.now();
@@ -201,26 +156,6 @@ public class TraceCommandHandler {
                     }
                 }
             }
-            
-
-              // if (duration != null && duration != 0) {
-              //   if (duration >= sData.getDuration() &&
-              //       currentDateTime.isAfter(startDateTime) &&
-              //       currentDateTime.isBefore(expiryDateTime)) {
-              //     String serviceName = traceDTO.getServiceName();
-              //     int alertCount = alertCountMap.getOrDefault(serviceName, 0);
-              //     alertCount++;
-
-              //     if (alertCount > 3) {
-              //       System.out.println("Exceeded");
-              //       // Throw an alert as the count exceeds 3 for the same service
-              //       sendAlert(new HashMap<>(), "Critical Alert - Duration " + traceDTO.getDuration() + " exceeded for this service: " + serviceName);
-              //     } else {
-              //       System.out.println("Not Exceeded" + alertCount);
-              //       alertCountMap.put(serviceName, alertCount);
-              //     }
-              //   }
-              // }
 
             }
           }
@@ -334,7 +269,7 @@ public class TraceCommandHandler {
                   // Check for "http.status_code" attribute
                   List<Attributes> attributes = span.getAttributes();
                   for (Attributes attribute : attributes) {
-                    if ("http.status_code".equals(attribute.getKey())) {
+                    if ("http.status_code".equals(attribute.getKey())|| "http.response.status_code".equals(attribute.getKey())) {
                       String statusCodeString = attribute.getValue().getIntValue();
 
                       if (statusCodeString != null) {
@@ -358,7 +293,7 @@ public class TraceCommandHandler {
                 // Rest of your code
                 List<Attributes> attributes = span.getAttributes();
                 for (Attributes attribute : attributes) {
-                  if ("http.method".equals(attribute.getKey())) {
+                  if ("http.method".equals(attribute.getKey()) || "http.request.method".equals(attribute.getKey())) {
                     traceDTO.setMethodName(attribute.getValue().getStringValue());
                   }
                   // Handle other attributes as needed
