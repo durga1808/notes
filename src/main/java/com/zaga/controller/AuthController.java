@@ -237,52 +237,67 @@ private boolean hasLogTraceMetricsRuleTypes(ServiceListNew existingService) {
       }
   }
   
-
-  private void updateExistingService(
-    ServiceListNew existingService,
-    ServiceListNew newService
-  ) {
-    String ruleType = newService.getRules().get(0).getRuleType();
-
-    if ("metric".equals(ruleType)) {
-      Rule existingRule = existingService.getRules().get(0);
-      Rule newRule = newService.getRules().get(0);
+  private void updateExistingService(ServiceListNew existingService, ServiceListNew serviceListNew) {
+      String ruleType = serviceListNew.getRules().get(0).getRuleType();
+      Rule existingRule = findRuleByType(existingService, ruleType);
+  
+      if (existingRule != null) {
+          Rule newRule = serviceListNew.getRules().get(0);
+  
+          switch (ruleType) {
+              case "metric":
+                  updateMetricRule(existingService,existingRule, newRule);
+                  break;
+              case "trace":
+                  updateTraceRule(existingService,existingRule, newRule);
+                  break;
+              case "log":
+                  updateLogRule(existingService,existingRule, newRule);
+                  break;
+              default:
+                  System.out.println("Not matched rule type: " + ruleType);
+                  break;
+          }
+      } else {
+          System.out.println("Rule not found for service: " + existingService.getServiceName() + " and ruleType: " + ruleType);
+      }
+  }
+  
+  private Rule findRuleByType(ServiceListNew existingService, String ruleType) {
+      for (Rule rule : existingService.getRules()) {
+          if (ruleType.equals(rule.getRuleType())) {
+              return rule;
+          }
+      }
+      return null;
+  }
+  
+  private void updateMetricRule(ServiceListNew existingService,Rule existingRule, Rule newRule) {
       existingRule.setMemoryConstraint(newRule.getMemoryConstraint());
       existingRule.setMemoryLimit(newRule.getMemoryLimit());
       existingRule.setCpuConstraint(newRule.getCpuConstraint());
       existingRule.setCpuLimit(newRule.getCpuLimit());
       existingRule.setStartDateTime(newRule.getStartDateTime());
       existingRule.setExpiryDateTime(newRule.getExpiryDateTime());
-      System.out.println(
-        "Updated metric rule for service: " + existingService.getServiceName()
-      );
-    } else if ("trace".equals(ruleType)) {
-      Rule existingRule = existingService.getRules().get(0);
-      Rule newRule = newService.getRules().get(0);
+      System.out.println("Updated metric rule for service: " + existingService.getServiceName());
+  }
+  
+  private void updateTraceRule(ServiceListNew existingService,Rule existingRule, Rule newRule) {
       existingRule.setDuration(newRule.getDuration());
       existingRule.setDurationConstraint(newRule.getDurationConstraint());
       existingRule.setStartDateTime(newRule.getStartDateTime());
       existingRule.setExpiryDateTime(newRule.getExpiryDateTime());
-      System.out.println(
-        "Updated trace rule for service: " + existingService.getServiceName()
-      );
-    } else if ("log".equals(ruleType)) {
-      Rule existingRule = existingService.getRules().get(0);
-      Rule newRule = newService.getRules().get(0);
+      System.out.println("Updated trace rule for service: " + existingService.getServiceName());
+  }
+  
+  private void updateLogRule(ServiceListNew existingService,Rule existingRule, Rule newRule) {
       existingRule.setSeverityConstraint(newRule.getSeverityConstraint());
       existingRule.setSeverityText(newRule.getSeverityText());
       existingRule.setStartDateTime(newRule.getStartDateTime());
       existingRule.setExpiryDateTime(newRule.getExpiryDateTime());
-      System.out.println(
-        "Updated log rule for service: " + existingService.getServiceName()
-      );
-    } else {
-      System.out.println("Not matched rule type: " + ruleType);
-    }
+      System.out.println("Updated log rule for service: " + existingService.getServiceName());
   }
-
-
-
+  
 
   @POST
   @Path("/getServiceList")
