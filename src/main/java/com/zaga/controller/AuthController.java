@@ -201,102 +201,101 @@ private boolean hasLogTraceMetricsRuleTypes(ServiceListNew existingService) {
   
 
   @PUT
-  @Path("/updateServiceList")
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response updateServiceList(ServiceListNew serviceListNew) {
-      try {
-          String serviceName = serviceListNew.getServiceName();
-          String ruleType = serviceListNew.getRules().get(0).getRuleType();
-  
-          if (serviceName == null || ruleType == null) {
-              return Response.status(Response.Status.BAD_REQUEST)
-                      .entity("{\"error\": \"serviceName and ruleType must be provided\"}")
-                      .build();
-          }
-  
-          ServiceListNew existingService = serviceListRepo.findByServiceNameAndRuleType(
-                  serviceName,
-                  ruleType
-          );
-  
-          if (existingService != null) {
-              updateExistingService(existingService, serviceListNew);
-              serviceListRepo.update(existingService);
-              System.out.println("Updated service: " + existingService.getServiceName());
-  
-              // Return the updated service data in JSON format
-              return Response.ok(existingService, MediaType.APPLICATION_JSON).build();
-          } else {
-              return Response.status(Response.Status.NOT_FOUND)
-                      .entity("{\"error\": \"Service not found\"}")
-                      .build();
-          }
-      } catch (Exception e) {
-          e.printStackTrace();
-          return Response.serverError().build();
-      }
-  }
-  
-  private void updateExistingService(ServiceListNew existingService, ServiceListNew serviceListNew) {
-      String ruleType = serviceListNew.getRules().get(0).getRuleType();
-      Rule existingRule = findRuleByType(existingService, ruleType);
-  
-      if (existingRule != null) {
-          Rule newRule = serviceListNew.getRules().get(0);
-  
-          switch (ruleType) {
-              case "metric":
-                  updateMetricRule(existingService,existingRule, newRule);
-                  break;
-              case "trace":
-                  updateTraceRule(existingService,existingRule, newRule);
-                  break;
-              case "log":
-                  updateLogRule(existingService,existingRule, newRule);
-                  break;
-              default:
-                  System.out.println("Not matched rule type: " + ruleType);
-                  break;
-          }
-      } else {
-          System.out.println("Rule not found for service: " + existingService.getServiceName() + " and ruleType: " + ruleType);
-      }
-  }
-  
-  private Rule findRuleByType(ServiceListNew existingService, String ruleType) {
-      for (Rule rule : existingService.getRules()) {
-          if (ruleType.equals(rule.getRuleType())) {
-              return rule;
-          }
-      }
-      return null;
-  }
-  
-  private void updateMetricRule(ServiceListNew existingService,Rule existingRule, Rule newRule) {
-      existingRule.setMemoryConstraint(newRule.getMemoryConstraint());
-      existingRule.setMemoryLimit(newRule.getMemoryLimit());
-      existingRule.setCpuConstraint(newRule.getCpuConstraint());
-      existingRule.setCpuLimit(newRule.getCpuLimit());
-      existingRule.setStartDateTime(newRule.getStartDateTime());
-      existingRule.setExpiryDateTime(newRule.getExpiryDateTime());
-      System.out.println("Updated metric rule for service: " + existingService.getServiceName());
-  }
-  
-  private void updateTraceRule(ServiceListNew existingService,Rule existingRule, Rule newRule) {
-      existingRule.setDuration(newRule.getDuration());
-      existingRule.setDurationConstraint(newRule.getDurationConstraint());
-      existingRule.setStartDateTime(newRule.getStartDateTime());
-      existingRule.setExpiryDateTime(newRule.getExpiryDateTime());
-      System.out.println("Updated trace rule for service: " + existingService.getServiceName());
-  }
-  
-  private void updateLogRule(ServiceListNew existingService,Rule existingRule, Rule newRule) {
-      existingRule.setSeverityConstraint(newRule.getSeverityConstraint());
-      existingRule.setSeverityText(newRule.getSeverityText());
-      existingRule.setStartDateTime(newRule.getStartDateTime());
-      existingRule.setExpiryDateTime(newRule.getExpiryDateTime());
-      System.out.println("Updated log rule for service: " + existingService.getServiceName());
-  }
+@Path("/updateServiceList")
+@Produces(MediaType.APPLICATION_JSON)
+public Response updateServiceList(ServiceListNew serviceListNew) {
+    try {
+        String serviceName = serviceListNew.getServiceName();
+
+        if (serviceName == null) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("{\"error\": \"serviceName must be provided\"}")
+                    .build();
+        }
+
+        ServiceListNew existingService = serviceListRepo.findByServiceName(serviceName);
+
+        if (existingService != null) {
+            updateExistingService(existingService, serviceListNew);
+            serviceListRepo.update(existingService);
+            System.out.println("Updated service: " + existingService.getServiceName());
+
+            // Return the updated service data in JSON format
+            return Response.ok(existingService, MediaType.APPLICATION_JSON).build();
+        } else {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity("{\"error\": \"Service not found\"}")
+                    .build();
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+        return Response.serverError().build();
+    }
+}
+
+private void updateExistingService(ServiceListNew existingService, ServiceListNew serviceListNew) {
+    List<Rule> newRules = serviceListNew.getRules();
+
+    for (Rule newRule : newRules) {
+        String ruleType = newRule.getRuleType();
+        Rule existingRule = findRuleByType(existingService, ruleType);
+
+        if (existingRule != null) {
+            switch (ruleType) {
+                case "metric":
+                    updateMetricRule(existingRule, newRule);
+                    break;
+                case "trace":
+                    updateTraceRule(existingRule, newRule);
+                    break;
+                case "log":
+                    updateLogRule(existingRule, newRule);
+                    break;
+                default:
+                    System.out.println("Not matched rule type: " + ruleType);
+                    break;
+            }
+        } else {
+            System.out.println("Rule not found for service: " + existingService.getServiceName() + " and ruleType: " + ruleType);
+        }
+    }
+}
+
+private Rule findRuleByType(ServiceListNew existingService, String ruleType) {
+    for (Rule rule : existingService.getRules()) {
+        if (ruleType.equals(rule.getRuleType())) {
+            return rule;
+        }
+    }
+    return null;
+}
+
+private void updateMetricRule(Rule existingRule, Rule newRule) {
+    existingRule.setMemoryConstraint(newRule.getMemoryConstraint());
+    existingRule.setMemoryLimit(newRule.getMemoryLimit());
+    existingRule.setCpuConstraint(newRule.getCpuConstraint());
+    existingRule.setCpuLimit(newRule.getCpuLimit());
+    existingRule.setStartDateTime(newRule.getStartDateTime());
+    existingRule.setExpiryDateTime(newRule.getExpiryDateTime());
+    System.out.println("Updated metric rule");
+}
+
+private void updateTraceRule(Rule existingRule, Rule newRule) {
+    existingRule.setDuration(newRule.getDuration());
+    existingRule.setDurationConstraint(newRule.getDurationConstraint());
+    existingRule.setStartDateTime(newRule.getStartDateTime());
+    existingRule.setExpiryDateTime(newRule.getExpiryDateTime());
+    System.out.println("Updated trace rule");
+}
+
+private void updateLogRule(Rule existingRule, Rule newRule) {
+    existingRule.setSeverityConstraint(newRule.getSeverityConstraint());
+    existingRule.setSeverityText(newRule.getSeverityText());
+    existingRule.setStartDateTime(newRule.getStartDateTime());
+    existingRule.setExpiryDateTime(newRule.getExpiryDateTime());
+    System.out.println("Updated log rule");
+}
+
   
 
   @POST
