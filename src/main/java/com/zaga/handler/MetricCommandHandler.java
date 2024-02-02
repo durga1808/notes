@@ -59,31 +59,23 @@ public class MetricCommandHandler {
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 
     public void createMetricProduct(OtelMetric metrics) {
-        vertx.executeBlocking(promise -> {
-            try {
-                metricCommandRepo.persist(metrics);
-                promise.complete();
-            } catch (Exception e) {
-                promise.fail(e);
-            }
-        }, result -> {
-            if (result.succeeded()) {
-                List<MetricDTO> metricDTOs = extractAndMapData(metrics);
-                ServiceListNew serviceListData1 = new ServiceListNew();
-                for (MetricDTO metricDTOSingle : metricDTOs) {
-                    serviceListData1 = serviceListRepo.find("serviceName = ?1", metricDTOSingle.getServiceName()).firstResult();
-                    break;
-                }
-                for (MetricDTO metricDTO : metricDTOs) {
-                    processRuleManipulation(metricDTO, serviceListData1);
-                }
-                System.out.println("---------MetricDTOs:---------- " + metricDTOs.size());
-            } else {
-                System.err.println("Error persisting metrics: " + result.cause().getMessage());
-                // Handle the error appropriately (e.g., logging, notifying, etc.)
-            }
-        });
-    }    
+        metricCommandRepo.persist(metrics);
+
+        List<MetricDTO> metricDTOs = extractAndMapData(metrics);
+        ServiceListNew serviceListData1 = new ServiceListNew();
+        for (MetricDTO metricDTOSingle : metricDTOs) {
+            System.out.println("The metric rule fetching from the data base");
+            serviceListData1 = serviceListRepo.find("serviceName = ?1", metricDTOSingle.getServiceName()).firstResult();
+
+            System.out.println("The metric rule fetched from the data base"+serviceListData1);
+            break;
+        }
+        for (MetricDTO metricDTO : metricDTOs) {
+            System.out.println("The Process rule entered");
+            processRuleManipulation(metricDTO, serviceListData1);
+        }
+        System.out.println("---------MetricDTOs:---------- " + metricDTOs.size());
+    }
     
     
     public void processRuleManipulation(MetricDTO metricDTO, ServiceListNew serviceListData) {

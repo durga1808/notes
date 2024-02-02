@@ -59,43 +59,30 @@ public class TraceCommandHandler {
 
   public void createTraceProduct(OtelTrace trace) {
     traceCommandRepo.persist(trace);
-    List<TraceDTO> traceDTOs = extractAndMapData(trace);
+   List<TraceDTO> traceDTOs = extractAndMapData(trace);
+   ServiceListNew serviceListNew = new ServiceListNew();
+   for (TraceDTO traceDTOSingle : traceDTOs) {
+     try {
+       serviceListNew = serviceListRepo.find("serviceName = ?1", traceDTOSingle.getServiceName()).firstResult();
+       break;
+     } catch (Exception e) {
+       System.out.println("ERROR " + e.getLocalizedMessage());
+     }
+   }
 
-    vertx.executeBlocking(promise -> {
-        ServiceListNew serviceListNew = new ServiceListNew();
-        for (TraceDTO traceDTOSingle : traceDTOs) {
-            try {
-                serviceListNew = serviceListRepo.find("serviceName = ?1", traceDTOSingle.getServiceName()).firstResult();
-                break;
-            } catch (Exception e) {
-                System.out.println("ERROR " + e.getLocalizedMessage());
-            }
-        }
+   System.out.println("Trace DTO size " + traceDTOs.size());
 
-        promise.complete(serviceListNew);
-    }, result -> {
-        if (result.failed()) {
-            System.err.println("Error creating Trace product: " + result.cause().getMessage());
-            // Handle the error appropriately (e.g., logging, notifying, etc.)
-        } else {
-            ServiceListNew serviceListNew = (ServiceListNew) result.result();
-            System.out.println("Trace DTO size " + traceDTOs.size());
-
-            if (serviceListNew != null) {
-                for (TraceDTO traceDTO : traceDTOs) {
-                    // System.out.println("Trace DTO's " + traceDTO.toString());
-                    processRuleManipulation(traceDTO, serviceListNew);
-                }
-            }
-        }
-    });
-}
-
+   if (!serviceListNew.equals(null)) {
+     for (TraceDTO traceDTO : traceDTOs) {
+       // System.out.println("Trace DTO's " + traceDTO.toString());
+       processRuleManipulation(traceDTO, serviceListNew);
+     }
+   }
+ }
 
 public void processRuleManipulation(TraceDTO traceDTO, ServiceListNew serviceListNew) {
   LocalDateTime currentDateTime = LocalDateTime.now();
 
-  vertx.executeBlocking(promise -> {
       try {
           if (!serviceListNew.getRules().isEmpty()) {
               for (Rule sData : serviceListNew.getRules()) {
@@ -104,16 +91,9 @@ public void processRuleManipulation(TraceDTO traceDTO, ServiceListNew serviceLis
                   }
               }
           }
-          promise.complete();
       } catch (Exception e) {
-          promise.fail(e);
       }
-  }, result -> {
-      if (result.failed()) {
-          System.err.println("Error processing trace rules: " + result.cause().getMessage());
-          // Handle the error appropriately (e.g., logging, notifying, etc.)
-      }
-  });
+  
 }
 
 private void processTraceRule(TraceDTO traceDTO, Rule sData, LocalDateTime currentDateTime) {
@@ -168,7 +148,7 @@ private void processTraceRule(TraceDTO traceDTO, Rule sData, LocalDateTime curre
                   } else {
                       severity = "Low Alert";
                   }
-                  System.out.println(severity + " - Duration " + traceDTO.getDuration() + " exceeded for this service: " + serviceName);
+                  System.out.println(severity + " - Duration " + traceDTO.getDuration() + " exceeded for this service: " + serviceName +"at" + traceDTO.getCreatedTime());
 
                   sendAlert(new HashMap<>(), severity + " - Duration " + traceDTO.getDuration() + " exceeded for this service: " + serviceName);
                   String traceAlertMessage = severity + " - Duration " + traceDTO.getDuration() + " exceeded for this service: " + serviceName;
@@ -308,6 +288,9 @@ private void sendAlert(Map<String, String> alertPayload, String message) {
                                                 System.err.println("Failed to parse status code: " + statusCodeString);
                                                 e.printStackTrace();
                                             }
+                                            if ("http.method".equals(attribute.getKey()) || "http.request.method".equals(attribute.getKey())) {
+                                                traceDTO.setMethodName(attribute.getValue().getStringValue());
+                                            }
                                         } else {
                                             System.err.println("Status code is null. Cannot parse.");
                                         }
@@ -316,15 +299,6 @@ private void sendAlert(Map<String, String> alertPayload, String message) {
                             } else {
                                 // Code to handle when span.getParentSpanId() is not empty (if needed)
                             }
-
-                            // Rest of your code
-                            List<Attributes> attributes = span.getAttributes();
-                            for (Attributes attribute : attributes) {
-                                if ("http.method".equals(attribute.getKey()) || "http.request.method".equals(attribute.getKey())) {
-                                    traceDTO.setMethodName(attribute.getValue().getStringValue());
-                                }
-                                // Handle other attributes as needed
-                            }
                             objectList.add(span);
                             traceDTO.setSpanCount(String.valueOf(objectList.size()));
                             traceDTO.setSpans(objectList);
@@ -332,7 +306,7 @@ private void sendAlert(Map<String, String> alertPayload, String message) {
                     }
                 }
                 traceDTOs.add(traceDTO);
-                traceQueryRepo.persist(traceDTO);
+                traceQueryRepo.persist(traceDTOs);
                 // System.out.println("TraceDto: " + traceDTO.toString());
             }
         }

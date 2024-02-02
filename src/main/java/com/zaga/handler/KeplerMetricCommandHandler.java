@@ -103,23 +103,20 @@ public class KeplerMetricCommandHandler {
     }
   }
 
-  public void createKeplerMetric(KeplerMetric metric) {
-    keplerMetricRepo.persist(metric);
 
-    vertx.executeBlocking(promise -> {
-        List<KeplerMetricDTO> metricDTOs = extractAndMapData(metric);
+public void createKeplerMetric(KeplerMetric metric) {
+  keplerMetricRepo.persist(metric);
+  System.out.println("Entered=----------------------------------");
+  List<KeplerMetricDTO> metricDTOs = extractAndMapData(metric);
 
-        if (!metricDTOs.isEmpty()) {
-            for (KeplerMetricDTO keplerMetDTO : metricDTOs) {
-                KeplerMetricDTORepo.persist(keplerMetDTO);
-            }
-        }
-        promise.complete();
-    }, result -> {
-        if (result.failed()) {
-            System.out.println("Error executing blocking code: " + result.cause());
-        }
-    });
+  if (!metricDTOs.isEmpty()) {
+
+    System.out.println("keplerMetricDTO-------------"+metricDTOs.size());
+    for (KeplerMetricDTO keplerMetDTO : metricDTOs) {
+      KeplerMetricDTORepo.persist(keplerMetDTO);
+
+    }
+  }
 }
 
   public List<KeplerMetricDTO> extractAndMapData(KeplerMetric keplerMetric) {
