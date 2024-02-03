@@ -26,4 +26,8 @@ public class Rule {
     private String durationConstraint;
     private List<String> severityText;
     private String severityConstraint;
+    private String cpuAlertSeverityText;
+    private String memoryAlertSeverityText;
+    private String tracecAlertSeverityText;
+    private String logAlertSeverityText;
 }

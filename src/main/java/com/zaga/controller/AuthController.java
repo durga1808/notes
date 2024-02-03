@@ -200,7 +200,7 @@ private boolean hasLogTraceMetricsRuleTypes(ServiceListNew existingService) {
   
   
 
-  @PUT
+@PUT
 @Path("/updateServiceList")
 @Produces(MediaType.APPLICATION_JSON)
 public Response updateServiceList(ServiceListNew serviceListNew) {
@@ -277,6 +277,8 @@ private void updateMetricRule(Rule existingRule, Rule newRule) {
     existingRule.setCpuLimit(newRule.getCpuLimit());
     existingRule.setStartDateTime(newRule.getStartDateTime());
     existingRule.setExpiryDateTime(newRule.getExpiryDateTime());
+    existingRule.setCpuAlertSeverityText(newRule.getCpuAlertSeverityText());
+    existingRule.setMemoryAlertSeverityText(newRule.getMemoryAlertSeverityText());
     System.out.println("Updated metric rule");
 }
 
@@ -285,6 +287,7 @@ private void updateTraceRule(Rule existingRule, Rule newRule) {
     existingRule.setDurationConstraint(newRule.getDurationConstraint());
     existingRule.setStartDateTime(newRule.getStartDateTime());
     existingRule.setExpiryDateTime(newRule.getExpiryDateTime());
+    existingRule.setTracecAlertSeverityText(newRule.getTracecAlertSeverityText());
     System.out.println("Updated trace rule");
 }
 
@@ -293,6 +296,7 @@ private void updateLogRule(Rule existingRule, Rule newRule) {
     existingRule.setSeverityText(newRule.getSeverityText());
     existingRule.setStartDateTime(newRule.getStartDateTime());
     existingRule.setExpiryDateTime(newRule.getExpiryDateTime());
+    existingRule.setLogAlertSeverityText(newRule.getLogAlertSeverityText());
     System.out.println("Updated log rule");
 }
 

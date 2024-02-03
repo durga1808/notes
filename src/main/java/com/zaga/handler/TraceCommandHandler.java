@@ -133,25 +133,25 @@ private void processTraceRule(TraceDTO traceDTO, Rule sData, LocalDateTime curre
 
           if (isDurationViolation && currentDateTime.isAfter(startDateTime) && currentDateTime.isBefore(expiryDateTime)) {
               String serviceName = traceDTO.getServiceName();
-              int alertCount = alertCountMap.getOrDefault(serviceName, 0);
-              alertCount++;
+            //   int alertCount = alertCountMap.getOrDefault(serviceName, 0);
+            //   alertCount++;
 
-              double percentageExceeded = ((double) (duration - durationLimit) / durationLimit) * 100;
+            //   double percentageExceeded = ((double) (duration - durationLimit) / durationLimit) * 100;
 
-              if (alertCount > 3) {
-                  System.out.println("Exceeded");
-                  String severity;
-                  if (percentageExceeded > 50) {
-                      severity = "Critical Alert";
-                  } else if (percentageExceeded >= 5 && percentageExceeded <= 15) {
-                      severity = "Medium Alert";
-                  } else {
-                      severity = "Low Alert";
-                  }
-                  System.out.println(severity + " - Duration " + traceDTO.getDuration() + " exceeded for this service: " + serviceName +"at" + traceDTO.getCreatedTime());
+            //   if (alertCount > 3) {
+            //       System.out.println("Exceeded");
+            //       String severity;
+            //       if (percentageExceeded > 50) {
+            //           severity = "Critical Alert";
+            //       } else if (percentageExceeded >= 5 && percentageExceeded <= 15) {
+            //           severity = "Medium Alert";
+            //       } else {
+            //           severity = "Low Alert";
+            //       }
+                  System.out.println(sData.getTracecAlertSeverityText() + " - Duration " + traceDTO.getDuration() + " exceeded for this service: " + serviceName +"at" + traceDTO.getCreatedTime());
 
-                  sendAlert(new HashMap<>(), severity + " - Duration " + traceDTO.getDuration() + " exceeded for this service: " + serviceName);
-                  String traceAlertMessage = severity + " - Duration " + traceDTO.getDuration() + " exceeded for this service: " + serviceName;
+                  sendAlert(new HashMap<>(), sData.getTracecAlertSeverityText() + " - Duration " + traceDTO.getDuration() + " exceeded for this service: " + serviceName + " at" + traceDTO.getCreatedTime());
+                  String traceAlertMessage = sData.getTracecAlertSeverityText() + " - Duration " + traceDTO.getDuration() + " exceeded for this service: " + serviceName + " at" + traceDTO.getCreatedTime();
 
                   AlertPayload alertTracePayload = new AlertPayload();
 
@@ -163,15 +163,14 @@ private void processTraceRule(TraceDTO traceDTO, Rule sData, LocalDateTime curre
 
                   alertProducer.kafkaSend(alertTracePayload);
 
-                  System.out.println("sl");
+                //   System.out.println("sl");
               } else {
-                  System.out.println("Not Exceeded" + alertCount);
-                  alertCountMap.put(serviceName, alertCount);
+                  System.out.println("No Alert Received");
+                //   alertCountMap.put(serviceName, alertCount);
               }
           }
       }
   }
-}
 
 private void sendAlert(Map<String, String> alertPayload, String message) {
   alertPayload.put("alertMessage", message);

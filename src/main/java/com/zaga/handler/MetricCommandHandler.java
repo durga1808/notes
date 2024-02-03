@@ -143,13 +143,13 @@ public class MetricCommandHandler {
                                 AlertPayload alertPayload2 = new AlertPayload();
 
                                 if (isCpuViolation && currentDateTime.isAfter(startDateTime) && currentDateTime.isBefore(expiryDateTime)) {
-                                    System.out.println("OUT");
-                                    String cpuSeverity = calculateSeverity(cpuUsage, cpuLimitMilliCores);
-                                    System.out.println(cpuSeverity + " - CPU Usage " + Math.ceil(cpuUsage) + " peaked in this service " + metricDTO.getServiceName());
-                                    sendAlert(alertPayload,"" + cpuSeverity + "- CPU Usage " + Math.ceil(cpuLimitMilliCores)
+                                    // System.out.println("OUT");
+                                    // String cpuSeverity = calculateSeverity(cpuUsage, cpuLimitMilliCores);
+                                    System.out.println(sData.getCpuAlertSeverityText() + " - CPU Usage " + Math.ceil(cpuUsage) + " peaked in this service " + metricDTO.getServiceName());
+                                    sendAlert(alertPayload,"" + sData.getCpuAlertSeverityText() + "- CPU Usage " + Math.ceil(cpuLimitMilliCores)
                                             + "  peaked in this service " + metricDTO.getServiceName());
                                     System.out.println("peaked in this service------------ " + alertPayload);
-                                    String cpuAlertMessage = cpuSeverity + "- CPU Usage " + Math.ceil(cpuUsage) + " peaked in this service " + metricDTO.getServiceName();
+                                    String cpuAlertMessage = sData.getCpuAlertSeverityText() + "- CPU Usage " + Math.ceil(cpuUsage) + " peaked in this service " + metricDTO.getServiceName();
 
                                     alertPayload2.setServiceName(metricDTO.getServiceName());
                                     alertPayload2.setCreatedTime(metricDTO.getDate());
@@ -159,11 +159,11 @@ public class MetricCommandHandler {
                                 }
                             
                                 if (isMemoryViolation && currentDateTime.isAfter(startDateTime) && currentDateTime.isBefore(expiryDateTime)) {
-                                    System.out.println("OUT");
-                                    String memorySeverity = calculateSeverity(memoryUsage, memoryLimit);
-                                sendAlert(alertPayload,"" + memorySeverity + " - Memory Usage " + memoryUsage + " peaked in this service "
+                                    // System.out.println("OUT");
+                                    // String memorySeverity = calculateSeverity(memoryUsage, memoryLimit);
+                                sendAlert(alertPayload,"" + sData.getMemoryAlertSeverityText() + " - Memory Usage " + memoryUsage + " peaked in this service "
                                             + metricDTO.getServiceName() + "at" + metricDTO.getDate());
-                                    System.out.println(memorySeverity + " Alert - Memory Usage " + memoryUsage + " peaked in this service " + metricDTO.getServiceName());
+                                    System.out.println(sData.getMemoryAlertSeverityText() + " Alert - Memory Usage " + memoryUsage + " peaked in this service " + metricDTO.getServiceName());
                                 }
                                 
                             }
@@ -201,19 +201,7 @@ public class MetricCommandHandler {
         }
     }
 
-public String calculateSeverity(double actualUsage, double limit) {
-                                double percentageExceeded = ((actualUsage - limit) / limit) * 100;
-                            
-                                if (percentageExceeded > 50) {
-                                    return "Critical Alert";
-                                    
-                                } else if (percentageExceeded >= 5 && percentageExceeded <= 15) {
-                                    return "Medium Alert";
-                                } else {
-                                    return "Low Alert";
-                                }
-                            }
-    private void sendAlert(Map<String, String> alertPayload, String message) {
+  private void sendAlert(Map<String, String> alertPayload, String message) {
         alertPayload.put("alertMessage", message);
         alertPayload.put("alertType", "metric");
         sessions.getSessions().forEach(session -> {
