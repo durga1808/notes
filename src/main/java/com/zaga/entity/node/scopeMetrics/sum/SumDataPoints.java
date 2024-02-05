@@ -1,5 +1,8 @@
 package com.zaga.entity.node.scopeMetrics.sum;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.*;
 
 
@@ -7,7 +10,13 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class SumDataPoints {
-    private String asDouble;
+    @JsonProperty("asDouble")
+    private Double asDouble;
+    @JsonProperty("asInt")
+    @JsonIgnore
+    private String asInt;
+    @JsonProperty("timeUnixNano")
     private String timeUnixNano;
-    private double startTimeUnixNano;
+    @JsonProperty("startTimeUnixNano")
+    private String startTimeUnixNano;
 }

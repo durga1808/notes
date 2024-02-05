@@ -1,11 +1,18 @@
 package com.zaga.entity.node.scopeMetrics.gauge;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.*;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class GaugeDataPoints {
-    private String asDouble;
+    @JsonProperty("asDouble")
+    private Double asDouble;
+    @JsonProperty("asInt")
+    private String asInt;
+    @JsonProperty("timeUnixNano")
     private String timeUnixNano;
-    private double startTimeUnixNano;
+    @JsonProperty("startTimeUnixNano")
+    private String startTimeUnixNano;
 }
