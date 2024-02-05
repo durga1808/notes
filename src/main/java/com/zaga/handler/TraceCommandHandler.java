@@ -275,6 +275,12 @@ private void sendAlert(Map<String, String> alertPayload, String message) {
                                 // Check for "http.status_code" attribute
                                 List<Attributes> attributes = span.getAttributes();
                                 for (Attributes attribute : attributes) {
+                                    if ("http.method".equals(attribute.getKey()) || "http.request.method".equals(attribute.getKey())) {
+                                        traceDTO.setMethodName(attribute.getValue().getStringValue());
+                                        System.out.println("http method ----------------"+traceDTO.getMethodName());
+                                    }else{
+                                        // System.out.println("Invallid attributes");
+                                    }
                                     if ("http.status_code".equals(attribute.getKey()) || "http.response.status_code".equals(attribute.getKey())) {
                                         String statusCodeString = attribute.getValue().getIntValue();
 
@@ -287,9 +293,7 @@ private void sendAlert(Map<String, String> alertPayload, String message) {
                                                 System.err.println("Failed to parse status code: " + statusCodeString);
                                                 e.printStackTrace();
                                             }
-                                            if ("http.method".equals(attribute.getKey()) || "http.request.method".equals(attribute.getKey())) {
-                                                traceDTO.setMethodName(attribute.getValue().getStringValue());
-                                            }
+                                          
                                         } else {
                                             System.err.println("Status code is null. Cannot parse.");
                                         }
