@@ -40,9 +40,10 @@ public class PodCommandHandler {
         List<PodMetricDTO> metricDTOs = extractAndMapData(metrics);
                 System.out.println("---------MetricDTOs:---------- " + metricDTOs.size());
     }
+
     public List<PodMetricDTO> extractAndMapData(OtelPodMetric metrics) {
         List<PodMetricDTO> podMetricDTOs = new ArrayList<>();
-
+    
         try {
             Map<String, PodMetricDTO> podMetricsMap = new HashMap<>();
     
@@ -55,7 +56,7 @@ public class PodCommandHandler {
                         podMetricDTO.setPodName(podName);
                         podMetricsMap.put(podName, podMetricDTO);
                     }
-
+    
                     for (ScopeMetrics scopeMetric : resourceMetric.getScopeMetrics()) {
                         Date createdTime = null;
                         Double cpuUsage = null;
@@ -68,73 +69,54 @@ public class PodCommandHandler {
     
                             for (Metric metric : metricsList) {
                                 String metricName = metric.getName();
+                                System.out.println("metricName: " + metricName);
     
                                 if (metric.getGauge() != null) {
                                     MetricGauge metricGauge = metric.getGauge();
                                     List<GaugeDataPoint> gaugeDataPoints = metricGauge.getDataPoints();
-                                
+    
                                     for (GaugeDataPoint gaugeDataPoint : gaugeDataPoints) {
-                                        if (isCpuMetric(metricName)){
-                                        cpuUsage = gaugeDataPoint.getAsDouble();
-                                        System.out.println("--------asDOUBLE------" + cpuUsage);
-                                        // cpuUsage = Double.parseDouble(cpuUsage);
-                                        System.out.println("--------cpuUsage-------" + cpuUsage);
-                                    }
+                                        if (isCpuMetric(metricName)) {
+                                            cpuUsage = gaugeDataPoint.getAsDouble();
+                                            System.out.println("--------asDOUBLE------" + cpuUsage);
+                                            System.out.println("--------cpuUsage-------" + cpuUsage);
+                                        }
+    
                                         // Assuming the memory metric is also present in GaugeDataPoint, adjust as needed
                                         Long memoryValue = gaugeDataPoint.getAsInt();
                                         if (isMemoryMetric(metricName)) {
-
                                             int currentMemoryUsage = memoryValue.intValue(); // Convert Long to int
                                             System.out.println("--------Memory usage:----- " + currentMemoryUsage);
                                             memoryUsage += currentMemoryUsage;
                                         }
-                                        
+                                    }
+    
+                                    Integer memoryUsageInMb = memoryUsage / (1024 * 1024);
+    
+                                    MetricDTO metricDTO = new MetricDTO();
+                                    metricDTO.setDate(createdTime);
+                                    metricDTO.setMemoryUsage(memoryUsageInMb);
+                                    metricDTO.setCpuUsage(cpuUsage);
+    
+                                    podMetricDTO.getMetrics().add(metricDTO);
                                 }
-                                
-                            Integer memoryUsageInMb = memoryUsage / (1024 * 1024);
-    
-                            if (podMetricDTO == null) {
-                                podMetricDTO = new PodMetricDTO();
-                                podMetricDTO.setPodName(podName);
-                                podMetricsMap.put(podName, podMetricDTO);
                             }
-                            
-                            MetricDTO metricDTO = new MetricDTO();
-                            metricDTO.setDate(createdTime);
-                            metricDTO.setMemoryUsage(memoryUsageInMb);
-                            metricDTO.setCpuUsage(cpuUsage);
-                            
-                            podMetricDTO.getMetrics().add(metricDTO);
-    
-                         }
+                        }
                     }
                 }
             }
-        }
-    }
-}
-         catch (Exception e) {
+    
+            // Convert the map values to a list
+            podMetricDTOs.addAll(podMetricsMap.values());
+    
+        } catch (Exception e) {
             e.printStackTrace(); // Handle the exception appropriately
         }
     
         return podMetricDTOs;
     }
     
-    private PodMetricDTO findOrCreatePodMetricDTO(List<PodMetricDTO> podMetricDTOs, String podName) {
-        for (PodMetricDTO podMetricDTO : podMetricDTOs) {
-            if (podMetricDTO.getPodName().equals(podName)) {
-                return podMetricDTO;
-            }
-        }
-    
-        PodMetricDTO newPodMetricDTO = new PodMetricDTO();
-        newPodMetricDTO.setPodName(podName);
-        podMetricDTOs.add(newPodMetricDTO);
-    
-        return newPodMetricDTO;
-    }
-    
-
+    // s
     //     private boolean isSupportedMetric(String metricName) {
     //     return Set.of(
     //         "otelcol/kubeletstatsreceiver").contains(metricName);

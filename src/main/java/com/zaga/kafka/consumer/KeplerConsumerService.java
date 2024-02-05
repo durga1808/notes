@@ -49,7 +49,6 @@ public class KeplerConsumerService {
 
             OtelPodMetric keplerMetric = gson.fromJson(reader1, OtelPodMetric.class);
 
-            // KeplerMetricCommandHandler keplerMetricCommandHandler = new KeplerMetricCommandHandler();
             PodCommandHandler podCommandHandler = new PodCommandHandler();
 
             List<PodMetricDTO> podMetricDTOlst = podCommandHandler.extractAndMapData(keplerMetric);
