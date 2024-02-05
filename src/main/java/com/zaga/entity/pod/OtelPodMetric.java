@@ -17,6 +17,6 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = false)
 @JsonIgnoreProperties("id")
 @MongoEntity(collection = "Pod", database = "OtelPodMetrics")
-public class OtelPod  extends PanacheMongoEntity{
+public class OtelPodMetric  extends PanacheMongoEntity{
         private List<ResourceMetric> resourceMetrics;
 }
