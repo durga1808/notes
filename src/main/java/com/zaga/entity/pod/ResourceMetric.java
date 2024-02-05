@@ -10,6 +10,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ResourceMetric {
-    private List<Resource> resource;
+    private Resource resource;
     private List<ScopeMetrics> scopeMetrics;
 }
