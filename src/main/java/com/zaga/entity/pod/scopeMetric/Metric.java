@@ -1,7 +1,7 @@
 package com.zaga.entity.pod.scopeMetric;
 
-import com.zaga.entity.pod.scopeMetric.gauge.MetricGauge;
-import com.zaga.entity.pod.scopeMetric.sum.MetricSum;
+import com.zaga.entity.pod.scopeMetric.gauge.Gauge;
+import com.zaga.entity.pod.scopeMetric.sum.Sum;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -14,6 +14,6 @@ public class Metric {
     private String name;
     private String description;
     private String unit;
-    private MetricSum sum;
-    private MetricGauge gauge;
+    private Sum sum;
+    private Gauge gauge;
 }

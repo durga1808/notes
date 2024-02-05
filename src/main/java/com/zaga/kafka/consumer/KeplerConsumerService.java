@@ -16,7 +16,7 @@ import com.zaga.entity.pod.OtelPodMetric;
 import com.zaga.entity.queryentity.kepler.KeplerMetricDTO;
 import com.zaga.handler.KeplerMetricCommandHandler;
 // import com.zaga.handler.PodCommandHandler;
-import com.zaga.handler.PodCommandHandler;
+// import com.zaga.handler.PodCommandHandler;
 
 import jakarta.inject.Inject;
 
@@ -39,35 +39,35 @@ public class KeplerConsumerService {
         }
     }
 
-    public static void main(String[] ar) throws URISyntaxException {
+    // public static void main(String[] ar) throws URISyntaxException {
 
-        Gson gson = new Gson();
+    //     Gson gson = new Gson();
 
-        File file = new File("pod.json");
+    //     File file = new File("pod.json");
 
-        try (Reader reader1 = new FileReader(file)) {
+    //     try (Reader reader1 = new FileReader(file)) {
 
-            OtelPodMetric keplerMetric = gson.fromJson(reader1, OtelPodMetric.class);
+    //         OtelPodMetric keplerMetric = gson.fromJson(reader1, OtelPodMetric.class);
 
-            PodCommandHandler podCommandHandler = new PodCommandHandler();
+    //         PodCommandHandler podCommandHandler = new PodCommandHandler();
 
-            List<PodMetricDTO> podMetricDTOlst = podCommandHandler.extractAndMapData(keplerMetric);
+    //         List<PodMetricDTO> podMetricDTOlst = podCommandHandler.extractAndMapData(keplerMetric);
 
-            System.out.println(podMetricDTOlst.size());
+    //         System.out.println(podMetricDTOlst.size());
 
-            for (PodMetricDTO podMetricDTO : podMetricDTOlst) {
+    //         for (PodMetricDTO podMetricDTO : podMetricDTOlst) {
 
-                System.out.println(podMetricDTO.toString());
+    //             System.out.println(podMetricDTO.toString());
 
-            }
-            System.out.println(podMetricDTOlst.size());
+    //         }
+    //         System.out.println(podMetricDTOlst.size());
 
-            // keplerMetricCommandHandler.createKeplerMetric(keplerMetric);
+    //         // keplerMetricCommandHandler.createKeplerMetric(keplerMetric);
 
-        } catch (IOException e) {
-            System.out.println("ERROR " + e.getLocalizedMessage());
-        }
+    //     } catch (IOException e) {
+    //         System.out.println("ERROR " + e.getLocalizedMessage());
+    //     }
 
-    }
+    // }
 
 }

@@ -9,6 +9,6 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class MetricGauge {
+public class Gauge {
        private List<GaugeDataPoint> dataPoints;
 }
