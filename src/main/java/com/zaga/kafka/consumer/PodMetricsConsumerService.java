@@ -2,13 +2,13 @@ package com.zaga.kafka.consumer;
 
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 
-import com.zaga.entity.otelmetric.OtelMetric;
 import com.zaga.entity.pod.OtelPodMetric;
 import com.zaga.handler.PodCommandHandler;
 
 import jakarta.inject.Inject;
 
 public class PodMetricsConsumerService {
+  
     @Inject
     PodCommandHandler podCommandHandler;
 
