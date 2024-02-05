@@ -9,9 +9,12 @@ import java.util.List;
 
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 
+import com.zaga.entity.PodMetricDTO;
 import com.zaga.entity.kepler.KeplerMetric;
+import com.zaga.entity.otelmetric.OtelMetric;
 import com.zaga.entity.queryentity.kepler.KeplerMetricDTO;
 import com.zaga.handler.KeplerMetricCommandHandler;
+import com.zaga.handler.PodCommandHandler;
 
 import jakarta.inject.Inject;
 
@@ -38,24 +41,25 @@ public class KeplerConsumerService {
 
         Gson gson = new Gson();
 
-        File file = new File("./src/main/java/com/zaga/kafka/consumer/keplerdata.json");
+        File file = new File("pod.json");
 
         try (Reader reader1 = new FileReader(file)) {
 
-            KeplerMetric keplerMetric = gson.fromJson(reader1, KeplerMetric.class);
+            OtelMetric keplerMetric = gson.fromJson(reader1, OtelMetric.class);
 
-            KeplerMetricCommandHandler keplerMetricCommandHandler = new KeplerMetricCommandHandler();
+            // KeplerMetricCommandHandler keplerMetricCommandHandler = new KeplerMetricCommandHandler();
+            PodCommandHandler podCommandHandler = new PodCommandHandler();
 
-            List<KeplerMetricDTO> keplerMetricDTOlst = keplerMetricCommandHandler.extractAndMapData(keplerMetric);
+            List<PodMetricDTO> podMetricDTOlst = podCommandHandler.extractAndMapData(keplerMetric);
 
-            System.out.println(keplerMetricDTOlst.size());
+            System.out.println(podMetricDTOlst.size());
 
-            for (KeplerMetricDTO keplerMetricDTO : keplerMetricDTOlst) {
+            for (PodMetricDTO podMetricDTO : podMetricDTOlst) {
 
-                System.out.println(keplerMetricDTO.toString());
+                System.out.println(podMetricDTO.toString());
 
             }
-            System.out.println(keplerMetricDTOlst.size());
+            System.out.println(podMetricDTOlst.size());
 
             // keplerMetricCommandHandler.createKeplerMetric(keplerMetric);
 
