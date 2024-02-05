@@ -346,29 +346,33 @@ private void updateLogRule(Rule existingRule, Rule newRule) {
   }
 
 
-    @DELETE
-    @Path("/{username}/environments/{clusterId}")
-    public Response deleteEnvironment(
-            @QueryParam("username") String username,
-            @QueryParam("clusterId") long clusterId) {
+  @DELETE
+  @Path("/{clusterUsername}/delete-environments/{clusterId}")
+  public Response deleteEnvironment(
+          @QueryParam("clusterUsername") String clusterUsername,
+          @QueryParam("clusterId") long clusterId) {
+  
+      UserCredentials userCredentials = repo.findByClusterUsername(clusterUsername);
+  
+      if (userCredentials == null) {
+          return Response.status(Response.Status.NOT_FOUND).build();
+      }
+  
+      List<Environments> environments = userCredentials.getEnvironments();
+  
+      environments.removeIf(env -> env.getClusterId() == clusterId);
+      userCredentials.setEnvironments(environments);
+  
+      try {
+          repo.update(userCredentials);
+          return Response.ok().build();
+      } catch (Exception e) {
+          e.printStackTrace();
+          return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+      }
+  }
+  
 
-        UserCredentials userCredentials = repo.findByUsername(username);
-
-        if (userCredentials == null) {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
-        List<Environments> environments = userCredentials.getEnvironments();
-
-        environments.removeIf(env -> env.getClusterId() == clusterId);
-        userCredentials.setEnvironments(environments);
-
-        try {
-            repo.update(userCredentials);
-            return Response.ok().build();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
-        }
-    }
+  
   }
   
