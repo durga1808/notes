@@ -17,4 +17,8 @@ public class AuthRepo implements PanacheMongoRepository<UserCredentials> {
         return userData;
 
     }
+
+    public UserCredentials findByUsername(String username) {
+        return find("username", username).firstResult();
+    }
 }

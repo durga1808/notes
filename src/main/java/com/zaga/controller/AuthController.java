@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.zaga.entity.auth.Environments;
 import com.zaga.entity.auth.Rule;
 import com.zaga.entity.auth.ServiceListNew;
 import com.zaga.entity.auth.UserCredentials;
@@ -12,10 +13,14 @@ import com.zaga.handler.AuthCommandHandler;
 import com.zaga.repo.AuthRepo;
 import com.zaga.repo.ServiceListRepo;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -339,4 +344,31 @@ private void updateLogRule(Rule existingRule, Rule newRule) {
       return Response.serverError().build();
     }
   }
-}
+
+
+    @DELETE
+    @Path("/{username}/environments/{clusterId}")
+    public Response deleteEnvironment(
+            @QueryParam("username") String username,
+            @QueryParam("clusterId") long clusterId) {
+
+        UserCredentials userCredentials = repo.findByUsername(username);
+
+        if (userCredentials == null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+        List<Environments> environments = userCredentials.getEnvironments();
+
+        environments.removeIf(env -> env.getClusterId() == clusterId);
+        userCredentials.setEnvironments(environments);
+
+        try {
+            repo.update(userCredentials);
+            return Response.ok().build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+  }
+  
