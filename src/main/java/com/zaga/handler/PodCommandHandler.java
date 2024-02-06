@@ -45,9 +45,12 @@ public Map<String, PodMetricDTO> extractAndMapData(OtelPodMetric metrics) {
     try {
         for (ResourceMetric resourceMetric : metrics.getResourceMetrics()) {
             String podName = getPodName(resourceMetric);
+            String namespaceName = getNamespaceName(resourceMetric);
+            // System.out.println("NameSpace: " + podName + " namespace: " + namespaceName);
             if (podName != null) {
                 PodMetricDTO podMetricDTO = podMetricsMap.computeIfAbsent(podName, k -> new PodMetricDTO());
                 podMetricDTO.setPodName(podName);
+                podMetricDTO.setNamespaceName(namespaceName);
 
                 List<MetricDTO> metricDTOs = podMetricDTO.getMetrics();
 
@@ -89,9 +92,10 @@ public Map<String, PodMetricDTO> extractAndMapData(OtelPodMetric metrics) {
                 
 
                 MetricDTO metricDTO = new MetricDTO();
-                metricDTO.setDate(createdTime != null ? createdTime : new Date()); // Provide a default value
-                metricDTO.setMemoryUsage(memoryUsage / (1024 * 1024)); // Convert to MB
-                metricDTO.setCpuUsage(cpuUsage != null ? cpuUsage : 0.0); // Provide a default value
+                metricDTO.setDate(createdTime != null ? createdTime : new Date()); 
+                metricDTO.setMemoryUsage(memoryUsage / (1024 * 1024)); 
+                metricDTO.setCpuUsage(cpuUsage != null ? cpuUsage : 0.0); 
+                
 
                 metricDTOs.add(metricDTO);
             }
@@ -208,6 +212,17 @@ public Map<String, PodMetricDTO> extractAndMapData(OtelPodMetric metrics) {
 
   private boolean isCpuMetric(String metricName) {
     return Set.of("k8s.pod.cpu.utilization").contains(metricName);
+  }
+  
+  private String getNamespaceName(ResourceMetric resourceMetric) {
+    return resourceMetric
+      .getResource()
+      .getAttributes()
+      .stream()
+      .filter(attribute -> "k8s.namespace.name".equals(attribute.getKey()))
+      .findFirst()
+      .map(attribute -> attribute.getValue().getStringValue())
+      .orElse(null);
   }
 
   private String getPodName(ResourceMetric resourceMetric) {
