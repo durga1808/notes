@@ -1,4 +1,4 @@
-package com.zaga.entity;
+package com.zaga.entity.queryentity.pod;
 
 
 import java.util.Date;

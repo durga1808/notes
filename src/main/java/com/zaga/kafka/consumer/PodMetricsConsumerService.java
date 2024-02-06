@@ -14,7 +14,7 @@ public class PodMetricsConsumerService {
     PodCommandHandler podCommandHandler;
     PodCommandRepo podCommandRepo;
 
-  // @Incoming("pod-in")
+  @Incoming("pod-in")
   public void consumePodMetricDetails(OtelPodMetric podMetrics) {
     System.out.println("consumed podmetric data----------------"+podMetrics);
     if (podMetrics != null) {

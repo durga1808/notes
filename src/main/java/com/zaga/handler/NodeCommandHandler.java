@@ -6,7 +6,7 @@ import com.zaga.entity.node.ScopeMetric;
 import com.zaga.entity.node.scopeMetrics.Metrics;
 import com.zaga.entity.node.scopeMetrics.gauge.Gauge;
 import com.zaga.entity.node.scopeMetrics.gauge.GaugeDataPoints;
-import com.zaga.entity.queryentity.NodeMetricDTO;
+import com.zaga.entity.queryentity.node.NodeMetricDTO;
 import com.zaga.repo.NodeDTORepo;
 import com.zaga.repo.NodeMetricRepo;
 
