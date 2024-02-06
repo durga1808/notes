@@ -55,7 +55,7 @@ public class TraceCommandHandler {
 
   private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 
-  private Map<String, Integer> alertCountMap = new HashMap<>();
+//   private Map<String, Integer> alertCountMap = new HashMap<>();
 
   public void createTraceProduct(OtelTrace trace) {
     traceCommandRepo.persist(trace);

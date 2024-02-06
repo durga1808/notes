@@ -3,7 +3,7 @@ package com.zaga.controller;
 
 
 import com.zaga.entity.pod.OtelPodMetric;
-// import com.zaga.handler.PodCommandHandler;
+import com.zaga.handler.PodCommandHandler;
 import com.zaga.repo.PodCommandRepo;
 
 import jakarta.inject.Inject;
@@ -22,14 +22,14 @@ public class PodController {
 @Inject
 PodCommandRepo podCommandRepo;
 
-// @Inject
-// PodCommandHandler podCommandHandler;
+@Inject
+PodCommandHandler podCommandHandler;
 
 @POST
 @Path("/create")
 public Response createPodMetric(OtelPodMetric podMetric) {
     podCommandRepo.persist(podMetric);
-    // podCommandHandler.extractAndMapData(podMetric);
+    podCommandHandler.extractAndMapData(podMetric);
     return Response.status(Response.Status.CREATED).entity(podMetric).build();
 }
 }

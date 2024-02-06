@@ -53,8 +53,8 @@ public class LogCommandHandler {
     "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
   );
 
-  private Map<String, Integer> alertCountMap = new HashMap<>();
-  private Map<String, String> previousTraceIdMap = new HashMap<>();
+  // private Map<String, Integer> alertCountMap = new HashMap<>();
+  // private Map<String, String> previousTraceIdMap = new HashMap<>();
 
   public void createLogProduct(OtelLog logs) {
     logCommandRepo.persist(logs);
@@ -111,7 +111,7 @@ public void processRuleManipulation(LogDTO logDTO, ServiceListNew serviceListNew
                         sData.setExpiryDateTime(expiryDateTime);
 
                         String severityText = logDTO.getSeverityText();
-                        String traceId = logDTO.getTraceId();
+                        // String traceId = logDTO.getTraceId();
                         System.out.println("Log Severity " + severityText);
 
                         if (severityText != null && !severityText.isEmpty()) {
