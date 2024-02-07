@@ -35,7 +35,7 @@ public class PodCommandHandler {
     podCommandRepo.persist(metrics);
 
     Map<String, PodMetricDTO> metricDTOs = extractAndMapData(metrics);
-    System.out.println("------------------------------------------PODMetricDTOs:-------------------------------------- " + metricDTOs);
+    System.out.println("------------------------------------------PODMetricDTOs:-------------------------------------- " + metricDTOs.size());
   }
 
 
@@ -104,7 +104,7 @@ public Map<String, PodMetricDTO> extractAndMapData(OtelPodMetric metrics) {
 
         List<PodMetricDTO> aggregatedPodMetrics = new ArrayList<>(podMetricsMap.values());
         podMetricDTORepo.persist(aggregatedPodMetrics);
-        System.out.println("Aggregated-----------------------"+aggregatedPodMetrics);
+        System.out.println("Aggregated-----------------------"+aggregatedPodMetrics.size());
         
     } catch (Exception e) {
         e.printStackTrace();
