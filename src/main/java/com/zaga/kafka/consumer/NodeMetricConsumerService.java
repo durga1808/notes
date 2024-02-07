@@ -16,7 +16,7 @@ public class NodeMetricConsumerService {
     @Inject
     NodeCommandHandler nodeCommandHandler;
 
-  // @Incoming("node-in")
+  @Incoming("node-in")
   public void consumePodMetricDetails(OtelNode podMetrics) {
     System.out.println("consumed podmetric data----------------"+podMetrics);
     if (podMetrics != null) {
