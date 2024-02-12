@@ -6,14 +6,19 @@ import java.io.IOException;
 import java.io.Reader;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 
 import com.zaga.entity.kepler.KeplerMetric;
 import com.zaga.entity.node.OtelNode;
+import com.zaga.entity.pod.OtelPodMetric;
 import com.zaga.entity.queryentity.node.NodeMetricDTO;
+import com.zaga.entity.queryentity.pod.PodMetricDTO;
 import com.zaga.handler.KeplerMetricCommandHandler;
-import com.zaga.handler.NodeCommandHandler;
+import com.zaga.handler.PodCommandHandler;
+
+// import com.zaga.handler.NodeCommandHandler;
 import jakarta.inject.Inject;
 
 import com.google.gson.Gson;
@@ -39,19 +44,19 @@ public class KeplerConsumerService {
 
         Gson gson = new Gson();
 
-        File file = new File("node.json");
+        File file = new File("pod.json");
 
         try (Reader reader1 = new FileReader(file)) {
 
-            OtelNode keplerMetric = gson.fromJson(reader1, OtelNode.class);
+            OtelPodMetric keplerMetric = gson.fromJson(reader1, OtelPodMetric.class);
 
-            NodeCommandHandler podCommandHandler = new NodeCommandHandler();
+            PodCommandHandler podCommandHandler = new PodCommandHandler();
 
-            List<NodeMetricDTO> podMetricDTOlst = podCommandHandler.extractAndMapNodeData(keplerMetric);
+            List<PodMetricDTO> podMetricDTOlst = podCommandHandler.extractAndMapData(keplerMetric);
 
-            System.out.println(podMetricDTOlst.size());
+            System.out.println(podMetricDTOlst);
 
-            for (NodeMetricDTO podMetricDTO : podMetricDTOlst) {
+            for (PodMetricDTO podMetricDTO : podMetricDTOlst) {
 
                 System.out.println(podMetricDTO.toString());
 

@@ -1,6 +1,7 @@
 package com.zaga.entity.queryentity.pod;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import io.quarkus.mongodb.panache.PanacheMongoEntity;
@@ -16,7 +17,10 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = false)
 @MongoEntity(collection = "PodMetricDTO", database = "OtelPodMetrics")
 public class PodMetricDTO extends PanacheMongoEntity{
-    private List<MetricDTO> metrics = new ArrayList<>();
+    // private List<MetricDTO> metrics = new ArrayList<>();
+    private Date date;
+    private Double cpuUsage;
+    private Long memoryUsage;
     private String podName;
     private String namespaceName;
 }
