@@ -22,7 +22,7 @@ public class EventController {
     @Path("/create_event")
     public Response createEvent (OtelEvents event){
       try {
-         handler.createEvents(event);
+         handler.handleEventData(event);
         return Response.status(200).entity(event).build();
 
       } catch (Exception e) {

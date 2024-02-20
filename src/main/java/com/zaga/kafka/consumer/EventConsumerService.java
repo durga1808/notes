@@ -15,7 +15,7 @@ public class EventConsumerService {
      @Incoming("event-in")
       public void consumeEventDetails(OtelEvents events) {
         System.out.println("consumed Event -----------");
-        eventCommandHandler.createEvents(events);
+        eventCommandHandler.handleEventData(events);
      }
 
 
