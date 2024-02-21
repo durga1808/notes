@@ -1,4 +1,4 @@
-package com.zaga.entity.cluster_utilization;
+package com.zaga.entity.clusterutilization;
 
 import java.util.List;
 

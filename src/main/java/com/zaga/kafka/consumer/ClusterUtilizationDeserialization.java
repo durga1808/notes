@@ -3,19 +3,19 @@ package com.zaga.kafka.consumer;
 import org.apache.kafka.common.serialization.Deserializer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.zaga.entity.cluster_utilization.OtelCluster_utilization;
+import com.zaga.entity.clusterutilization.OtelClusterUutilization;
 
-public class Cluster_utilizationDeserialization implements Deserializer<OtelCluster_utilization>{
+public class ClusterUtilizationDeserialization implements Deserializer<OtelClusterUutilization>{
       private final ObjectMapper objectMapper;
 
-      public Cluster_utilizationDeserialization(){
+      public ClusterUtilizationDeserialization(){
         this.objectMapper=new ObjectMapper();
       }
       
  @Override
-    public OtelCluster_utilization deserialize(String topic, byte[] data) {
+    public OtelClusterUutilization deserialize(String topic, byte[] data) {
       try {
-         return objectMapper.readValue(data, OtelCluster_utilization.class);
+         return objectMapper.readValue(data, OtelClusterUutilization.class);
        } catch (Exception e) {
           throw new RuntimeException("Error deserializing JSON", e);
        }

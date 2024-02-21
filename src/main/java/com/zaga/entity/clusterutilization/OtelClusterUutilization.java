@@ -1,4 +1,4 @@
-package com.zaga.entity.cluster_utilization;
+package com.zaga.entity.clusterutilization;
 
 import java.util.List;
 
@@ -17,6 +17,6 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = false)
 @JsonIgnoreProperties("id")
 @MongoEntity(collection = "Cluster_utilization", database = "OtelCluster_utilization")
-public class OtelCluster_utilization  extends PanacheMongoEntity{
+public class OtelClusterUutilization  extends PanacheMongoEntity{
      private List<ResourceMetric> resourceMetrics;
 }
