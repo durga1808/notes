@@ -21,14 +21,10 @@ public class ClusterUtilizationDTO extends PanacheMongoEntity{
      private Date date;
      private String nodeName;
      private Double cpuUsage;
-     private Long memoryCapcity;
+     private Long memoryCapacity;
      private Long memoryUsage;
      private Long memoryAvailable;
      private Long fileSystemCapacity;
      private Long fileSystemUsage;
      private Long fileSystemAvailable;
-    public void setCpuUsage(Object cpuUsage2) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'setCpuUsage'");
-    }
-}
+   }

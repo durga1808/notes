@@ -13,13 +13,6 @@ import com.zaga.entity.clusterutilization.ResourceMetric;
 import com.zaga.entity.clusterutilization.scopeMetric.Metric;
 import com.zaga.entity.clusterutilization.scopeMetric.MetricGauge;
 import com.zaga.entity.clusterutilization.scopeMetric.gauge.GaugeDataPoint;
-import com.zaga.entity.node.OtelNode;
-import com.zaga.entity.node.ResourceMetrics;
-import com.zaga.entity.node.ScopeMetric;
-import com.zaga.entity.node.scopeMetrics.Metrics;
-import com.zaga.entity.node.scopeMetrics.gauge.Gauge;
-import com.zaga.entity.node.scopeMetrics.gauge.GaugeDataPoints;
-import com.zaga.entity.queryentity.cluster_utilization.ClusterUtilizationDTO;
 import com.zaga.entity.queryentity.cluster_utilization.ClusterUtilizationDTO;
 import com.zaga.repo.ClusterUtilizationDTORepo;
 import com.zaga.repo.ClusterUtilizationRepo;
@@ -42,11 +35,11 @@ public class ClusterUtilizationHandler {
     // }
 
 
-    public void createCluster_utilization(OtelClusterUutilization cluster_utilization) {
+    public void createClusterUtilization(OtelClusterUutilization cluster_utilization) {
         cluster_utilizationRepo.persist(cluster_utilization);
 
         List<ClusterUtilizationDTO> metricDTOs = extractAndMapClusterData(cluster_utilization);
-        System.out.println("------------------------------------------NodeMetricDTOs:-------------------------------------- " + metricDTOs.size());
+        System.out.println("------------------------------------------ClusterDTOs:-------------------------------------- " + metricDTOs.size());
     }
 
     public List<ClusterUtilizationDTO> extractAndMapClusterData(OtelClusterUutilization cluster_utilization) {
@@ -56,13 +49,16 @@ public class ClusterUtilizationHandler {
             for (ResourceMetric resourceMetric : cluster_utilization.getResourceMetrics()) {
                 String nodeName = getNodeName(resourceMetric);
                 if (nodeName != null) {
-                    // NodeMetricDTO nodeMetricDTO = new NodeMetricDTO();
-                  
-    
+                                 
                     for (com.zaga.entity.clusterutilization.ScopeMetric scopeMetric : resourceMetric.getScopeMetrics()) {
                         Date createdTime = null;
-                        String cpuUsage = null;
+                        Double cpuUsage = null;
                         Long memoryUsage = 0L;
+                        Long memoryCapacity = null; 
+                        Long memoryAvailable = null; 
+                        Long fileSystemCapacity = null; 
+                        Long fileSystemUsage = null; 
+                        Long fileSystemAvailable = null; 
     
                         String name = scopeMetric.getScope().getName();
     
@@ -81,14 +77,22 @@ public class ClusterUtilizationHandler {
                                         createdTime = convertUnixNanoToLocalDateTime(startTimeUnixNano);
     
                                         if (isCpuMetric(metricName)) {
-                                            cpuUsage = gaugeDataPoint.getAsDouble();
+                                            String cpuData = gaugeDataPoint.getAsDouble();
+                                            cpuUsage = Double.parseDouble(cpuData);
+                                        } else if (isMemoryMetric(metricName)) {
+                                            memoryUsage += Long.parseLong(gaugeDataPoint.getAsInt());
+                                        } 
+                                        else if (isMemoryCapacityMetric(metricName)) {
+                                            memoryCapacity = Long.parseLong(gaugeDataPoint.getAsInt());
                                         }
-    
-                                        // Assuming the memory metric is also present in GaugeDataPoint, adjust as needed
-                                        String memoryValue = gaugeDataPoint.getAsInt();
-                                        if (isMemoryMetric(metricName)) {
-                                            long currentMemoryUsage = Long.parseLong(memoryValue);
-                                            memoryUsage += currentMemoryUsage;
+                                         else if (isMemoryAvailableMetric(metricName)) {
+                                            memoryAvailable = Long.parseLong(gaugeDataPoint.getAsInt());
+                                        } else if (isFileSystemCapacityMetric(metricName)) {
+                                            fileSystemCapacity = Long.parseLong(gaugeDataPoint.getAsInt());
+                                        } else if (isFileSystemUsageMetric(metricName)) {
+                                            fileSystemUsage = Long.parseLong(gaugeDataPoint.getAsInt());
+                                        } else if (isFileSystemAvailableMetric(metricName)) {
+                                            fileSystemAvailable = Long.parseLong(gaugeDataPoint.getAsInt());
                                         }
                                     }
                                 }
@@ -96,14 +100,18 @@ public class ClusterUtilizationHandler {
                         }
     
                         ClusterUtilizationDTO clusterDTO = new ClusterUtilizationDTO();
-                        clusterDTO.setNodeName(nodeName);
-                        clusterDTO.setDate(createdTime != null ? createdTime : new Date());
-                        clusterDTO.setMemoryUsage(memoryUsage / (1024 * 1024));
-                        clusterDTO.setCpuUsage(cpuUsage != null ? cpuUsage : 0.0);
-    
-                        clusterDTOs.add(clusterDTO);
-                        
-                    }
+                    clusterDTO.setNodeName(nodeName);
+                    clusterDTO.setDate(createdTime != null ? createdTime : new Date());
+                    clusterDTO.setCpuUsage(cpuUsage != null ? cpuUsage : 0.0);
+                    clusterDTO.setMemoryUsage(memoryUsage / (1024 * 1024)); 
+                    clusterDTO.setMemoryCapacity(memoryCapacity != null ? memoryCapacity / (1024 * 1024) : null); 
+                    clusterDTO.setMemoryAvailable(memoryAvailable != null ? memoryAvailable / (1024 * 1024) : null); 
+                    clusterDTO.setFileSystemCapacity(fileSystemCapacity);
+                    clusterDTO.setFileSystemUsage(fileSystemUsage);
+                    clusterDTO.setFileSystemAvailable(fileSystemAvailable);
+
+                    clusterDTOs.add(clusterDTO);
+                }
                 }
             }
             clusterUtilizationDTORepo.persist(clusterDTOs);
@@ -114,13 +122,16 @@ public class ClusterUtilizationHandler {
     
         return clusterDTOs;
     }
+    
+    
     private boolean isMemoryMetric(String metricName) {
         return Set.of("k8s.node.memory.usage").contains(metricName);
     }
 
     private boolean isCpuMetric(String metricName) {
-        return Set.of("k8s.node.cpu.utilization").contains(metricName);
+        return metricName.equals("k8s.node.cpu.usage");
     }
+    
 
     private String getNodeName(ResourceMetric resourceMetric) {
         return resourceMetric
@@ -143,4 +154,26 @@ public class ClusterUtilizationHandler {
 
         return Date.from(istDateTime.atZone(istZone).toInstant());
     }
+
+    private boolean isMemoryCapacityMetric(String metricName) {
+        return metricName.equals("k8s.node.memory.capacity");
+    }
+    
+
+    private boolean isMemoryAvailableMetric(String metricName) {
+        return metricName.equals("k8s.node.memory.available");
+    }
+
+    private boolean isFileSystemCapacityMetric(String metricName) {
+        return metricName.equals("k8s.node.filesystem.capacity");
+    }
+
+    private boolean isFileSystemUsageMetric(String metricName) {
+        return metricName.equals("k8s.node.filesystem.usage");
+    }
+
+    private boolean isFileSystemAvailableMetric(String metricName) {
+        return metricName.equals("k8s.node.filesystem.available");
+    }
+
 }

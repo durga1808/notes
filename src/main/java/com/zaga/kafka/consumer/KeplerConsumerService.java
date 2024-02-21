@@ -28,7 +28,7 @@ public class KeplerConsumerService {
     @Inject
     KeplerMetricCommandHandler keplerMetricCommandHandler;
 
-    @Incoming("kepler-in")
+    // @Incoming("kepler-in")
     public void consumeKeplerDetails(KeplerMetric keplerMetric) {
       
 

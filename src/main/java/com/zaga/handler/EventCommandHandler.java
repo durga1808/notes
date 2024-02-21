@@ -34,6 +34,7 @@ public class EventCommandHandler {
         return events;
     }
     public List<EventsDTO> handleEventData(OtelEvents events) {
+        List<EventsDTO> eventsDTOList = new ArrayList<>();
     List<ResourceLogs> resourceLogsList = events.getResourceLogs();
 
     for (ResourceLogs resourceLogs : resourceLogsList) {
@@ -71,11 +72,12 @@ public class EventCommandHandler {
                     eventsDTO.setScopeLogs(singleScopeLogsList);
 
                     eventsDTORepo.persist(eventsDTO);
+                    eventsDTOList.add(eventsDTO);
                 }
             }
         }
     }
-    return null;
+    return eventsDTOList;
 }
 
     private String getNodeName(Resource resource) {
