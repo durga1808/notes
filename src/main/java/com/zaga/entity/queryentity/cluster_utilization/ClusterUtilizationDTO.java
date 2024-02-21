@@ -16,8 +16,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = false)
 @JsonIgnoreProperties("id")
-@MongoEntity(collection = "ClusterDTO", database = "OtelCluster_utilization")
-public class Cluster_UtilizationDTO extends PanacheMongoEntity{
+@MongoEntity(collection = "ClusterDTO", database = "OtelClusterUtilization")
+public class ClusterUtilizationDTO extends PanacheMongoEntity{
      private Date date;
      private String nodeName;
      private Double cpuUsage;
@@ -27,4 +27,8 @@ public class Cluster_UtilizationDTO extends PanacheMongoEntity{
      private Long fileSystemCapacity;
      private Long fileSystemUsage;
      private Long fileSystemAvailable;
+    public void setCpuUsage(Object cpuUsage2) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'setCpuUsage'");
+    }
 }

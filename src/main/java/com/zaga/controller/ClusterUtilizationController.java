@@ -27,7 +27,7 @@ public class ClusterUtilizationController {
     @Path("/create_clusterUtilization")
     public Response createEvent (OtelClusterUutilization cluster_utilization){
       try {
-        cluster_utilizationHandler.createcCluster_utilization(cluster_utilization);
+        cluster_utilizationHandler.createCluster_utilization(cluster_utilization);
         return Response.status(200).entity(cluster_utilization).build();
 
       } catch (Exception e) {
