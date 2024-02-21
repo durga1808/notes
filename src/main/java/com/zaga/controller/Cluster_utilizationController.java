@@ -10,6 +10,7 @@ import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 @Path("/cluster_utilization")
 @Produces(MediaType.APPLICATION_JSON)
@@ -23,11 +24,17 @@ public class Cluster_utilizationController {
     Cluster_utilizationRepo cluster_utilizationRepo;
 
     @POST
-    @Path("/cluster_utilization")
-    public OtelCluster_utilization createCluster_utilization(OtelCluster_utilization otelCluster_utilization){
-       OtelCluster_utilization utilization = new OtelCluster_utilization();
-       return utilization;
-    }
+    @Path("/create_cluster-utilization")
+    public Response createEvent (OtelCluster_utilization cluster_utilization){
+      try {
+        cluster_utilizationHandler.createcCluster_utilization(cluster_utilization);
+        return Response.status(200).entity(cluster_utilization).build();
+
+      } catch (Exception e) {
+        return Response.status(500).entity(e.getMessage()).build();
+        
+      }
     
 
+}
 }

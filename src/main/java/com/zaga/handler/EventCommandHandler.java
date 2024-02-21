@@ -46,20 +46,18 @@ public class EventCommandHandler {
             String timeUnixNano = getTimeUnixNano(scopeLogs);
 
             List<LogRecords> logRecordsList = scopeLogs.getLogRecords();
-            Set<String> uniqueBodies = new HashSet<>(); // Keep track of unique body values
+            Set<String> uniqueBodies = new HashSet<>(); 
             for (LogRecords logRecord : logRecordsList) {
-                // Extract relevant information from logRecord
+                
                 String severityText = logRecord.getSeverityText();
                 String spanId = logRecord.getSpanId();
                 String traceId = logRecord.getTraceId();
-                String body = logRecord.getBody().getStringValue();  // Assuming Body has a stringValue field
+                String body = logRecord.getBody().getStringValue();  
                 System.out.println("scopeLogs------"+ scopeLogs);
-                // Convert timeUnixNano to Date in UTC
-                Date createdTime = new Date(Long.parseLong(timeUnixNano) / 1_000_000); // Divide by 1_000_000 to convert nanoseconds to milliseconds
-
-                // Check if the body value is unique
+                Date createdTime = new Date(Long.parseLong(timeUnixNano) / 1_000_000); 
+               
                 if (uniqueBodies.add(body)) {
-                    // Create EventsDTO object and set the extracted information
+                   
                     EventsDTO eventsDTO = new EventsDTO();
                     eventsDTO.setSeverityText(severityText);
                     eventsDTO.setCreatedTime(createdTime);
@@ -67,12 +65,10 @@ public class EventCommandHandler {
                     eventsDTO.setObjectKind(objectKind);
                     eventsDTO.setObjectName(objectName);
                     
-                    // Create a new list containing only the current scopeLogs
                     List<ScopeLogs> singleScopeLogsList = new ArrayList<>();
                     singleScopeLogsList.add(scopeLogs);
                     eventsDTO.setScopeLogs(singleScopeLogsList);
 
-                    // Store the EventsDTO object in the database
                     eventsDTORepo.persist(eventsDTO);
                 }
             }

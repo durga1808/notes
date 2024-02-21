@@ -2,6 +2,7 @@ package com.zaga.entity.cluster_utilization.scopeMetric;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.zaga.entity.cluster_utilization.scopeMetric.gauge.GaugeDataPoint;
 
 import lombok.AllArgsConstructor;
@@ -13,5 +14,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class MetricGauge {
+
+      @JsonIgnoreProperties("dataPoints")
       private List<GaugeDataPoint> dataPoints;
 }

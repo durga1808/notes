@@ -12,7 +12,7 @@ public class EventConsumerService {
     @Inject
     private EventCommandHandler eventCommandHandler;
     
-     @Incoming("event-in")
+    @Incoming("event-in")
       public void consumeEventDetails(OtelEvents events) {
         System.out.println("consumed Event -----------");
         eventCommandHandler.handleEventData(events);

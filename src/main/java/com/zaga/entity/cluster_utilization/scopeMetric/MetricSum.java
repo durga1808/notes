@@ -2,6 +2,7 @@ package com.zaga.entity.cluster_utilization.scopeMetric;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.zaga.entity.cluster_utilization.scopeMetric.sum.SumDataPoint;
 
 import lombok.AllArgsConstructor;
@@ -12,8 +13,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class MetricSum {
+
+    @JsonIgnoreProperties("dataPoints")
     private List<SumDataPoint> dataPoints;
+    @JsonIgnoreProperties("aggregationTemporality")
     private int aggregationTemporality;
+    @JsonIgnoreProperties("isMonotonic")
     private Boolean isMonotonic;
 
 }
