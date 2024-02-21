@@ -23,16 +23,17 @@ import jakarta.inject.Inject;
 public class EventCommandHandler {
     
     @Inject
-    EventRepo repo ;
+    EventRepo eventRepo ;
 
     @Inject
     EventsDTORepo eventsDTORepo;
 
-    // public OtelEvents createEvents (OtelEvents events) {
-    //     repo.persist(events);
-    //     return events;
-    // }
-    public void handleEventData(OtelEvents events) {
+    public OtelEvents createEvents (OtelEvents events) {
+        eventRepo.persist(events);
+        List<EventsDTO> eventsList = handleEventData(events);
+        return events;
+    }
+    public List<EventsDTO> handleEventData(OtelEvents events) {
     List<ResourceLogs> resourceLogsList = events.getResourceLogs();
 
     for (ResourceLogs resourceLogs : resourceLogsList) {
@@ -74,6 +75,7 @@ public class EventCommandHandler {
             }
         }
     }
+    return null;
 }
 
     private String getNodeName(Resource resource) {
