@@ -1,6 +1,6 @@
-package com.zaga.entity.cluster_utilization.resource;
+package com.zaga.entity.clusterutilization.resource;
 
-import com.zaga.entity.cluster_utilization.resource.attributes.Value;
+import com.zaga.entity.clusterutilization.resource.attributes.Value;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

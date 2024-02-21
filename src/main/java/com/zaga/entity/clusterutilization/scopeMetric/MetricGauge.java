@@ -1,9 +1,9 @@
-package com.zaga.entity.cluster_utilization.scopeMetric;
+package com.zaga.entity.clusterutilization.scopeMetric;
 
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.zaga.entity.cluster_utilization.scopeMetric.gauge.GaugeDataPoint;
+import com.zaga.entity.clusterutilization.scopeMetric.gauge.GaugeDataPoint;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -1,4 +1,4 @@
-package com.zaga.entity.cluster_utilization.scopeMetric;
+package com.zaga.entity.clusterutilization.scopeMetric;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 

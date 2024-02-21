@@ -1,8 +1,8 @@
 package com.zaga.controller;
 
-import com.zaga.entity.cluster_utilization.OtelCluster_utilization;
-import com.zaga.handler.Cluster_utilizationHandler;
-import com.zaga.repo.Cluster_utilizationRepo;
+import com.zaga.entity.clusterutilization.OtelClusterUutilization;
+import com.zaga.handler.ClusterUtilizationHandler;
+import com.zaga.repo.ClusterUtilizationRepo;
 
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
@@ -15,17 +15,17 @@ import jakarta.ws.rs.core.Response;
 @Path("/cluster_utilization")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-public class Cluster_utilizationController {
+public class ClusterUtilizationController {
     
     @Inject
-    Cluster_utilizationHandler cluster_utilizationHandler;
+    ClusterUtilizationHandler cluster_utilizationHandler;
 
     @Inject
-    Cluster_utilizationRepo cluster_utilizationRepo;
+    ClusterUtilizationRepo cluster_utilizationRepo;
 
     @POST
-    @Path("/create_cluster-utilization")
-    public Response createEvent (OtelCluster_utilization cluster_utilization){
+    @Path("/create_clusterUtilization")
+    public Response createEvent (OtelClusterUutilization cluster_utilization){
       try {
         cluster_utilizationHandler.createcCluster_utilization(cluster_utilization);
         return Response.status(200).entity(cluster_utilization).build();
