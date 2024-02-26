@@ -312,6 +312,7 @@ private void updateLogRule(Rule existingRule, Rule newRule) {
       Response response = authCommandHandler.getServiceList(userCredentials);
       return response;
     } catch (Exception e) {
+        System.out.println("ERRORRR:---------------------------- " + e.getMessage());
       e.printStackTrace();
       return Response.serverError().build();
     }
@@ -338,7 +339,7 @@ private void updateLogRule(Rule existingRule, Rule newRule) {
       return Response.ok("Password updated successfully").build();
     } catch (Exception e) {
       e.printStackTrace();
-      return Response.serverError().build();
+      return Response.status(Response.Status.EXPECTATION_FAILED).build();
     }
   }
 

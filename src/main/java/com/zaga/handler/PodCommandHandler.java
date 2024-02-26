@@ -34,13 +34,13 @@ public class PodCommandHandler {
   public void createPodMetric(OtelPodMetric metrics) {
     podCommandRepo.persist(metrics);
 
-    Map<String, PodMetricDTO> metricDTOs = extractAndMapData(metrics);
+    List<PodMetricDTO> metricDTOs = extractAndMapData(metrics);
     System.out.println("------------------------------------------PODMetricDTOs:-------------------------------------- " + metricDTOs.size());
   }
 
 
-public Map<String, PodMetricDTO> extractAndMapData(OtelPodMetric metrics) {
-    Map<String, PodMetricDTO> podMetricsMap = new HashMap<>();
+  public List<PodMetricDTO> extractAndMapData(OtelPodMetric metrics) {
+    List<PodMetricDTO> podMetricsList = new ArrayList<>();
 
     try {
         for (ResourceMetric resourceMetric : metrics.getResourceMetrics()) {
@@ -48,11 +48,9 @@ public Map<String, PodMetricDTO> extractAndMapData(OtelPodMetric metrics) {
             String namespaceName = getNamespaceName(resourceMetric);
             // System.out.println("NameSpace: " + podName + " namespace: " + namespaceName);
             if (podName != null) {
-                PodMetricDTO podMetricDTO = podMetricsMap.computeIfAbsent(podName, k -> new PodMetricDTO());
+                PodMetricDTO podMetricDTO = new PodMetricDTO();
                 podMetricDTO.setPodName(podName);
                 podMetricDTO.setNamespaceName(namespaceName);
-
-                List<MetricDTO> metricDTOs = podMetricDTO.getMetrics();
 
                 for (ScopeMetrics scopeMetric : resourceMetric.getScopeMetrics()) {
                     Date createdTime = null;
@@ -79,7 +77,7 @@ public Map<String, PodMetricDTO> extractAndMapData(OtelPodMetric metrics) {
                                         cpuUsage = gaugeDataPoint.getAsDouble();
                                     }
 
-                                    // Assuming the memory metric is also present in GaugeDataPoint, adjust as needed
+
                                     String memoryValue = gaugeDataPoint.getAsInt();
                                     if (isMemoryMetric(metricName)) {
                                         long currentMemoryUsage = Long.parseLong(memoryValue);
@@ -89,28 +87,25 @@ public Map<String, PodMetricDTO> extractAndMapData(OtelPodMetric metrics) {
                             }
                         }
                     }
-                
 
-                MetricDTO metricDTO = new MetricDTO();
-                metricDTO.setDate(createdTime != null ? createdTime : new Date()); 
-                metricDTO.setMemoryUsage(memoryUsage / (1024 * 1024)); 
-                metricDTO.setCpuUsage(cpuUsage != null ? cpuUsage : 0.0); 
-                
+                    podMetricDTO.setDate(createdTime != null ? createdTime : new Date());
+                    podMetricDTO.setMemoryUsage(memoryUsage / (1024 * 1024));
+                    podMetricDTO.setCpuUsage(cpuUsage != null ? cpuUsage : 0.0);
 
-                metricDTOs.add(metricDTO);
+                }
+                
+                podMetricsList.add(podMetricDTO);
             }
         }
-    }
-
-        List<PodMetricDTO> aggregatedPodMetrics = new ArrayList<>(podMetricsMap.values());
-        podMetricDTORepo.persist(aggregatedPodMetrics);
-        System.out.println("Aggregated-----------------------"+aggregatedPodMetrics.size());
         
+        podMetricDTORepo.persist(podMetricsList);
+        System.out.println("Aggregated-----------------------" + podMetricsList.size());
+
     } catch (Exception e) {
         e.printStackTrace();
     }
 
-    return podMetricsMap;
+    return podMetricsList;
 }
 
 

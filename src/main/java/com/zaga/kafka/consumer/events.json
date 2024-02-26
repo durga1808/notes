@@ -1,0 +1,113 @@
+{
+    "resourceLogs": [
+      {
+        "resource": {
+          "attributes": [
+            {
+              "key": "k8s.node.name",
+              "value": {
+                "stringValue": "zagaocp-master3"
+              }
+            },
+            {
+              "key": "k8s.object.kind",
+              "value": {
+                "stringValue": "Pod"
+              }
+            },
+            {
+              "key": "k8s.object.name",
+              "value": {
+                "stringValue": "redhat-marketplace-jk8tc"
+              }
+            },
+            {
+              "key": "k8s.object.uid",
+              "value": {
+                "stringValue": "983ba59c-c95b-43e1-8ce2-709e10657dd8"
+              }
+            },
+            {
+              "key": "k8s.object.fieldpath",
+              "value": {
+                "stringValue": "spec.containers{registry-server}"
+              }
+            },
+            {
+              "key": "k8s.object.api_version",
+              "value": {
+                "stringValue": "v1"
+              }
+            },
+            {
+              "key": "k8s.object.resource_version",
+              "value": {
+                "stringValue": "20196010"
+              }
+            }
+          ]
+        },
+        "scopeLogs": [
+          {
+            "scope": {},
+            "logRecords": [
+              {
+                "timeUnixNano": "1708325990000000000",
+                "severityNumber": 9,
+                "severityText": "Normal",
+                "body": {
+                  "stringValue": "Stopping container registry-server"
+                },
+                "attributes": [
+                  {
+                    "key": "k8s.event.reason",
+                    "value": {
+                      "stringValue": "Killing"
+                    }
+                  },
+                  {
+                    "key": "k8s.event.action",
+                    "value": {
+                      "stringValue": ""
+                    }
+                  },
+                  {
+                    "key": "k8s.event.start_time",
+                    "value": {
+                      "stringValue": "2024-02-19 06:59:50 +0000 UTC"
+                    }
+                  },
+                  {
+                    "key": "k8s.event.name",
+                    "value": {
+                      "stringValue": "redhat-marketplace-jk8tc.17b5316ff9cc8b87"
+                    }
+                  },
+                  {
+                    "key": "k8s.event.uid",
+                    "value": {
+                      "stringValue": "4e395b63-61c1-42a3-9cb2-61397f864737"
+                    }
+                  },
+                  {
+                    "key": "k8s.namespace.name",
+                    "value": {
+                      "stringValue": "openshift-marketplace"
+                    }
+                  },
+                  {
+                    "key": "k8s.event.count",
+                    "value": {
+                      "intValue": "1"
+                    }
+                  }
+                ],
+                "traceId": "",
+                "spanId": ""
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
