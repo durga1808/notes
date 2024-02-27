@@ -11,7 +11,7 @@ public class ClusterUtilizationConsumer {
     @Inject
     private ClusterUtilizationHandler cluster_utilizationHandler;
 
-     @Incoming("cluser_utilization-in")
+    //  @Incoming("cluser_utilization-in")
       public void consumeClusterUtilizationDetails(OtelClusterUutilization cluster_utilization) {
         System.out.println("consumed cluster_utilization -----------");
         cluster_utilizationHandler.createClusterUtilization(cluster_utilization);
