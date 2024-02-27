@@ -36,10 +36,18 @@ public class ClusterUtilizationHandler {
 
 
     public void createClusterUtilization(OtelClusterUutilization cluster_utilization) {
+
+        System.out.println("--------------------[CLUSTER UTILIZATION HANDLER]--------------" + cluster_utilization);
         cluster_utilizationRepo.persist(cluster_utilization);
 
         List<ClusterUtilizationDTO> metricDTOs = extractAndMapClusterData(cluster_utilization);
         System.out.println("------------------------------------------ClusterDTOs:-------------------------------------- " + metricDTOs.size());
+
+        for (ClusterUtilizationDTO dto : metricDTOs) {
+            System.out.println("-------ClusterCreatedTime------"+dto.getDate());
+            System.out.println("------ClusterNodeName---------"+ dto.getNodeName());
+        }
+//     }
     }
 
     public List<ClusterUtilizationDTO> extractAndMapClusterData(OtelClusterUutilization cluster_utilization) {
@@ -48,6 +56,7 @@ public class ClusterUtilizationHandler {
         try {
             for (ResourceMetric resourceMetric : cluster_utilization.getResourceMetrics()) {
                 String nodeName = getNodeName(resourceMetric);
+                String clusterName = getClusterName(resourceMetric);
                 if (nodeName != null) {
                                  
                     for (com.zaga.entity.clusterutilization.ScopeMetric scopeMetric : resourceMetric.getScopeMetrics()) {
@@ -101,6 +110,7 @@ public class ClusterUtilizationHandler {
     
                         ClusterUtilizationDTO clusterDTO = new ClusterUtilizationDTO();
                     clusterDTO.setNodeName(nodeName);
+                    clusterDTO.setClusterName(clusterName);
                     clusterDTO.setDate(createdTime != null ? createdTime : new Date());
                     clusterDTO.setCpuUsage(cpuUsage != null ? cpuUsage : 0.0);
                     clusterDTO.setMemoryUsage(memoryUsage / (1024 * 1024)); 
@@ -139,6 +149,17 @@ public class ClusterUtilizationHandler {
                 .getAttributes()
                 .stream()
                 .filter(attribute -> "k8s.node.name".equals(attribute.getKey()))
+                .findFirst()
+                .map(attribute -> attribute.getValue().getStringValue())
+                .orElse(null);
+    }
+
+    private String getClusterName(ResourceMetric resourceMetric) {
+        return resourceMetric
+                .getResource()
+                .getAttributes()
+                .stream()
+                .filter(attribute -> "k8s.cluster.name".equals(attribute.getKey()))
                 .findFirst()
                 .map(attribute -> attribute.getValue().getStringValue())
                 .orElse(null);

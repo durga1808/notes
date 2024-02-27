@@ -20,6 +20,7 @@ import lombok.NoArgsConstructor;
 public class ClusterUtilizationDTO extends PanacheMongoEntity{
      private Date date;
      private String nodeName;
+     private String clusterName;
      private Double cpuUsage;
      private Long memoryCapacity;
      private Long memoryUsage;
