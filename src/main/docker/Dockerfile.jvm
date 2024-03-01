@@ -34,6 +34,15 @@ ENV ALERT_BOOTSTRAP_URL='observai-kafka-bootstrap.observability-kafka.svc.cluste
 ENV ALERT_TOPIC='AlertTopic'
 ENV ALERT_OFFSET_RESET='latest'
 
+ENV EVENT_BOOTSTRAP_URL='infra-kafka-bootstrap.observability-kafka.svc.cluster.local:9092'
+ENV EVENT_TOPIC='events_data'
+ENV EVENT_OFFSET_RESET='latest'
+
+
+ENV CLUSTER_UTILIZATION_BOOTSTRAP_URL='infra-kafka-bootstrap.observability-kafka.svc.cluster.local:9092'
+ENV CLUSTER_UTILIZATION_TOPIC='kubelet_node_stats'
+ENV CLUSTER_UTILIZATION_OFFSET_RESET='latest'
+
 # We make four distinct layers so if there are application changes the library layers can be re-used
 COPY --chown=185 target/quarkus-app/lib/ /deployments/lib/
 COPY --chown=185 target/quarkus-app/*.jar /deployments/
