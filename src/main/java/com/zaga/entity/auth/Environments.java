@@ -1,5 +1,6 @@
 package com.zaga.entity.auth;
 
+import jakarta.ws.rs.DefaultValue;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,5 +16,6 @@ public class Environments {
     private long clusterId;
     private String clusterName;
     private String openshiftClusterName;
+    @DefaultValue("active")
     private String clusterStatus;
 }
