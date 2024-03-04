@@ -132,6 +132,8 @@ public Response updateUserInfo(UserCredentials userInfo) {
               existingEnv.setClusterPassword(environment.getClusterPassword());
               existingEnv.setHostUrl(environment.getHostUrl());
               existingEnv.setClusterType(environment.getClusterType());
+              existingEnv.setOpenshiftClusterName(environment.getOpenshiftClusterName());
+              existingEnv.setClusterName(environment.getClusterName());
               
               // Update other properties as needed
 
