@@ -395,13 +395,45 @@ public class AuthController {
             MongoDatabase database = mongoClient.getDatabase("ObservabilityCredentials");
             MongoCollection<Document> collection = database.getCollection("UserCreds");
             // Specify the query condition (username: "admin")
-            Document query = new Document("username", "admin");
+            Document query = new Document("username", userName);
 
             // Specify the update operation (pulling environments with clusterId: 3)
             Document update = new Document("$pull", new Document("environments", new Document("clusterId", clusterId)));
 
             collection.updateOne(query, update);
             System.out.println("---------[SUCCESSFULLY DELETED ENVIRONMENT]-----------");
+            return Response.ok().build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+
+
+
+    @PUT
+    @Path("/clusterStatusUpdate")
+    public Response updateClusterStatus(@QueryParam("userName") String userName,
+    @QueryParam("clusterId") long clusterId,
+    @QueryParam("clusterStatus") String clusterStatus) {
+        if (userName == null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        try {
+            // repo.update({username:"admin"},{$pull : {environments:{clusterId:3}}});
+            MongoDatabase database = mongoClient.getDatabase("ObservabilityCredentials");
+            MongoCollection<Document> collection = database.getCollection("UserCreds");
+            
+            // Specify the filter to match the document
+            Document filter = new Document("username", userName)
+                    .append("environments", new Document("$elemMatch", new Document("clusterId", clusterId)));
+
+            // Specify the update operation
+            Document update = new Document("$set", new Document("environments.$.clusterStatus", clusterStatus));
+
+            collection.updateOne(filter, update);
             return Response.ok().build();
         } catch (Exception e) {
             e.printStackTrace();
