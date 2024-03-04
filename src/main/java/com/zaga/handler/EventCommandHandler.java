@@ -42,6 +42,7 @@ public class EventCommandHandler {
         String nodeName = getNodeName(resource);
         String objectKind = getObjectKind(resource);
         String objectName = getObjectName(resource);
+        String clusterName = getClusterName(resource);
 
         List<ScopeLogs> scopeLogsList = resourceLogs.getScopeLogs();
         for (ScopeLogs scopeLogs : scopeLogsList) {
@@ -66,6 +67,7 @@ public class EventCommandHandler {
                     eventsDTO.setNodeName(nodeName);
                     eventsDTO.setObjectKind(objectKind);
                     eventsDTO.setObjectName(objectName);
+                    eventsDTO.setClusterName(clusterName);
                     
                     List<ScopeLogs> singleScopeLogsList = new ArrayList<>();
                     singleScopeLogsList.add(scopeLogs);
@@ -106,6 +108,16 @@ public class EventCommandHandler {
                 .map(attribute -> attribute.getValue().getStringValue())
                 .orElse(null);
     }
+
+    private String getClusterName(Resource resource) {
+        return resource.getAttributes()
+                .stream()
+                .filter(attribute -> "k8s.cluster.name".equals(attribute.getKey()))
+                .findFirst()
+                .map(attribute -> attribute.getValue().getStringValue())
+                .orElse(null);
+    }
+
 
     private String getTimeUnixNano(ScopeLogs scopeLogs) {
         return scopeLogs.getLogRecords().get(0).getTimeUnixNano();
