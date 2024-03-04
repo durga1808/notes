@@ -110,6 +110,60 @@ public Response saveUserInfo(final UserCredentials credentials) {
     }
 }
 
+// public Response updateUserInfo(UserCredentials userInfo) {
+//   UserCredentials existingUser = authRepo
+//           .find("username", userInfo.getUsername())
+//           .firstResult();
+
+//   if (existingUser != null) {
+//       List<Environments> existingEnvironments = existingUser.getEnvironments() != null ?
+//               new ArrayList<>(existingUser.getEnvironments()) :
+//               new ArrayList<>();
+
+//       userInfo.getEnvironments().forEach(environment -> {
+//           Optional<Environments> existingEnvironment = existingEnvironments.stream()
+//                   .filter(e -> e.getClusterId() == environment.getClusterId())
+//                   .findFirst();
+
+//           if (existingEnvironment.isPresent()) {
+//               // Update the existing environment with the new data
+//               Environments existingEnv = existingEnvironment.get();
+//               existingEnv.setClusterUsername(environment.getClusterUsername());
+//               existingEnv.setClusterPassword(environment.getClusterPassword());
+//               existingEnv.setHostUrl(environment.getHostUrl());
+//               existingEnv.setClusterType(environment.getClusterType());
+              
+//               // Update other properties as needed
+
+//               System.out.println("Environment with clusterId " + environment.getClusterId() + " updated successfully.");
+//           } else {
+//               // Increment clusterId for new environment
+//               Long maxClusterId = existingEnvironments.stream()
+//                       .map(Environments::getClusterId)
+//                       .max(Long::compare)
+//                       .orElse(0L);
+//               environment.setClusterId(maxClusterId + 1);
+
+//               existingEnvironments.add(environment);
+
+//               System.out.println("New environment with clusterId " + environment.getClusterId() + " added successfully.");
+//           }
+//       });
+
+//       existingUser.setEnvironments(existingEnvironments);
+//       authRepo.update(existingUser);  // Update the existing user
+
+//       System.out.println("User environments updated successfully.");
+//       return Response
+//               .status(200)
+//               .entity("User environments updated successfully")
+//               .build();
+//   }
+
+//   return Response.status(200).entity(userInfo.getEnvironments()).build();
+// }
+
+ 
 public Response updateUserInfo(UserCredentials userInfo) {
   UserCredentials existingUser = authRepo
           .find("username", userInfo.getUsername())
@@ -134,7 +188,8 @@ public Response updateUserInfo(UserCredentials userInfo) {
               existingEnv.setClusterType(environment.getClusterType());
               existingEnv.setOpenshiftClusterName(environment.getOpenshiftClusterName());
               existingEnv.setClusterName(environment.getClusterName());
-              
+              existingEnv.setClusterStatus(environment.getClusterStatus()); // Update clusterStatus field
+
               // Update other properties as needed
 
               System.out.println("Environment with clusterId " + environment.getClusterId() + " updated successfully.");
@@ -164,8 +219,6 @@ public Response updateUserInfo(UserCredentials userInfo) {
 
   return Response.status(200).entity(userInfo.getEnvironments()).build();
 }
-
- 
 
 
   public UserCredentials getUserInfoByUsername(String username) {
