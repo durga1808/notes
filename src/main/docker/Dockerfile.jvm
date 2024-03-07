@@ -7,27 +7,27 @@ ENV APP_PORT=8082
 ENV MONGODB_URL='mongodb://root:pass123@observai-mongodb-community-0.observai-mongodb-community-svc.observability-mongodb.svc.cluster.local:27017,observai-mongodb-community-1.observai-mongodb-community-svc.observability-mongodb.svc.cluster.local:27017,observai-mongodb-community-2.observai-mongodb-community-svc.observability-mongodb.svc.cluster.local:27017/admin?ssl=false'
 
 ENV TRACE_BOOTSTRAP_URL='observai-kafka-bootstrap.observability-kafka.svc.cluster.local:9092'
-ENV TRACE_TOPIC='observai-main-traces-1'
+ENV TRACE_TOPIC='observai_main_metrics_1'
 ENV TRACE_OFFSET_RESET='latest'
 
 ENV LOG_BOOTSTRAP_URL='observai-kafka-bootstrap.observability-kafka.svc.cluster.local:9092'
-ENV LOG_TOPIC='observai-main-logs-1'
+ENV LOG_TOPIC='observai_main_logs_1'
 ENV LOG_OFFSET_RESET='latest'
 
 ENV METRIC_BOOTSTRAP_URL='observai-kafka-bootstrap.observability-kafka.svc.cluster.local:9092'
-ENV METRIC_TOPIC='observai-main-metrics-1'
+ENV METRIC_TOPIC='observai_main_traces_1'
 ENV METRIC_OFFSET_RESET='latest'
 
 ENV KEPLER_BOOTSTRAP_URL='observai-kafka-bootstrap.observability-kafka.svc.cluster.local:9092'
-ENV KEPLER_TOPIC='kepler-zaga-vm'
+ENV KEPLER_TOPIC='kepler_zaga_vm'
 ENV KEPLER_OFFSET_RESET='latest'
 
 ENV PODMETRIC_BOOTSTRAP_URL='infra-kafka-bootstrap.observability-kafka.svc.cluster.local:9092'
-ENV PODMETRIC_TOPIC='kubeletstats-pod-receiver'
+ENV PODMETRIC_TOPIC='kubelet_pod_stats'
 ENV PODMETRIC_OFFSET_RESET='latest'
 
 ENV NODEMETRIC_BOOTSTRAP_URL='infra-kafka-bootstrap.observability-kafka.svc.cluster.local:9092'
-ENV NODEMETRIC_TOPIC='kubeletstats-node-receiver'
+ENV NODEMETRIC_TOPIC='kubelet_node_stats'
 ENV NODEMETRIC_OFFSET_RESET='latest'
 
 ENV ALERT_BOOTSTRAP_URL='observai-kafka-bootstrap.observability-kafka.svc.cluster.local:9092'
